@@ -112,3 +112,9 @@ Chưa lưu nguyên response body ra snapshot/hash trên đĩa trong phiên lập
 ## 6. Cách cập nhật research log
 
 Mỗi xác minh mới thêm ngày, URL/endpoint, version/commit, loại bằng chứng (`docs`, `live_probe`, `full_audit`, `backtest`), kết quả và điều vẫn chưa biết. Không ghi đè bằng chứng cũ nếu nguồn thay đổi; ghi sự khác biệt và ảnh hưởng tới kế hoạch.
+
+## 7. Probe cập nhật 2026-10-03
+
+Đã chạy lại capability probe riêng cho `PriceUSD`, `CapMrktCurUSD`, `SplyCur`, `CapMVRVCur` trên ETH/1d tại ba khoảng lịch sử. Cả 12 request trả HTTP 200 có dữ liệu. Đây là cập nhật cho bốn input Core; không thay thế kết quả cũ của `CapRealUSD`/`FeeTotUSD` (403) và không phải full audit. Bằng chứng, timestamp, hash và phạm vi xem [data-audit.md](data-audit.md); raw response vẫn ở local private/ignored.
+
+Tài liệu hiện hành được đọc lại cho Community API, API Access và kho archive. Tài liệu access mô tả dùng phi thương mại theo Creative Commons; archive ghi CC BY-NC 4.0. Chưa giải quyết quyền thương mại và tái phân phối output ECO. API timestamp của mẫu là 00:00 UTC; period-end, availability lịch sử và revision vẫn chưa chốt. Ghi nhận chi tiết và nguồn tại [data-contract.md](data-contract.md), [data-rights.md](data-rights.md).

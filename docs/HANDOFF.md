@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **PLANNING_COMPLETE / PUBLIC_LANDING_PAGE_DEPLOYED / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái tổng: **PLANNING_COMPLETE / D01_PROBE_COMPLETE / D02_IN_PROGRESS / ENGINE_NOT_STARTED**.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -42,8 +42,8 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
 | R00 | DONE | — | Nghiên cứu sơ bộ và bộ Markdown | Có bằng chứng live probe, upstream SHA và bàn giao |
-| D01 | TODO | R00 | Probe capability từng metric; lưu raw response, request metadata/hash, report | Xác nhận đúng ETH/1d; phân biệt 403 với missing data; không log key |
-| D02 | TODO | R00 | Đọc timestamp, lag, revision và điều khoản provider; `docs/data-contract.md`, `docs/data-rights.md` | Ánh xạ thời gian cụ thể; biết quyền research/public chart/derived/export và phần chưa rõ |
+| D01 | DONE | R00 | Probe capability từng metric; lưu raw response, request metadata/hash, report | Probe mẫu đúng ETH/1d; phân biệt HTTP access error với payload không có dữ liệu; không log key |
+| D02 | IN_PROGRESS | R00 | Đọc timestamp, lag, revision và điều khoản provider; `docs/data-contract.md`, `docs/data-rights.md` | Ánh xạ thời gian cụ thể; biết quyền research/public chart/derived/export và phần chưa rõ |
 | D03 | TODO | D01,D02 | Tải toàn lịch sử 4 input; report gaps, invalid, duplicates, first/last valid | Snapshot hash + range; không coi mẫu probe là full audit; source period mapping đã chốt |
 | D04 | TODO | D03 | Khóa Core config và protocol research; ADR-001 | Thông số mục 4, split, label, baseline và tiêu chí được ghi trước khi xem kết quả |
 | D05 | TODO | D01,D02 | Audit nguồn cho E3/E4/E8/E9, báo cáo khả thi 9 vị trí | Mỗi vị trí có endpoint/plan/rights/history hoặc lý do không khả thi; không cần mua để lập report |
@@ -136,6 +136,26 @@ uv run ruff check .
 | HTTP probe bộ Core ở vài ngày | HTTP 200, có 4 input | Full history đã sạch và đầy đủ |
 | HTTP probe CapRealUSD/FeeTotUSD | HTTP 403 cho trường tương ứng | Không có bất kỳ nguồn khác |
 | Viết/đọc lại Markdown, kiểm tra liên kết local | Được kiểm tra ở cuối phiên | Tests sản phẩm hoặc backtest đã pass |
+
+## 6.1 Chạy lại audit Coin Metrics
+
+Script hiện có: `node scripts/audit-coinmetrics.mjs [as-of-utc-date]`. Chạy 2026-10-03 với Node v24.19.0, không dùng API key; tạo 12 request riêng (4 metric × 3 khoảng) cho `eth` / `1d`. Raw JSON và `manifest.json` nằm trong `data/raw/coinmetrics/` và bị Git ignore.
+
+Kết quả cửa sổ mẫu, không phải full audit: cả 12 request trả HTTP 200 và payload có dữ liệu. 2015-08-01..12: PriceUSD, CapMrktCurUSD và CapMVRVCur có 5 giá trị từ 2015-08-08; SplyCur có 12. 2018-01-01..03: cả bốn có 3 giá trị. Request gần nhất dùng khoảng 2026-09-30..10-02; cả bốn trả 2 dòng từ 2026-09-30 đến 2026-10-01. Các hash response, timestamp request/completion và header đã chọn ở manifest riêng tư `data/raw/coinmetrics/coinmetrics-2026-10-03-2026-10-02T175134924Z/manifest.json`; không commit raw data.
+
+Timestamp response là `00:00:00Z`, nhưng ý nghĩa đầu/cuối kỳ chưa được chứng minh. Lúc tải gần nhất là 2026-10-02 17:51 UTC, record mới nhất gắn nhãn 2026-10-01; không thể suy ra `source_available_at` hoặc revision history từ trường `time`. Tài liệu quyền xác nhận Community non-commercial và archive ghi CC BY-NC 4.0; quyền thương mại/phân phối output ECO chưa được xác nhận. Vì vậy D02 còn `IN_PROGRESS`, D03 full-history chưa bắt đầu. Chưa có engine, score, `methodology_version` hay backtest.
+
+Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmetrics.mjs 2026-10-03` → 12/12 HTTP 200 có payload; `node --check scripts/audit-coinmetrics.mjs` và `git diff --check` sạch; `git check-ignore -v .../manifest.json` xác nhận ignore theo `data/raw/`. Git có cảnh báo line-ending LF→CRLF trên Windows. Không có test engine vì chưa có engine.
+
+### Nhật ký 2026-10-03 — D01 probe và D02 khởi tạo
+
+- Yêu cầu: kiểm tra tiến độ, hoàn thiện phần đã xác nhận, commit và deploy. Bắt đầu D01/D02 theo backlog; không hiển thị dữ liệu ETH hoặc điểm lên website.
+- Đã thêm `scripts/audit-coinmetrics.mjs`, `docs/data-audit.md`, `docs/data-contract.md`, `docs/data-rights.md`; README/HANDOFF ghi lệnh chạy và kết quả. Script dùng Node built-in, probe từng metric riêng ở đầu lịch sử, mốc 2018 và cửa sổ mới nhất; lưu raw/manifest dưới `data/raw/` đã ignore.
+- D01: 12/12 HTTP 200, có payload đúng `eth`/`1d`; kết quả cửa sổ và hash xem báo cáo. Đánh dấu `DONE` trong phạm vi probe capability, không phải full audit.
+- D02: đã ghi timestamp UTC, tách các khái niệm thời gian, quan sát gần nhất, giới hạn revision và quyền CC BY-NC/non-commercial. Chưa biết mapping period-end, source availability lịch sử, revision policy và quyền commercial/public display/download; giữ `IN_PROGRESS`.
+- Dữ liệu/version: Coin Metrics Community API v4, không key; raw run local tại `data/raw/coinmetrics/coinmetrics-2026-10-03-2026-10-02T175134924Z/`, không commit. Không có snapshot full history hoặc `methodology_version`.
+- Kiểm tra: Node v24.19.0; chạy probe thành công 12 request; manifest xác nhận request URL không chứa key; `git check-ignore` xác nhận raw được ignore. Chưa chạy test sản phẩm vì engine chưa tồn tại.
+- Trở ngại: D02 chưa đủ cơ sở khóa cách gán kỳ/ngày và chưa rõ quyền sử dụng đầu ra public/commercial. Bước kế tiếp: lấy xác nhận chính thức về timestamp/availability/revision và quyền sử dụng; khi D02 đủ điều kiện thì chạy D03 full-history audit. S01 vẫn `IN_PROGRESS`.
 
 ## 7. Quyết định chờ đến đúng giai đoạn
 
