@@ -8,6 +8,8 @@ Chạy probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03` hoặc
 
 Kiểm tra bất biến protocol D04 và register feasibility D05 bằng `node scripts/validate-research-artifacts.mjs`. Lệnh này chỉ xác minh hợp đồng research/config, không chạy engine, backtest, live source probe hoặc xác nhận quyền phát hành.
 
+Chạy live probe D05 không cần API key bằng `node scripts/audit-d05-feasibility.mjs 2026-10-03`. Raw response/manifest được giữ trong `data/raw/d05/` (bị Git ignore); chỉ summary/hash evidence không chứa raw được commit.
+
 ## Đọc theo thứ tự
 
 1. [Kế hoạch chi tiết](docs/MASTER_PLAN.md): phạm vi, 9 chỉ số đối chiếu, công thức bản đầu, dữ liệu, kiến trúc, giao diện, kiểm định và tiêu chí hoàn thành.

@@ -308,3 +308,10 @@ Task tiếp theo:
 - Kiểm tra: `node --check scripts/validate-research-artifacts.mjs`; `node scripts/validate-research-artifacts.mjs` trả `D04 protocol invariants: PASS` và `D05 feasibility register E1-E9: PASS`; parse JSON config/status; `git diff --check`. Engine/backtest chưa tồn tại, không ghi là đã kiểm thử.
 - Phát hành: commit `b919c83` đã push `main`; sau cập nhật, `https://eco.tnmp.cloud/` và `https://eco-tnmp.pages.dev/` trả HTTP 200, có link Protocol/Feasibility. Status trên cả hai host ghi `research_artifacts_validation=passed`, `score_available=false`, `data_release_available=false`.
 - Bước tiếp theo vẫn là S01-S03 rồi M01-M06; sau khi đủ engine mới chạy Q01 theo protocol ADR-001. E3/E8/E9 cần evidence entitlement/coverage trước khi chọn; E4 vẫn R&D-only.
+
+### Nhật ký 2026-10-03 — live probe revision cho D05
+
+- Thêm `scripts/audit-d05-feasibility.mjs`, không dùng API key. Script probe catalog Coin Metrics cho 7 candidate metric, timeseries ETH/1d mẫu 2021-01-01..03, và ba trang tài liệu Glassnode; raw body + manifest giữ local dưới `data/raw/d05/` bị ignore.
+- Kết quả thực tế: catalog HTTP 200 liệt kê 7 metric 1d; timeseries `FeeTotNtv` HTTP 200, 3/3 giá trị ETH; `CapRealUSD`, `FeeTotUSD`, `FeeBlobTotNtv`, `FeePrioTotNtv`, `SplyAct1yr`, `TxTfrValAdjUSD` HTTP 403. Glassnode indicators/supply/metadata HTTP 200 và có thuật ngữ endpoint liên quan, nhưng không chứng minh entitlement/history/licence.
+- Thêm bản tóm tắt không chứa raw tại `docs/evidence/d05-live-probe-2026-10-03.json`, cập nhật report/register context và validator để bắt buộc kiểm tra status/hash/coverage của live revision. D05 vẫn giữ E4 là R&D-only; E3/E8/E9 chưa được chọn; không đổi Core, methodology, score hoặc quyền phát hành.
+- Kiểm tra: `node --check scripts/audit-d05-feasibility.mjs`; chạy `node scripts/audit-d05-feasibility.mjs 2026-10-03` thành công; catalog 7 entries; FeeTotNtv 3/3 non-null; các candidate bị chặn 403; docs 3/3 HTTP 200. Tiếp theo sau D05: S01-S03 rồi M01-M06; không công bố raw.

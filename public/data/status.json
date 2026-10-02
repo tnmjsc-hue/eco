@@ -12,6 +12,7 @@
     "D04": "complete",
     "D05": "complete",
     "research_artifacts_validation": "passed",
+    "d05_live_probe": "verified_2026-10-03",
     "core_capability_probe": {
       "provider": "Coin Metrics Community API",
       "asset": "ETH",

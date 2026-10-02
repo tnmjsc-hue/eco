@@ -11,6 +11,7 @@ async function readJson(path) {
 
 const protocol = await readJson('configs/research/core-v0.1.0.json');
 const feasibility = await readJson('configs/research/metric-feasibility-v0.1.0.json');
+const d05Evidence = await readJson('docs/evidence/d05-live-probe-2026-10-03.json');
 
 assert.equal(protocol.status, 'frozen_for_research_only');
 assert.equal(protocol.methodology_version, 'core-v0.1.0');
@@ -79,5 +80,25 @@ assert.ok(feasibility.metrics.find(({ id }) => id === 'E2').decision.includes('n
 assert.ok(feasibility.metrics.find(({ id }) => id === 'E4').decision.includes('r_and_d_only'));
 assert.ok(feasibility.metrics.find(({ id }) => id === 'E8').decision.includes('do_not_relabel'));
 assert.ok(feasibility.metrics.find(({ id }) => id === 'E9').decision.includes('not_selected'));
+
+assert.equal(d05Evidence.audit_id, 'D05');
+assert.equal(d05Evidence.audit_version, 'metric-feasibility-v0.1.1');
+assert.equal(d05Evidence.authorization, 'no_api_key');
+assert.equal(d05Evidence.coinmetrics_catalog.http_status, 200);
+assert.equal(d05Evidence.coinmetrics_catalog.one_day_entries.length, 7);
+const probeStatuses = Object.fromEntries(d05Evidence.coinmetrics_timeseries.map(({ metric, http_status }) => [metric, http_status]));
+assert.deepEqual(probeStatuses, {
+  CapRealUSD: 403,
+  FeeTotNtv: 200,
+  FeeTotUSD: 403,
+  FeeBlobTotNtv: 403,
+  FeePrioTotNtv: 403,
+  SplyAct1yr: 403,
+  TxTfrValAdjUSD: 403,
+});
+const feeProbe = d05Evidence.coinmetrics_timeseries.find(({ metric }) => metric === 'FeeTotNtv');
+assert.equal(feeProbe.row_count, 3);
+assert.equal(feeProbe.non_null_value_count, 3);
+assert.ok(d05Evidence.glassnode_documentation.every(({ http_status }) => http_status === 200));
 
 process.stdout.write('D04 protocol invariants: PASS\nD05 feasibility register E1-E9: PASS\n');

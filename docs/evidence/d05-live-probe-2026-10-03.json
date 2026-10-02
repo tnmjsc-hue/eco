@@ -1,0 +1,47 @@
+{
+  "audit_id": "D05",
+  "audit_version": "metric-feasibility-v0.1.1",
+  "as_of_utc": "2026-10-03",
+  "retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+  "authorization": "no_api_key",
+  "source_manifest": "private:data/raw/d05/d05-feasibility-2026-10-03-2026-10-02T190637699Z/manifest.json",
+  "sample_window": {
+    "asset": "eth",
+    "frequency": "1d",
+    "start": "2021-01-01",
+    "end": "2021-01-03"
+  },
+  "coinmetrics_catalog": {
+    "http_status": 200,
+    "response_sha256": "f2c26758daab32dbaa5619870cbe0235586c7b0777e85c70da2337f784715e69",
+    "one_day_entries": [
+      { "metric": "CapRealUSD", "min_time": "2015-07-30T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "FeeBlobTotNtv", "min_time": "2024-03-13T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "FeePrioTotNtv", "min_time": "2021-08-05T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "FeeTotNtv", "min_time": "2015-07-30T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "FeeTotUSD", "min_time": "2015-08-08T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "SplyAct1yr", "min_time": "2015-07-30T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" },
+      { "metric": "TxTfrValAdjUSD", "min_time": "2015-08-08T00:00:00.000000000Z", "max_time": "2026-10-01T00:00:00.000000000Z" }
+    ]
+  },
+  "coinmetrics_timeseries": [
+    { "metric": "CapRealUSD", "http_status": 403, "row_count": 0, "response_sha256": "3751f3abc1c84ded5581bfce5c333cd4153273bebbee4459d183c786408762dd" },
+    { "metric": "FeeTotNtv", "http_status": 200, "row_count": 3, "non_null_value_count": 3, "first_time": "2021-01-01T00:00:00.000000000Z", "last_time": "2021-01-03T00:00:00.000000000Z", "response_sha256": "cb3133bbd5fccd4c845df9a55e35589f3087f216627824198da8285c29939034" },
+    { "metric": "FeeTotUSD", "http_status": 403, "row_count": 0, "response_sha256": "2eea98918bc228792ab58c11554c12273ad4c51fb128181fd33a57e3dc4e36ca" },
+    { "metric": "FeeBlobTotNtv", "http_status": 403, "row_count": 0, "response_sha256": "b5b1904eac10a841060495a03adeed637a336b776a5dc4757c3275e4e217a228" },
+    { "metric": "FeePrioTotNtv", "http_status": 403, "row_count": 0, "response_sha256": "1e4261c7eae4f84c3fae3783df84d051e1a7426c2ac2d08d255eb0679f2d8c48" },
+    { "metric": "SplyAct1yr", "http_status": 403, "row_count": 0, "response_sha256": "b549d2993288de4e8b43e5d6597519de622b836648155d1eac9f6020b87df4f1" },
+    { "metric": "TxTfrValAdjUSD", "http_status": 403, "row_count": 0, "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c" }
+  ],
+  "glassnode_documentation": [
+    { "id": "indicators", "http_status": 200, "term_hits": { "RHODL": true, "dormancy_account_based": true }, "response_sha256": "5717b4ee65b0e33e1b15ef523b369675da8269e1f6d8c333e71605e9d266cf30" },
+    { "id": "supply", "http_status": 200, "term_hits": { "realized-cap": true, "HODL": true }, "response_sha256": "7ca0f705c37110dc6a4af87ea27709798cd3a82c24fe9860b504ff5d479bbc88" },
+    { "id": "metadata", "http_status": 200, "term_hits": { "ETH": true, "asset": true }, "response_sha256": "4a9bd502087551e52030e8b17c94f3b9b6db4c200214c9e376dc602a76357909" }
+  ],
+  "interpretation": [
+    "Catalog presence is not proof of Community timeseries entitlement or public redistribution rights.",
+    "FeeTotNtv is the only candidate timeseries returning sample rows without a key; it remains R&D-only.",
+    "Glassnode pages document relevant endpoint families, but this no-key documentation fetch does not prove ETH entitlement, historical coverage, units, or licence.",
+    "No candidate is promoted into Core, and no raw provider body is committed."
+  ]
+}

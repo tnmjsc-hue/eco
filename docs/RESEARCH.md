@@ -118,3 +118,9 @@ Mỗi xác minh mới thêm ngày, URL/endpoint, version/commit, loại bằng c
 Đã chạy capability probe 12 request và D03 full-history 5 trang/4.080 rows cho bốn input Core. Bằng chứng, hash và phạm vi xem [data-audit.md](data-audit.md); raw response vẫn local private/ignored. D02 đã ghi period mapping; không có `source_available_at` hoặc revision vintage.
 
 Tài liệu hiện hành được đọc lại cho Community API, API Access và kho archive. Tài liệu access mô tả dùng phi thương mại theo Creative Commons; archive ghi CC BY-NC 4.0. Chưa giải quyết quyền thương mại và tái phân phối output ECO. API timestamp là 00:00 UTC; period-end được hiểu theo daily UTC docs, availability lịch sử và revision chưa chốt. Protocol frozen ở [ADR-001](ADR-001-core-research-protocol.md), map 9 vị trí ở [metric-feasibility.md](metric-feasibility.md), rights tại [data-rights.md](data-rights.md).
+
+### 3.8 Probe cập nhật D05 — 2026-10-03
+
+Chạy `node scripts/audit-d05-feasibility.mjs 2026-10-03` không dùng API key. Catalog Coin Metrics HTTP 200 liệt kê 7 metric ETH/1d: `CapRealUSD`, `FeeBlobTotNtv`, `FeePrioTotNtv`, `FeeTotNtv`, `FeeTotUSD`, `SplyAct1yr`, `TxTfrValAdjUSD`, với khoảng thời gian được ghi trong [evidence JSON](evidence/d05-live-probe-2026-10-03.json). Timeseries mẫu 2021-01-01..03 chỉ `FeeTotNtv` trả HTTP 200 và 3/3 giá trị; sáu metric còn lại trả HTTP 403. Điều này phân biệt catalog availability với entitlement của Community timeseries.
+
+Ba trang tài liệu Glassnode Indicators, Supply và Metadata trả HTTP 200; có các thuật ngữ RHODL, `dormancy_account_based`, realized-cap/HODL và ETH/asset. Đây chỉ là bằng chứng tài liệu; không có API key/entitlement để xác minh asset coverage, lịch sử, đơn vị hoặc quyền derived/public/commercial. E3/E8/E9 vẫn chưa được chọn; E4 `FeeTotNtv` vẫn R&D-only. Raw bodies và manifest đầy đủ nằm local trong `data/raw/d05/` và không commit.
