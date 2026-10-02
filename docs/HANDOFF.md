@@ -265,7 +265,7 @@ Task tiếp theo:
 - Snapshot riêng tư `data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`; canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`. Raw + manifest bị `.gitignore`; không stage/commit. Đây là audit hoàn tất, không khẳng định dữ liệu gap-free hoặc được phép công khai.
 - Kiểm tra: `node --check scripts/backfill-coinmetrics.mjs`; chạy backfill thành công; `git check-ignore -v` cho manifest; `node -e` parse `public/data/status.json`; `git diff --check` sạch. Chưa có engine nên không có test engine/backtest.
 - Trang chủ thể hiện D02/D03 complete có giới hạn, D04/engine vẫn chưa bắt đầu; `score_available=false`, `data_release_available=false`, `methodology_version=null`. Bước tiếp theo: S01 tooling/fixtures và D04 khóa protocol; D05 tiếp tục nghiên cứu các vị trí còn lại trong mục tiêu 9 metric.
-- Git/Pages: sẽ ghi commit, deployment ID/trạng thái và HTTP/domain verification sau khi push hoàn tất; chưa phát hành dataset hoặc score.
+- Git/Pages: commit `a2cfcc60e8318c1c6c9f5861fffb3b90ce214cdf` đã push `main`; `git ls-remote origin refs/heads/main` trả cùng SHA. Sau push, Pages hostname và `eco.tnmp.cloud` đều HTTP 200, title ECO và nội dung mới khớp (hero full-history, trạng thái D02/D03, ngày thiếu); `/data/status.json` trên cả hai host ghi D02/D03 complete nhưng `score_available=false`, `data_release_available=false`. Nội dung mới đã được phục vụ trên production. Deployment ID/stage không lấy được từ API credential trong phiên này; không ghi ID hoặc stage suy đoán. Chưa phát hành dataset hoặc score.
 
 ### Nhật ký 2026-10-03 — công khai tiến độ D01 trên trang chủ
 
