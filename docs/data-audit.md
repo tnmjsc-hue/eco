@@ -28,6 +28,20 @@ Mỗi body response nằm cạnh manifest. Thư mục `data/raw/` bị Git ignor
 - Capability đã xác nhận cho bốn metric, đúng asset `eth` và tần suất `1d`, trong các khoảng đã probe.
 - Không có 403 trong lần chạy này. Kết quả 403 lịch sử của `CapRealUSD`/`FeeTotUSD` trong [RESEARCH.md](RESEARCH.md) là probe khác; không suy rộng sang 4 metric Core.
 - HTTP 200 ở mẫu không chứng minh full coverage, continuity, không có duplicate/revision, quyền tái phân phối, hay khả năng tái lập release.
-- API `time` trả timestamp `00:00:00Z`. Chưa chứng minh timestamp là đầu kỳ hay thời điểm đo cuối kỳ; `source_available_at` và lịch sử revision không được cung cấp trong các mẫu.
-- D03 vẫn cần full history, pagination, kiểm kê gaps/duplicates/invalids, source period mapping và checksum của snapshot chuẩn hóa.
+- API `time` trả timestamp `00:00:00Z`. Tài liệu metric daily UTC được dùng để gán phần ngày làm `observation_date`, và nửa đêm ngày sau làm biên cuối kỳ mở; `source_available_at` và lịch sử revision không được cung cấp.
 - Không có điểm ECO, backtest, hoặc `methodology_version` được tính từ dữ liệu probe.
+
+## D03 — full-history snapshot
+
+Chạy `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03` với Coin Metrics Community API v4, không API key. Request range gồm ngày 2015-08-01..2026-10-02; endpoint trả 5 trang, tổng 4.080 dòng và 4.080 ngày riêng biệt, từ 2015-08-01 đến 2026-10-01. Ngày 2026-10-02 không có dòng trong response và được ghi là một ngày thiếu, không được lấp hoặc loại khỏi báo cáo.
+
+| Metric | Giá trị hợp lệ đầu | Giá trị hợp lệ cuối | Null | Thiếu field | Không hợp lệ | Zero / âm |
+|---|---|---|---:|---:|---:|---:|
+| `PriceUSD` | 2015-08-08 | 2026-10-01 | 7 | 0 | 0 | 0 / 0 |
+| `CapMrktCurUSD` | 2015-08-08 | 2026-10-01 | 7 | 0 | 0 | 0 / 0 |
+| `SplyCur` | 2015-08-01 | 2026-10-01 | 0 | 0 | 0 | 0 / 0 |
+| `CapMVRVCur` | 2015-08-08 | 2026-10-01 | 7 | 0 | 0 | 0 / 0 |
+
+Số dòng trùng: 0. Timestamp không hợp lệ: 0. Sai asset: 0. Thiếu field: 0 cho cả bốn metric. API response không có trường revision-status cho metric, nên **không** suy ra rằng không có revision. SHA-256 canonical snapshot: `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`. Hash từng trang, canonical rows, request metadata và manifest giữ riêng tư tại `data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`; chuỗi dữ liệu thô không được commit hoặc công khai.
+
+D03 hoàn tất với tư cách audit toàn lịch sử, không có nghĩa dữ liệu không còn gap hoặc đã sẵn sàng production. Dòng mới nhất chậm hơn một ngày so với ngày kết thúc yêu cầu; một lần lấy dữ liệu không xác lập SLA của provider. Availability/vintage lịch sử và quyền hiển thị công khai, tái phân phối, điểm dẫn xuất hay sử dụng thương mại vẫn chưa được giải quyết. `score_available=false` và `data_release_available=false`.

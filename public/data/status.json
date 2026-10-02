@@ -7,15 +7,19 @@
   "methodology_version": null,
   "progress": {
     "D01": "complete",
-    "D02": "in_progress",
-    "D03": "not_started",
+    "D02": "complete",
+    "D03": "complete",
     "core_capability_probe": {
       "provider": "Coin Metrics Community API",
       "asset": "ETH",
       "frequency": "1d",
       "input_count": 4,
       "sample_request_count": 12,
-      "full_history_audit_complete": false
+      "full_history_audit_complete": true,
+      "full_history_row_count": 4080,
+      "full_history_first_date": "2015-08-01",
+      "full_history_last_available_date": "2026-10-01",
+      "missing_requested_end_dates": 1
     },
     "data_rights_confirmed": false,
     "engine_available": false

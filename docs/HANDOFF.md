@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **PLANNING_COMPLETE / D01_PROBE_COMPLETE / D02_IN_PROGRESS / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01_PROBE_COMPLETE / D02_SCOPED_COMPLETE / D03_AUDIT_COMPLETE / ENGINE_NOT_STARTED**.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -8,7 +8,7 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
 
-**Đã có Git repository và trang giới thiệu tĩnh tại `eco.tnmp.cloud`. Chưa có engine, dependency, full dataset, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
+**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud` và một full-history snapshot Coin Metrics riêng tư đã audit. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
 
 ## 2. Bắt đầu từ đâu
 
@@ -43,8 +43,8 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 |---|---|---|---|---|
 | R00 | DONE | — | Nghiên cứu sơ bộ và bộ Markdown | Có bằng chứng live probe, upstream SHA và bàn giao |
 | D01 | DONE | R00 | Probe capability từng metric; lưu raw response, request metadata/hash, report | Probe mẫu đúng ETH/1d; phân biệt HTTP access error với payload không có dữ liệu; không log key |
-| D02 | IN_PROGRESS | R00 | Đọc timestamp, lag, revision và điều khoản provider; `docs/data-contract.md`, `docs/data-rights.md` | Ánh xạ thời gian cụ thể; biết quyền research/public chart/derived/export và phần chưa rõ |
-| D03 | TODO | D01,D02 | Tải toàn lịch sử 4 input; report gaps, invalid, duplicates, first/last valid | Snapshot hash + range; không coi mẫu probe là full audit; source period mapping đã chốt |
+| D02 | DONE | R00 | Chốt diễn giải nhãn/ngày UTC và ranh giới quyền Coin Metrics; `docs/data-contract.md`, `docs/data-rights.md` | Period mapping có nguồn chính thức; research local được giữ riêng tư; quyền public/derived/export/commercial và vintage lịch sử được nêu rõ là chưa xác nhận |
+| D03 | DONE | D01,D02 | Tải toàn lịch sử 4 input; report gaps, invalid, duplicates, first/last valid | Snapshot hash + range; report kiểm tra được; không công khai raw; mapping kỳ đã chốt |
 | D04 | TODO | D03 | Khóa Core config và protocol research; ADR-001 | Thông số mục 4, split, label, baseline và tiêu chí được ghi trước khi xem kết quả |
 | D05 | TODO | D01,D02 | Audit nguồn cho E3/E4/E8/E9, báo cáo khả thi 9 vị trí | Mỗi vị trí có endpoint/plan/rights/history hoặc lý do không khả thi; không cần mua để lập report |
 
@@ -143,20 +143,22 @@ Script hiện có: `node scripts/audit-coinmetrics.mjs [as-of-utc-date]`. Chạy
 
 Kết quả cửa sổ mẫu, không phải full audit: cả 12 request trả HTTP 200 và payload có dữ liệu. 2015-08-01..12: PriceUSD, CapMrktCurUSD và CapMVRVCur có 5 giá trị từ 2015-08-08; SplyCur có 12. 2018-01-01..03: cả bốn có 3 giá trị. Request gần nhất dùng khoảng 2026-09-30..10-02; cả bốn trả 2 dòng từ 2026-09-30 đến 2026-10-01. Các hash response, timestamp request/completion và header đã chọn ở manifest riêng tư `data/raw/coinmetrics/coinmetrics-2026-10-03-2026-10-02T175134924Z/manifest.json`; không commit raw data.
 
-Timestamp response là `00:00:00Z`, nhưng ý nghĩa đầu/cuối kỳ chưa được chứng minh. Lúc tải gần nhất là 2026-10-02 17:51 UTC, record mới nhất gắn nhãn 2026-10-01; không thể suy ra `source_available_at` hoặc revision history từ trường `time`. Tài liệu quyền xác nhận Community non-commercial và archive ghi CC BY-NC 4.0; quyền thương mại/phân phối output ECO chưa được xác nhận. Vì vậy D02 còn `IN_PROGRESS`, D03 full-history chưa bắt đầu. Chưa có engine, score, `methodology_version` hay backtest.
+Timestamp response là `00:00:00Z`; tài liệu metric mô tả dữ liệu theo kỳ daily UTC/cuối ngày, nên canonical dùng phần ngày nhãn làm `observation_date` và nửa đêm ngày kế làm biên cuối kỳ mở. Điều này không chứng minh thời điểm availability hoặc lịch sử revision. Tài liệu quyền xác nhận Community non-commercial và archive ghi CC BY-NC 4.0; quyền thương mại/phân phối output ECO chưa được xác nhận. D02 hoàn tất trong phạm vi ghi nhận mapping/giới hạn, không phải quyền phát hành. Chưa có engine, score, `methodology_version` hay backtest.
 
 Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmetrics.mjs 2026-10-03` → 12/12 HTTP 200 có payload; `node --check scripts/audit-coinmetrics.mjs` và `git diff --check` sạch; `git check-ignore -v .../manifest.json` xác nhận ignore theo `data/raw/`. Git có cảnh báo line-ending LF→CRLF trên Windows. Không có test engine vì chưa có engine.
 
-### Nhật ký 2026-10-03 — D01 probe và D02 khởi tạo
+### Nhật ký 2026-10-03 — D01 probe, D02 hợp đồng và D03 full-history
 
 - Yêu cầu: kiểm tra tiến độ, hoàn thiện phần đã xác nhận, commit và deploy. Bắt đầu D01/D02 theo backlog; không hiển thị dữ liệu ETH hoặc điểm lên website.
 - Đã thêm `scripts/audit-coinmetrics.mjs`, `docs/data-audit.md`, `docs/data-contract.md`, `docs/data-rights.md`; README/HANDOFF ghi lệnh chạy và kết quả. Script dùng Node built-in, probe từng metric riêng ở đầu lịch sử, mốc 2018 và cửa sổ mới nhất; lưu raw/manifest dưới `data/raw/` đã ignore.
 - D01: 12/12 HTTP 200, có payload đúng `eth`/`1d`; kết quả cửa sổ và hash xem báo cáo. Đánh dấu `DONE` trong phạm vi probe capability, không phải full audit.
-- D02: đã ghi timestamp UTC, tách các khái niệm thời gian, quan sát gần nhất, giới hạn revision và quyền CC BY-NC/non-commercial. Chưa biết mapping period-end, source availability lịch sử, revision policy và quyền commercial/public display/download; giữ `IN_PROGRESS`.
-- Dữ liệu/version: Coin Metrics Community API v4, không key; raw run local tại `data/raw/coinmetrics/coinmetrics-2026-10-03-2026-10-02T175134924Z/`, không commit. Không có snapshot full history hoặc `methodology_version`.
-- Kiểm tra: Node v24.19.0; chạy probe thành công 12 request; manifest xác nhận request URL không chứa key; `git check-ignore` xác nhận raw được ignore. Chưa chạy test sản phẩm vì engine chưa tồn tại.
-- Phát hành: commit `b134ea349d87105ee1fe8b33f620b9ddf702ff0b` đã push `main`; Cloudflare Pages deployment `119e2b9f-02fd-49ea-821c-150165d97926` là `production/success`, stage `deploy`, branch `main`, đúng commit. Pages hostname theo deployment và `https://eco-tnmp.pages.dev/`, cùng `https://eco.tnmp.cloud/`, đều HTTP 200, đúng title ECO và nhãn chưa có điểm. `/data/status.json` trên deployment và custom domain đều HTTP 200, `score_available=false`, `data_release_available=false`.
-- Trở ngại: D02 chưa đủ cơ sở khóa cách gán kỳ/ngày và chưa rõ quyền sử dụng đầu ra public/commercial. Bước kế tiếp: lấy xác nhận chính thức về timestamp/availability/revision và quyền sử dụng; khi D02 đủ điều kiện thì chạy D03 full-history audit. S01 vẫn `IN_PROGRESS`.
+- D02: tài liệu metric chính thức chốt ánh xạ nhãn/ngày UTC và biên kỳ kế tiếp; không chứng minh availability hoặc revision. Quyền research được giới hạn ở audit local/private phi thương mại theo điều khoản; quyền public/derived/export/commercial và retention cần xác nhận. D02 `DONE` chỉ trong phạm vi ghi nhận ranh giới này, không phải cấp quyền phát hành.
+- D03: thêm `scripts/backfill-coinmetrics.mjs`; runner phân trang tuần tự, retry 429/5xx/network có giới hạn, kiểm tra host pagination, giữ raw từng trang và tạo canonical JSONL/hash cùng quality report riêng tư. Ngày kết thúc là ngày đóng gần nhất trước `as-of`; không nội suy hoặc lọc raw.
+- Dữ liệu/version: Coin Metrics Community API v4, ETH, 1d, bốn input Core, không key. Snapshot local tại `data/raw/coinmetrics/<run-id>/`, bị ignore; chưa có `methodology_version`.
+- Kiểm tra: Node v24.19.0; `node --check scripts/backfill-coinmetrics.mjs` pass; `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03` tải 5 trang/4.080 dòng. Requested 2015-08-01..2026-10-02; response có 4.080 ngày unique 2015-08-01..2026-10-01, thiếu row ngày 2026-10-02; duplicate 0, invalid timestamp 0, invalid numeric 0, zero/negative 0. Không thiếu field. `PriceUSD`, `CapMrktCurUSD`, `CapMVRVCur`: mỗi metric 7 null, first valid 2015-08-08; `SplyCur`: 0 null, first valid 2015-08-01. Tất cả last valid 2026-10-01. Canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`; 5 raw page hashes và manifest ở `data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`, không commit. `git check-ignore` xác nhận raw bị ignore. Chưa có engine test vì engine chưa tồn tại.
+- D03 `DONE` nghĩa là full-history audit có report và snapshot có thể kiểm chứng, không có nghĩa dữ liệu không có gaps hoặc đã phù hợp làm điểm. Thời điểm source availability/vintage không được trả về; quyền phát hành vẫn chưa xác nhận.
+- Phát hành: chỉ code/docs/progress status được phát hành, không phát hành dữ liệu ETH. Trước commit xem toàn bộ staged diff và kiểm secret; xác nhận deployment production success và Pages/custom domain HTTP 200. Giữ `score_available=false`, `data_release_available=false`.
+- Trở ngại: vintage/availability lịch sử và quyền public/commercial chưa giải quyết. Task sẵn sàng tiếp theo: S01 (tooling/fixtures) và D04 (khóa protocol trước khi xem backtest); D05 vẫn cần đánh giá đủ 9 vị trí. Không trình bày Core như tương đương hoàn chỉnh.
 
 ## 7. Quyết định chờ đến đúng giai đoạn
 
@@ -171,7 +173,7 @@ Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmet
 Tiếp tục triển khai dự án ETH Cycle Index trong workspace này.
 Đọc AGENTS.md, README.md, docs/MASTER_PLAN.md, docs/RESEARCH.md, docs/HANDOFF.md và docs/DEPLOYMENT.md.
 Kiểm tra trạng thái thực tế trước khi làm. Bắt đầu task TODO đầu tiên đã đủ dependency.
-Hiện có trang giới thiệu công khai, chưa có engine/dashboard hoặc full dataset; ưu tiên D01/D02/D03 và hoàn tất S01.
+Hiện có trang giới thiệu công khai và private full-history audit; chưa có engine/dashboard/score. D01-D03 đã có bằng chứng; task sẵn sàng tiếp theo là S01 tooling/fixtures và D04 khóa protocol. Giữ dataset riêng tư.
 Giữ phạm vi Core E1/E5/E6/E7, daily UTC, causal normalization và provenance có version.
 Không dùng dữ liệu giả cho chỉ số thật; không gọi score là xác suất; không dùng BTC thay ETH.
 Website được phép tự deploy sau khi code và kiểm tra theo docs/DEPLOYMENT.md. Không tự mua dịch vụ hoặc công bố điểm ETH/dữ liệu khi các gate chưa đạt.
@@ -253,6 +255,17 @@ Task tiếp theo:
 - Chưa có runner/pipeline snapshot, backup/restore thực tế hoặc lịch batch. Task tiếp theo của dự án: D01/D02 rồi D03; S01 vẫn IN_PROGRESS.
 - Kiểm tra triển khai: commit `ddb8c7bd57f55bd1cc8e90024c285940ec348e67` đã push lên `main`; Pages API ghi deployment `4ac954e0-1787-4dbe-9af4-7ec117cdfd40` là `production` / `success` cho đúng commit. Cả `https://eco-tnmp.pages.dev/data/status.json` và `https://eco.tnmp.cloud/data/status.json` trả HTTP 200, `Content-Type: application/json`, nội dung `score_available=false` và `data_release_available=false`. Lần truy cập ngay sau push còn trả HTML cũ ngắn hạn; kiểm tra lại sau khi deploy hoàn tất đã trả JSON đúng.
 - Lệnh kiểm tra: `ConvertFrom-Json` cho status file, `git diff --cached --check`, quét staged diff theo mẫu credential, boto3 S3 put/get/delete, `Invoke-RestMethod` Pages deployments, `Invoke-WebRequest` cả hai hostname. Không có test engine hoặc data snapshot mới.
+
+### Nhật ký 2026-10-03 — hoàn tất D02 có giới hạn và D03 full-history
+
+- Yêu cầu: tiếp tục code phần đã xác nhận. Chốt cách diễn giải ngày UTC từ tài liệu metric, ghi rõ giới hạn vintage/rights, tải full-history, cập nhật tiến độ công khai nhưng không phát hành raw data hoặc score.
+- Thay đổi: thêm `scripts/backfill-coinmetrics.mjs` với pagination tuần tự, retry hữu hạn cho network/429/5xx, kiểm tra pagination host, raw response theo trang, canonical JSONL, SHA-256, nguồn timestamp/hash trang và quality report. Cập nhật `docs/data-contract.md`, `docs/data-rights.md`, `docs/data-audit.md`, `docs/HANDOFF.md`, `public/index.html`, `public/data/status.json`.
+- D02: ngày UTC từ nhãn `time` là observation date; `period_end_utc` dùng nửa đêm đầu ngày kế tiếp làm biên kỳ mở. Không suy diễn thời điểm availability/revision. Quyền public display/derived/export/commercial/retention vẫn chưa xác nhận; D02 complete chỉ nghĩa là đã ghi rõ bằng chứng và giới hạn.
+- D03: Coin Metrics Community API v4, ETH, 1d, 4 input; 5 trang, 4.080 rows/unique dates từ 2015-08-01 đến 2026-10-01. Requested end 2026-10-02 thiếu một ngày; giữ nguyên gap. Duplicate 0, invalid timestamp/value 0, zero/negative 0. PriceUSD/CapMrktCurUSD/CapMVRVCur có 7 null mỗi metric và first valid 2015-08-08; SplyCur không null và first valid 2015-08-01. Cả bốn last valid 2026-10-01. Không có revision-status field trong response.
+- Snapshot riêng tư `data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`; canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`. Raw + manifest bị `.gitignore`; không stage/commit. Đây là audit hoàn tất, không khẳng định dữ liệu gap-free hoặc được phép công khai.
+- Kiểm tra: `node --check scripts/backfill-coinmetrics.mjs`; chạy backfill thành công; `git check-ignore -v` cho manifest; `node -e` parse `public/data/status.json`; `git diff --check` sạch. Chưa có engine nên không có test engine/backtest.
+- Trang chủ thể hiện D02/D03 complete có giới hạn, D04/engine vẫn chưa bắt đầu; `score_available=false`, `data_release_available=false`, `methodology_version=null`. Bước tiếp theo: S01 tooling/fixtures và D04 khóa protocol; D05 tiếp tục nghiên cứu các vị trí còn lại trong mục tiêu 9 metric.
+- Git/Pages: sẽ ghi commit, deployment ID/trạng thái và HTTP/domain verification sau khi push hoàn tất; chưa phát hành dataset hoặc score.
 
 ### Nhật ký 2026-10-03 — công khai tiến độ D01 trên trang chủ
 

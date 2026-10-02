@@ -1,6 +1,6 @@
 # Quyền sử dụng dữ liệu Coin Metrics
 
-**Trạng thái: cần xác nhận trước khi phát hành dữ liệu.** Đây là ghi nhận tài liệu công khai, không phải tư vấn pháp lý hay xác nhận quyền thương mại.
+**Trạng thái: D02 đã ghi nhận ranh giới; quyền phát hành vẫn cần xác nhận.** Đây là ghi nhận tài liệu công khai, không phải tư vấn pháp lý hay xác nhận quyền thương mại.
 
 ## Bằng chứng đã đọc
 
@@ -11,7 +11,7 @@
 
 ## Cách xử lý trong dự án
 
-- Nghiên cứu local phi thương mại có thể tiếp tục trong phạm vi điều khoản áp dụng, đồng thời lưu request, response hash và provenance riêng tư.
+- Tiếp tục audit local như nghiên cứu phi thương mại theo điều khoản áp dụng; lưu request, response hash và provenance riêng tư. Đây không phải kết luận pháp lý hay quyền tái phân phối.
 - Không đưa raw response, CSV archive hoặc snapshot chưa rõ quyền lên repo public, Pages hay bucket public.
 - Chưa xác nhận mục đích thương mại của sản phẩm. Vì vậy quyền hiển thị dashboard công khai, tải CSV, cache, phân phối derived score và sử dụng thương mại vẫn **chưa được giải quyết**.
 - Trước khi công bố, kiểm tra điều khoản Community hiện hành và xin Coin Metrics xác nhận bằng văn bản về từng mục: derived scores, chart, public display, redistribution/download, retention/cache và commercial use. Nếu quyền không đủ, cần nguồn/licence khác được nghiên cứu và version hóa; không đổi provider ngầm.
@@ -33,3 +33,4 @@
 - Quyền commercial/publication đối với số liệu và derived outputs cụ thể của ECO.
 - Chính sách revision/backfill và thời điểm availability lịch sử theo từng metric.
 - Attribution format mà Coin Metrics yêu cầu cho hình thức hiển thị dự kiến.
+- Điều khoản Community hiện hành có cho phép snapshot lưu riêng tư dài hạn theo nhu cầu dự án hay không; review lại trước khi đưa pipeline vào vận hành liên tục.
