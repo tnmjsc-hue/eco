@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái: **CORE_ENGINE_TESTED / PRIMARY_RESEARCH_EVALUATED / DASHBOARD_PREVIEW_READY / DEPLOY_VERIFICATION_PENDING**. Core score reconstructed gần nhất 41.379812239861 ngày 2026-10-01; không phải sản phẩm vận hành realtime.
+**Cập nhật: 2026-10-03.** Trạng thái: **CORE_ENGINE_TESTED / PRIMARY_RESEARCH_EVALUATED / EXPERIMENTAL_DASHBOARD_DEPLOYED_AND_VERIFIED**. Core score reconstructed gần nhất 41.379812239861 ngày 2026-10-01; không phải sản phẩm vận hành realtime.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -54,7 +54,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| S01 | IN_PROGRESS | R00 | Init cấu trúc dự án, Git nếu chưa có, lockfile, lint/test, `.gitignore`, `.env.example` | Lệnh setup Windows và Linux được thử; chưa commit dữ liệu riêng hoặc secret |
+| S01 | DONE | R00 | Cấu trúc Python/web, Git, lockfile, syntax/tests, ignores/env names | Setup/test/build Windows + Ubuntu CI thực tế đạt; staged hash/secret scan sạch |
 | S02 | TODO | D03,S01 | Coin Metrics adapter với pagination, retry và cache raw | Fixtures 200/403/429/schema mismatch; backfill không mất/trùng ngày |
 | S03 | IN_PROGRESS | S02,D02 | Canonical schema và quality validation | Offline loader đã kiểm hash/schema/calendar/closed-day/provenance bằng tests; adapter/network fixtures S02 còn thiếu |
 | S04 | TODO | S03 | Incremental update và revision store | Chạy hai lần idempotent; đổi raw input tạo revision, không ghi đè vintage |
@@ -102,7 +102,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
 | O01 | IN_PROGRESS | S04,A01 | Atomic release publisher, checksums, release pointer | Local publisher/immutable allowlist/hash/pointer tests đạt; fault/rollback drill và incremental còn thiếu |
-| O02 | TODO | O01,M06 | CI và scheduled batch theo hosting thực | Logs không secret; retry hữu hạn; freshness status độc lập score record |
+| O02 | IN_PROGRESS | O01,M06 | CI và scheduled batch theo hosting thực | CI Ubuntu đã success; không chứa raw/credential, chưa có scheduled data batch |
 | O03 | TODO | O02,U04 | Runbook, backup và fault drills | Thử provider outage, missing day, bad payload, rollback và restore |
 | O04 | TODO | O03 | Chạy shadow >=30 ngày, lưu as_published | Báo cáo đủ scheduled/actual runs, lag, incidents; không tự coi 30 ngày là chứng minh mô hình |
 | O05 | TODO | O04,Q03,D02 | Chuẩn bị release: tên/domain/mục đích sử dụng/rights | Checklist rõ; bản build review được; xử lý phần cần quyết định ở bước phát hành |
@@ -333,3 +333,14 @@ Task tiếp theo:
 - Phản hồi người dùng: index nhìn gần như không đổi vì D05 chỉ nằm trong một dòng tiến độ. Cập nhật `public/index.html` và `public/progress.css` để hero hiển thị `D05 LIVE PROBE VERIFIED` và thêm dải evidence rõ ràng: 7 metric trong catalog, 1/7 timeseries mẫu truy cập được, 3/3 FeeTotNtv rows, 6 candidate trả 403.
 - Dải evidence ghi rõ catalog không đồng nghĩa quyền tải dữ liệu, Glassnode mới là tài liệu và khối này không tạo điểm ETH. Không thêm score giả hoặc mở raw data.
 - Kiểm tra local: marker hero/evidence CSS/status flags pass; `git diff --check`. Commit `4eaacd7` đã push `main`. Sau deploy, cả `eco.tnmp.cloud/?v=4eaacd7` và Pages hostname hiển thị marker hero cùng khối D05 evidence trong accessibility tree; HTTP 200. Repo sạch.
+
+### Nhật ký 2026-10-03 — dashboard score thật đã deploy và xác minh
+
+- Code commit `c6b1866e09b9f594e3f399e76992f9223482ddb6` đã push `main`. Trước push: 42 staged files được kiểm diff, không có raw/computed/DPAPI/secret; SHA-256 của manifest/history/research **trong Git index** khớp pointer. `.gitattributes` tránh biến đổi bytes theo CRLF.
+- Cloudflare Pages API xác nhận deployment `bf62b8d1-bff9-4564-bb90-bb15a7dd3750`, `production`, stage `success`, đúng commit `c6b1866`. Deployment hostname `https://bf62b8d1.eco-tnmp.pages.dev`. Token DPAPI chỉ giải mã trong tiến trình và giải phóng sau gọi, không in/commit.
+- `https://eco.tnmp.cloud/` và `https://eco-tnmp.pages.dev/` HTTP 200, title dashboard mới. Pointer cả hai host là `core-c899a808bda65db96be3`; manifest/history/research tải HTTP 200 và hashes byte thực **khớp local/index**. Score 41.379812239861 ngày 2026-10-01, `score_available=true`, `series_type=reconstructed`. Không thay release version hoặc data sau push.
+- Headers thực: versioned history/research `public, max-age=31536000, immutable`; pointer `public, max-age=0, must-revalidate`. Website không gọi raw R2/provider. History 1.237.334 bytes chưa nén; dữ liệu đã tính sẵn và cache trên Pages/CDN.
+- Production browser QA chạy trực tiếp `https://eco.tnmp.cloud/?v=c6b1866`: viewport 1440/768/390/360, score/date/coverage, missing/pending/warm-up null, custom E7 366 ngày, CSV, Enter/Space controls, network failure preservation+retry đều PASS; 43667 chart nonblank pixels, 0 page errors. Ảnh thật trong `test-results/` ignored; không tự nhận đã audit screen reader.
+- [GitHub Actions run 37058646492](https://github.com/tnmjsc-hue/eco/actions/runs/37058646492) `completed/success`, đúng SHA. Job Ubuntu thực thi Python/pnpm setup, install pinned/frozen, rebuild vendor không diff, 19 engine/gate tests, research validator, 3 public contract tests, syntax và whitespace, mọi step success. S01 DONE; O02 chỉ IN_PROGRESS vì scheduled batch chưa có.
+- Có follow-up commit bàn giao và bổ sung keyboard QA; không đổi engine, UI assets, release dữ liệu hoặc methodology. Đây là preview nghiên cứu phi thương mại **đã chạy thật**, không phải full operational release. Backtest chưa chứng minh incremental utility; không che kết quả không đạt.
+- Tiếp theo: TODO sẵn sàng S02 adapter fixtures, rồi S04 incremental/vintage; O02 scheduled batch, O03 restore/fault drills, O04 shadow >=30 ngày; Q02 report mở rộng và Q04 protocol metric mở rộng. Không mua nguồn trả phí hay tune trên cùng primary holdout theo quán tính.

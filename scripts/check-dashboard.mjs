@@ -15,6 +15,12 @@ try {
   assert.equal(await page.locator('#score-value').innerText(), '41');
   assert.equal(await page.locator('#selected-date').inputValue(), '2026-10-01');
   assert.equal(await page.locator('#coverage-value').innerText(), '4 / 4');
+  await page.locator('#previous-day').focus();
+  await page.locator('#previous-day').press('Enter');
+  assert.equal(await page.locator('#selected-date').inputValue(), '2026-09-30');
+  await page.locator('#next-day').focus();
+  await page.locator('#next-day').press('Enter');
+  assert.equal(await page.locator('#selected-date').inputValue(), '2026-10-01');
   assert.ok((await page.locator('#freshness').innerText()).includes('02/10/2026'));
   assert.equal(await page.locator('.lucide').count() > 8, true);
   const chartState = await page.evaluate(() => {
@@ -49,7 +55,8 @@ try {
   const text = await readFile(await download.path(), 'utf8');
   assert.ok(text.includes('CC BY-NC 4.0'));
   assert.ok(text.includes('custom_score'));
-  await page.locator('[data-metric="E7"]').uncheck();
+  await page.locator('[data-metric="E7"]').focus();
+  await page.locator('[data-metric="E7"]').press('Space');
   assert.equal(await page.locator('#score-value').innerText(), '—');
   await page.locator('[data-mode="core"]').click();
   assert.equal(await page.locator('#score-value').innerText(), '41');
@@ -89,6 +96,6 @@ try {
   await page.locator('#error').waitFor({ state: 'hidden' });
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ url, score: 41, viewport_checks: [1440, 768, 390, 360],
-    custom_series_verified: custom.length, csv: 'verified', network_failure_preserves_data: true,
+    custom_series_verified: custom.length, csv: 'verified', keyboard_controls: 'verified', network_failure_preserves_data: true,
     chart_nonblank_pixels: chartState.nonblank, page_errors: errors }));
 } finally { await browser.close(); }
