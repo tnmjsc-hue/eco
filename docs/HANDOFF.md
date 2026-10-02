@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / CORE_PROTOCOL_FROZEN / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / CORE_PROTOCOL_FROZEN / PRIVATE_SNAPSHOT_BACKED_UP / ENGINE_NOT_STARTED**.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -8,11 +8,11 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
 
-**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud`, full-history snapshot Coin Metrics riêng tư đã audit và protocol Core/research đã khóa. Snapshot chưa được upload lên R2. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
+**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud`, full-history snapshot Coin Metrics riêng tư đã audit và sao lưu lên R2, cùng protocol Core/research đã khóa. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
 
 ## 2. Bắt đầu từ đâu
 
-Khi người dùng yêu cầu triển khai, kiểm tra task `IN_PROGRESS` và TODO đầu tiên có dependency đủ. D01-D05 đã có report; D04 chỉ khóa protocol, không có nghĩa đã code/test engine. S01 pipeline còn dang dở. Snapshot D03 chưa upload R2 và không được frontend đọc; snapshot hiện tại chưa được phép công khai.
+Khi người dùng yêu cầu triển khai, kiểm tra task `IN_PROGRESS` và TODO đầu tiên có dependency đủ. D01-D05 đã có report; D04 chỉ khóa protocol, không có nghĩa đã code/test engine. S01 pipeline còn dang dở. Snapshot D03 đã upload R2 private và không được frontend đọc; snapshot hiện tại chưa được phép công khai.
 
 Nếu dữ liệu bị chặn, giữ evidence lỗi và làm task độc lập như schema/fixtures/UI; không dùng BTC thay ETH. Chỉ hỏi người dùng khi thực sự cần lựa chọn chi phí, tài khoản, mục đích thương mại hoặc phát hành, kèm kết quả cụ thể đã chuẩn bị.
 
@@ -173,7 +173,7 @@ Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmet
 Tiếp tục triển khai dự án ETH Cycle Index trong workspace này.
 Đọc AGENTS.md, README.md, docs/MASTER_PLAN.md, docs/RESEARCH.md, docs/HANDOFF.md và docs/DEPLOYMENT.md.
 Kiểm tra trạng thái thực tế trước khi làm. Bắt đầu task TODO đầu tiên đã đủ dependency.
-Hiện có trang giới thiệu công khai và private full-history audit; chưa có engine/dashboard/score, snapshot chưa lên R2. D01-D05 đã có bằng chứng; task tiếp theo S01/S02/S03 là pipeline, quality tests và cache/private storage integration theo rights gate. Giữ raw riêng tư.
+Hiện có trang giới thiệu công khai và private full-history audit đã sao lưu R2; chưa có engine/dashboard/score. D01-D05 đã có bằng chứng; task tiếp theo S01/S02/S03 là pipeline, quality tests và cache/private storage integration theo rights gate. Giữ raw riêng tư.
 Giữ phạm vi Core E1/E5/E6/E7, daily UTC, causal normalization và provenance có version.
 Không dùng dữ liệu giả cho chỉ số thật; không gọi score là xác suất; không dùng BTC thay ETH.
 Website được phép tự deploy sau khi code và kiểm tra theo docs/DEPLOYMENT.md. Không tự mua dịch vụ hoặc công bố điểm ETH/dữ liệu khi các gate chưa đạt.
@@ -289,3 +289,11 @@ Task tiếp theo:
 - Kiểm tra: D05 live catalog + các sample HTTP statuses đã được chạy và ghi trong báo cáo; `node --check scripts/upload-private-snapshot-r2.mjs` pass; dry-run xác nhận 7 object; JSON config/status parse pass, score/data release gates vẫn false; `git diff --check` sạch. Chưa có test R2 PUT/GET mới vì thiếu Account ID; chưa có tests engine.
 - Bước tiếp theo: hoàn tất upload+readback khi có Account ID; sau đó S01-S03 xây pipeline/fixtures/schema và M01-M06 engine theo ADR. Chỉ tạo public data endpoint sau xác nhận quyền, không phát raw snapshot.
 - Git/Pages: commit `46bf172f006c3d2001863f231836bf064293d58a` đã push `main`; `git ls-remote` trả cùng SHA. Sau deploy, Pages hostname và `eco.tnmp.cloud` đều HTTP 200, nội dung xác nhận D04/D05 và snapshot local/private; status JSON live ghi D04/D05 complete, `score_available=false`, `data_release_available=false`. Deployment ID/stage không được API credential hiện tại liệt kê; xác minh dựa trên nội dung production thực tế.
+
+### Nhật ký 2026-10-03 — upload snapshot D03 vào R2 private
+
+- Người dùng cung cấp Cloudflare Account ID để tiếp tục upload đã chuẩn bị. Dùng credential S3 mã hóa DPAPI ngoài repo trong environment của tiến trình, không in hoặc ghi key vào log/repo.
+- Upload thành công vào bucket `eco-eth-private`, prefix `raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`: 7 object gồm canonical JSONL, 5 trang raw và manifest. Script GET đọc ngược cả 7 object; tất cả `readback_verified=true`. Canonical SHA-256 giữ nguyên `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`.
+- Cập nhật `docs/STORAGE.md`, `README.md`, status JSON và dòng D03 trên trang chủ: ghi rõ bản sao R2 private đã xác minh nhưng website không đọc raw. `score_available=false`, `data_release_available=false`, quyền phát hành chưa xác nhận; không thay đổi lịch sử điểm vì chưa có điểm nào công bố.
+- Kiểm tra upload thực tế: lệnh `node scripts/upload-private-snapshot-r2.mjs data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z` thành công; 7/7 GET + SHA-256 đạt. Snapshot local được giữ nguyên và bị Git ignore.
+- Tiếp theo: kiểm tra restore độc lập, rồi S01-S03 (tooling, adapter/fixtures, canonical schema/quality); sau đó M01-M06 theo ADR-001. Không tạo endpoint đọc `raw/` hoặc public dataset trước khi rights gate thông qua.

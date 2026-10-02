@@ -2,7 +2,7 @@
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
-**Trạng thái ngày 2026-10-03: trang giới thiệu ECO đang chạy tại [eco.tnmp.cloud](https://eco.tnmp.cloud); D01-D05 đã hoàn tất trong phạm vi probe, contract, full-history audit, protocol nghiên cứu và feasibility 9 vị trí.** Chưa có engine, dashboard ETH, điểm hoặc backtest. Snapshot full-history hiện lưu riêng tư trên máy; chưa upload lên R2. Quyền công khai dữ liệu và điểm dẫn xuất vẫn chưa được xác nhận.
+**Trạng thái ngày 2026-10-03: trang giới thiệu ECO đang chạy tại [eco.tnmp.cloud](https://eco.tnmp.cloud); D01-D05 đã hoàn tất trong phạm vi probe, contract, full-history audit, protocol nghiên cứu và feasibility 9 vị trí.** Chưa có engine, dashboard ETH, điểm hoặc backtest. Snapshot full-history được giữ local và đã sao lưu vào R2 private; website không đọc raw. Quyền công khai dữ liệu và điểm dẫn xuất vẫn chưa được xác nhận.
 
 Chạy probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03` hoặc full history bằng `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03`. Raw response và manifest SHA-256 được ghi vào `data/raw/coinmetrics/` (bị Git ignore); không commit dữ liệu này. Báo cáo tại [data-audit.md](docs/data-audit.md), protocol nghiên cứu tại [ADR-001](docs/ADR-001-core-research-protocol.md), feasibility 9 vị trí tại [metric-feasibility.md](docs/metric-feasibility.md), và giới hạn quyền tại [data-rights.md](docs/data-rights.md). Upload snapshot private lên R2 dùng `node scripts/upload-private-snapshot-r2.mjs <snapshot-dir>` sau khi có `R2_ACCOUNT_ID` cùng credential trong process env.
 

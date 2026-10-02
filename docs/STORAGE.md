@@ -9,7 +9,7 @@ Token R2 `eco-eth-snapshot-pipeline` đã được tạo với quyền **Object 
 | Nơi | Dùng cho | Trạng thái |
 |---|---|---|
 | Cloudflare Pages `eco-tnmp` | Website và JSON tĩnh **được phép công bố** tại `eco.tnmp.cloud` | Đang chạy; GitHub `main` tự triển khai |
-| R2 `eco-eth-private` | Snapshot raw, hash, manifest chạy batch, bản sao lưu release và tài liệu kiểm toán riêng tư | Bucket và credential đã kiểm tra; snapshot D03 còn local, chưa upload vì thiếu Account ID trong cấu hình hiện tại |
+| R2 `eco-eth-private` | Snapshot raw, hash, manifest chạy batch, bản sao lưu release và tài liệu kiểm toán riêng tư | Snapshot D03 đã upload; 7/7 object đọc ngược và khớp SHA-256 |
 | D1 / KV | Chỉ mục truy vấn hoặc trạng thái cập nhật nhiều lần nếu sau này có nhu cầu thật | Chưa tạo; bản đầu không cần database server |
 
 Trang giới thiệu chưa có engine, dữ liệu ETH đã kiểm định hoặc điểm số. `public/data/status.json` công khai trạng thái nghiên cứu/các gate và cờ phát hành; không chứa time series, snapshot hay điểm ETH. Việc bucket tồn tại **không** đồng nghĩa pipeline đã kết nối hoặc dữ liệu được sao lưu. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline.
@@ -31,7 +31,7 @@ node scripts/upload-private-snapshot-r2.mjs data/raw/coinmetrics/<run-id> --dry-
 node scripts/upload-private-snapshot-r2.mjs data/raw/coinmetrics/<run-id>
 ```
 
-Lệnh upload cần `R2_ACCOUNT_ID`, `R2_BUCKET=eco-eth-private`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` trong environment của tiến trình. Access/secret keys không được truyền trên command line. Snapshot D03 hiện có dry-run 7 object, canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`; chưa thể upload thật vì Account ID không có trong repo hoặc environment. Sau upload, kiểm tra GET/read-back và dashboard R2 trước khi ghi snapshot là đã lưu cloud.
+Lệnh upload cần `R2_ACCOUNT_ID`, `R2_BUCKET=eco-eth-private`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` trong environment của tiến trình. Access/secret keys không được truyền trên command line. Snapshot D03 đã upload thật với 7 object dưới `raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z/`. Script GET đọc lại đủ 7 object và xác minh hash thành công; canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`. Manifest được upload cuối cùng. Account ID và credential không ghi vào repo hoặc log. Bản local vẫn được giữ làm nguồn đối chiếu.
 
 ## Luồng đọc từ website và cache
 
@@ -45,7 +45,7 @@ Token giới hạn bucket đã có; **không tạo thêm token trùng**. Nếu c
 
 Trên máy chạy pipeline, đọc hai file DPAPI bằng **cùng tài khoản Windows** và chuyển vào tiến trình dưới tên `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; thêm `R2_ACCOUNT_ID`, `R2_BUCKET` từ cấu hình. Endpoint S3: `https://<account-id>.r2.cloudflarestorage.com`. DPAPI gắn với máy/tài khoản Windows hiện tại, nên runner khác cần secret store riêng và cấp credential theo quy trình an toàn. Không ghi giá trị vào `.env.example`, log, URL, commit hoặc frontend. Nếu dùng GitHub Actions, thêm secret ở repo Settings → Secrets and variables → Actions, không đặt vào Pages build env vì Pages chỉ đọc release public. Việc chuyển credential sang runner chưa thực hiện.
 
-**Chưa thực hiện:** upload snapshot thật (thiếu Account ID), kiểm tra restore, lịch batch. Agent sau phải ghi lệnh/đầu ra thực tế vào `docs/HANDOFF.md`; không đánh dấu những bước này đã xong.
+**Chưa thực hiện:** kiểm tra restore, lịch batch và pipeline tự động. Upload snapshot D03 đã hoàn tất; đây chưa phải public data release và website không truy cập prefix `raw/`.
 
 ## Kiểm tra và chi phí
 

@@ -23,7 +23,7 @@
       "full_history_last_available_date": "2026-10-01",
       "missing_requested_end_dates": 1
     },
-    "private_snapshot_storage": "local_only_pending_r2_account_id",
+    "private_snapshot_storage": "private_r2_verified",
     "data_rights_confirmed": false,
     "engine_available": false
   }
