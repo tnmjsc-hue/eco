@@ -13,6 +13,16 @@
 .is-done .progress-state{color:#a6efcc}
 .is-current .progress-state{color:#f0cc78}
 .progress-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:24px}
+.d05-evidence{margin-top:38px;padding:27px 0 25px;border-top:1px solid #49606b;border-bottom:1px solid #2a3947}
+.d05-evidence-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.d05-evidence-heading h3{margin:8px 0 0;font-size:22px;font-weight:650;letter-spacing:-.025em}
+.evidence-status{flex:none;color:#a6efcc;font-size:10px;font-weight:750;letter-spacing:.14em}
+.evidence-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:25px}
+.evidence-stat{display:flex;flex-direction:column;gap:7px;min-height:87px;padding:0 20px;border-left:1px solid #2a3947}
+.evidence-stat:first-child{padding-left:0;border-left:0}
+.evidence-stat strong{color:#a6efcc;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.evidence-stat span{color:#a3b0ba;font-size:12px;line-height:1.45}
+.evidence-note{max-width:780px;margin:24px 0 0;color:#a3b0ba;font-size:12px;line-height:1.65}
 .progress-footer .score-disclosure{display:flex;align-items:center;gap:11px;margin:0;color:#f3f5f2;font-size:13px;font-weight:600}
 .score-disclosure .status-dot{flex:none}
 .progress-footer .text-link{flex:none}
@@ -23,5 +33,10 @@
   .progress-detail h3{font-size:15px}
   .progress-detail p{font-size:12px}
   .progress-state{grid-column:2;justify-self:start;text-align:left}
+  .d05-evidence-heading{align-items:flex-start;flex-direction:column;gap:14px}
+  .d05-evidence-heading h3{font-size:19px}
+  .evidence-grid{grid-template-columns:repeat(2,1fr);gap:20px 0}
+  .evidence-stat:nth-child(3){padding-left:0;border-left:0}
+  .evidence-stat:nth-child(2n+1){padding-left:0}
   .progress-footer{align-items:flex-start;flex-direction:column;gap:18px}
 }
