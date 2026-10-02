@@ -9,7 +9,7 @@ If `.codegraph/` exists, use it before grep/find:
 
 ## Bắt đầu mỗi phiên
 
-1. Đọc `README.md`, `docs/HANDOFF.md`, `docs/DEPLOYMENT.md`, rồi phần liên quan trong `docs/MASTER_PLAN.md` và `docs/RESEARCH.md`.
+1. Đọc `README.md`, `docs/HANDOFF.md`, `docs/DEPLOYMENT.md`, `docs/STORAGE.md`, rồi phần liên quan trong `docs/MASTER_PLAN.md` và `docs/RESEARCH.md`.
 2. Kiểm tra trạng thái filesystem/Git thực tế; không giả định các thư mục hoặc lệnh dự kiến đã tồn tại.
 3. Chọn task `TODO` đầu tiên đã đủ dependency; đánh dấu `IN_PROGRESS` trong bàn giao.
 4. Hoàn thành một phần có thể kiểm chứng, ghi bằng chứng và bước tiếp theo. Không đánh dấu `DONE` nếu mới viết thiết kế.
@@ -35,6 +35,8 @@ If `.codegraph/` exists, use it before grep/find:
 Cập nhật `docs/HANDOFF.md` sau mỗi phiên: task, file đã sửa, lệnh kiểm tra và kết quả thực tế, dữ liệu/version sử dụng, trở ngại và task kế tiếp. Quyết định mới cần ghi lý do, lựa chọn thay thế và ảnh hưởng đến lịch sử điểm. Nếu chưa có test hoặc chưa thể chạy, ghi rõ; không điền kết quả giả định.
 
 Khi sửa website, dùng GitHub `main` → Cloudflare Pages `eco-tnmp` theo `docs/DEPLOYMENT.md`, xác minh build và `https://eco.tnmp.cloud/` trước khi báo hoàn thành. Push `main` là hành động phát hành; không push khi chưa kiểm tra diff, secret và các cổng phát hành dữ liệu áp dụng.
+
+Bucket R2 `eco-eth-private` đã tạo, mặc định riêng tư. Token giới hạn bucket đã lưu DPAPI ngoài repo và thao tác ghi/đọc/xóa thử thành công; pipeline thật chưa có. Dùng theo `docs/STORAGE.md`; không bind bucket raw vào frontend/Pages Functions hoặc tạo token rộng quyền theo quán tính.
 
 ## Công cụ và cấu trúc
 

@@ -222,3 +222,11 @@ Task tiếp theo:
 - Kiểm tra thực tế: `.codegraph/` vắng; `git status --short --branch` trước sửa là `main...origin/main`, tài liệu còn untracked; quét các file định commit theo mẫu token/account ID không trả file; `git diff --cached --check` không báo lỗi; kiểm tra link Markdown nội bộ trả `LOCAL_MARKDOWN_LINKS_OK`.
 - Commit tài liệu `eef2f48dcc3778d17cd6e5a8a967b1c22f4ac06d` đã push lên `origin/main`. Pages API trả `success`/`deploy`/`production` cho commit `eef2f48`; `git ls-remote origin refs/heads/main` trả đúng SHA. `https://eco.tnmp.cloud/` trả HTTP 200, title ECO và thông báo chưa có điểm. Không có `methodology_version`, data snapshot hoặc test engine mới.
 - Task dự án kế tiếp vẫn D01/D02 rồi D03; S01 còn `IN_PROGRESS`. Khi code website thay đổi, agent dùng `docs/DEPLOYMENT.md` và cập nhật cấu hình Pages nếu output không còn là `public`.
+
+### Nhật ký 2026-10-03 — kết nối lưu trữ Cloudflare
+
+- Yêu cầu: kiểm tra Cloudflare có nơi lưu dữ liệu và kết nối cho ECO. Đã tạo R2 bucket `eco-eth-private`, lớp Standard, `Public Access: Disabled`; bucket `storage` có sẵn không bị sửa. Đã tạo token `eco-eth-snapshot-pipeline` quyền Object Read & Write chỉ trên bucket này, hạn đến 2027-10-03, theo đồng ý cụ thể của người dùng.
+- Hai khóa S3 lưu mã hóa DPAPI ngoài repo tại `%APPDATA%\ETH-CBBI\r2-access-key-id.dpapi` và `r2-secret-access-key.dpapi`. Không in/commit khóa. Đã dùng boto3 cài tạm ngoài repo để `PutObject`, `GetObject` so khớp byte và `DeleteObject` một object kiểm tra không nhạy cảm; kết quả `R2_PUT_GET_OK` và `R2_TEST_OBJECT_DELETED`.
+- File sửa/tạo: `docs/STORAGE.md`, `public/data/status.json`, `README.md`, `AGENTS.md`, `docs/DEPLOYMENT.md`, `docs/HANDOFF.md`. JSON trạng thái chỉ ghi `score_available=false`, `data_release_available=false`; không có điểm ETH, dataset hay `methodology_version` mới.
+- Quyết định: Pages tiếp tục phát JSON công khai đã qua gate; R2 riêng tư giữ raw snapshots khi pipeline có. D1/KV chưa cần cho web tĩnh một chỉ số ngày. Không bind bucket raw vào Pages Functions vì sẽ mở thêm đường truy cập dữ liệu riêng tư. Lựa chọn khác: D1 cho query động hoặc KV cho trạng thái nhỏ, xem lại khi có yêu cầu cụ thể. Không ảnh hưởng lịch sử điểm vì chưa phát hành điểm nào.
+- Chưa có runner/pipeline snapshot, backup/restore thực tế hoặc lịch batch. Task tiếp theo của dự án: D01/D02 rồi D03; S01 vẫn IN_PROGRESS.

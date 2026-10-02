@@ -10,7 +10,8 @@ Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm
 2. [Nghiên cứu và bằng chứng](docs/RESEARCH.md): nguồn chính thức, phiên bản CBBI đã đọc, kết quả thử API và giới hạn chưa xác minh.
 3. [Danh sách công việc và bàn giao](docs/HANDOFF.md): thứ tự thực hiện, điều kiện nghiệm thu, trạng thái và prompt cho agent kế tiếp.
 4. [Triển khai website](docs/DEPLOYMENT.md): cấu hình GitHub → Cloudflare Pages → `eco.tnmp.cloud`, kiểm tra và rollback.
-5. [Quy tắc agent](AGENTS.md): cách tiếp tục và cập nhật tiến độ.
+5. [Lưu trữ dữ liệu](docs/STORAGE.md): Pages cho JSON công khai, R2 riêng tư cho snapshot và giới hạn kết nối hiện tại.
+6. [Quy tắc agent](AGENTS.md): cách tiếp tục và cập nhật tiến độ.
 
 ## Quyết định nền tảng
 
