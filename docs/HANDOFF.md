@@ -316,3 +316,9 @@ Task tiếp theo:
 - Thêm bản tóm tắt không chứa raw tại `docs/evidence/d05-live-probe-2026-10-03.json`, cập nhật report/register context và validator để bắt buộc kiểm tra status/hash/coverage của live revision. D05 vẫn giữ E4 là R&D-only; E3/E8/E9 chưa được chọn; không đổi Core, methodology, score hoặc quyền phát hành.
 - Kiểm tra: `node --check scripts/audit-d05-feasibility.mjs`; chạy `node scripts/audit-d05-feasibility.mjs 2026-10-03` thành công; catalog 7 entries; FeeTotNtv 3/3 non-null; các candidate bị chặn 403; docs 3/3 HTTP 200. Tiếp theo sau D05: S01-S03 rồi M01-M06; không công bố raw.
 - Phát hành: commit `204b01f` đã push `main`; sau propagation, `https://eco.tnmp.cloud/` và `https://eco-tnmp.pages.dev/` trả HTTP 200, trang có nội dung live probe D05. Status trên cả hai host ghi `d05_live_probe=verified_2026-10-03`, `research_artifacts_validation=passed`, `score_available=false`, `data_release_available=false`.
+
+### Nhật ký 2026-10-03 — làm rõ D05 trên index
+
+- Phản hồi người dùng: index nhìn gần như không đổi vì D05 chỉ nằm trong một dòng tiến độ. Cập nhật `public/index.html` và `public/progress.css` để hero hiển thị `D05 LIVE PROBE VERIFIED` và thêm dải evidence rõ ràng: 7 metric trong catalog, 1/7 timeseries mẫu truy cập được, 3/3 FeeTotNtv rows, 6 candidate trả 403.
+- Dải evidence ghi rõ catalog không đồng nghĩa quyền tải dữ liệu, Glassnode mới là tài liệu và khối này không tạo điểm ETH. Không thêm score giả hoặc mở raw data.
+- Kiểm tra local: marker hero/evidence CSS/status flags pass; `git diff --check`. Commit `4eaacd7` đã push `main`. Sau deploy, cả `eco.tnmp.cloud/?v=4eaacd7` và Pages hostname hiển thị marker hero cùng khối D05 evidence trong accessibility tree; HTTP 200. Repo sạch.
