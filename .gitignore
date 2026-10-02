@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.dev.vars*
+secrets/
+data/raw/
+data/snapshots/
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
