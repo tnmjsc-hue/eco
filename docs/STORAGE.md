@@ -12,7 +12,7 @@ Token R2 `eco-eth-snapshot-pipeline` đã được tạo với quyền **Object 
 | R2 `eco-eth-private` | Snapshot raw, hash, manifest chạy batch, bản sao lưu release và tài liệu kiểm toán riêng tư | Bucket và credential đã kiểm tra; chưa có dữ liệu hoặc pipeline tự động |
 | D1 / KV | Chỉ mục truy vấn hoặc trạng thái cập nhật nhiều lần nếu sau này có nhu cầu thật | Chưa tạo; bản đầu không cần database server |
 
-Trang giới thiệu chưa có engine, dữ liệu ETH đã kiểm định hoặc điểm số. `public/data/status.json` chỉ khai báo trạng thái phát hành, không chứa dữ liệu ETH. Việc bucket tồn tại **không** đồng nghĩa pipeline đã kết nối hoặc dữ liệu được sao lưu. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline.
+Trang giới thiệu chưa có engine, dữ liệu ETH đã kiểm định hoặc điểm số. `public/data/status.json` công khai trạng thái nghiên cứu/các gate và cờ phát hành; không chứa time series, snapshot hay điểm ETH. Việc bucket tồn tại **không** đồng nghĩa pipeline đã kết nối hoặc dữ liệu được sao lưu. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline.
 
 ## Quy tắc dữ liệu
 

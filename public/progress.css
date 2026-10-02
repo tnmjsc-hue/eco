@@ -1,0 +1,27 @@
+.progress .section-main{max-width:none}
+.progress-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:28px}
+.progress-heading h2{max-width:760px}
+.progress-heading p{max-width:700px;margin:0}
+.progress-date{flex:none;padding-bottom:8px;color:#a3b0ba;font-size:12px;font-variant-numeric:tabular-nums}
+.progress-list{margin-top:35px;border-top:1px solid #2a3947}
+.progress-row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px;align-items:center;gap:16px;padding:22px 0;border-bottom:1px solid #2a3947}
+.progress-index{color:#8395a0;font-size:12px;font-variant-numeric:tabular-nums}
+.is-done .progress-index,.is-current .progress-index{color:#a6efcc}
+.progress-detail h3{margin:0 0 5px;font-size:16px;font-weight:650}
+.progress-detail p{margin:0;font-size:13px;line-height:1.6}
+.progress-state{justify-self:end;color:#8796a0;font-size:12px;font-weight:600;text-align:right}
+.is-done .progress-state{color:#a6efcc}
+.is-current .progress-state{color:#f0cc78}
+.progress-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:24px}
+.progress-footer .score-disclosure{display:flex;align-items:center;gap:11px;margin:0;color:#f3f5f2;font-size:13px;font-weight:600}
+.score-disclosure .status-dot{flex:none}
+.progress-footer .text-link{flex:none}
+@media(max-width:620px){
+  .progress-heading{align-items:flex-start;flex-direction:column;gap:0}
+  .progress-date{padding:0;margin-top:2px}
+  .progress-row{grid-template-columns:26px minmax(0,1fr);gap:10px;padding:18px 0}
+  .progress-detail h3{font-size:15px}
+  .progress-detail p{font-size:12px}
+  .progress-state{grid-column:2;justify-self:start;text-align:left}
+  .progress-footer{align-items:flex-start;flex-direction:column;gap:18px}
+}

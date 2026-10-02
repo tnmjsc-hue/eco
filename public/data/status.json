@@ -1,6 +1,23 @@
 {
   "project": "ECO",
   "state": "research",
+  "updated_at": "2026-10-03",
   "score_available": false,
-  "data_release_available": false
+  "data_release_available": false,
+  "methodology_version": null,
+  "progress": {
+    "D01": "complete",
+    "D02": "in_progress",
+    "D03": "not_started",
+    "core_capability_probe": {
+      "provider": "Coin Metrics Community API",
+      "asset": "ETH",
+      "frequency": "1d",
+      "input_count": 4,
+      "sample_request_count": 12,
+      "full_history_audit_complete": false
+    },
+    "data_rights_confirmed": false,
+    "engine_available": false
+  }
 }

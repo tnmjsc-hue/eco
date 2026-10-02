@@ -61,7 +61,7 @@ Không giữ cấu hình `public` theo quán tính. Sau khi scaffold và thử b
 
 Cloudflare Pages hiện phục vụ file web tĩnh. Pipeline Python, lịch tải dữ liệu, snapshot và atomic release publisher trong `docs/MASTER_PLAN.md` chưa tồn tại. Không coi một lần build Pages thành công là bằng chứng các phần đó đã chạy. Nếu thêm GitHub Actions hoặc nơi chạy batch, ghi workflow, secret names, lịch chạy, artifact và kiểm tra dữ liệu cụ thể trong tài liệu này.
 
-Lưu trữ dữ liệu theo [STORAGE.md](STORAGE.md): Pages chứa JSON công khai đã qua gate; R2 `eco-eth-private` giữ snapshot riêng tư. Bucket và token R2 giới hạn bucket đã thử kết nối, nhưng pipeline thật chưa có. `public/data/status.json` hiện chỉ cho biết chưa có release dữ liệu.
+Lưu trữ dữ liệu theo [STORAGE.md](STORAGE.md): Pages chứa JSON công khai đã qua gate; R2 `eco-eth-private` giữ snapshot riêng tư. Bucket và token R2 giới hạn bucket đã thử kết nối, nhưng pipeline thật chưa có. `public/data/status.json` công khai trạng thái nghiên cứu/gate và cờ phát hành; không chứa input time series hay điểm. Giữ `score_available=false` và `data_release_available=false` tới khi qua các gate dữ liệu/phương pháp.
 
 ## 4. Điều kiện công bố dữ liệu chỉ số
 

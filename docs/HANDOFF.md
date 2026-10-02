@@ -253,3 +253,10 @@ Task tiếp theo:
 - Chưa có runner/pipeline snapshot, backup/restore thực tế hoặc lịch batch. Task tiếp theo của dự án: D01/D02 rồi D03; S01 vẫn IN_PROGRESS.
 - Kiểm tra triển khai: commit `ddb8c7bd57f55bd1cc8e90024c285940ec348e67` đã push lên `main`; Pages API ghi deployment `4ac954e0-1787-4dbe-9af4-7ec117cdfd40` là `production` / `success` cho đúng commit. Cả `https://eco-tnmp.pages.dev/data/status.json` và `https://eco.tnmp.cloud/data/status.json` trả HTTP 200, `Content-Type: application/json`, nội dung `score_available=false` và `data_release_available=false`. Lần truy cập ngay sau push còn trả HTML cũ ngắn hạn; kiểm tra lại sau khi deploy hoàn tất đã trả JSON đúng.
 - Lệnh kiểm tra: `ConvertFrom-Json` cho status file, `git diff --cached --check`, quét staged diff theo mẫu credential, boto3 S3 put/get/delete, `Invoke-RestMethod` Pages deployments, `Invoke-WebRequest` cả hai hostname. Không có test engine hoặc data snapshot mới.
+
+### Nhật ký 2026-10-03 — công khai tiến độ D01 trên trang chủ
+
+- Người dùng phản hồi trang chủ chưa có thay đổi nhìn thấy. Nguyên nhân: commit trước chỉ cập nhật tài liệu và script audit, không sửa `public/`.
+- Đã cập nhật hero và mục tiến độ để thể hiện D01 probe mẫu đã xong, D02 đang xác minh thời gian/quyền, D03 full-history và engine/dashboard chưa bắt đầu; có link tới báo cáo probe. Thêm `public/progress.css` cho bố cục responsive của danh sách trạng thái.
+- `public/data/status.json` công khai metadata tiến độ D01-D03, số request mẫu và cờ sẵn sàng; giữ `score_available=false`, `data_release_available=false`, `methodology_version=null`. Không public raw response hoặc điểm ETH.
+- File liên quan được đồng bộ: `docs/DEPLOYMENT.md`, `docs/STORAGE.md`. Chưa push/deploy trong lúc ghi mục này; sẽ bổ sung SHA và kết quả HTTP sau kiểm tra.
