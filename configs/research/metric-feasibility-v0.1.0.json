@@ -1,0 +1,180 @@
+{
+  "register_version": "metric-feasibility-v0.1.0",
+  "audit_date": "2026-10-03",
+  "source_report": "docs/metric-feasibility.md",
+  "rights_policy": "public_derived_and_commercial_rights_unconfirmed",
+  "vintage_policy": "historical_source_availability_and_revision_vintages_unknown",
+  "metrics": [
+    {
+      "id": "E1",
+      "concept": "ETH MA Cycle Stretch",
+      "role": "core_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["PriceUSD"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/"],
+      "coverage": {
+        "status": "full_history_audited",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "D03 private snapshot audit"
+      },
+      "rights": "provider_research_access_observed_public_derived_commercial_unconfirmed",
+      "vintage": "availability_and_revisions_unknown",
+      "decision": "core_candidate_not_validated_for_predictive_utility"
+    },
+    {
+      "id": "E2",
+      "concept": "NUPL derived from MVRV",
+      "role": "diagnostic_only",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["CapMVRVCur"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/"],
+      "coverage": {
+        "status": "full_history_input_audited",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "D03 private snapshot; NUPL is derived as 1 - 1/MVRV"
+      },
+      "rights": "provider_research_access_observed_derived_output_rights_unconfirmed",
+      "vintage": "availability_and_revisions_unknown",
+      "decision": "diagnostic_only_not_an_independent_vote"
+    },
+    {
+      "id": "E3",
+      "concept": "RHODL / realized-cap age ratio",
+      "role": "unverified_candidate",
+      "provider": "glassnode_documentation_candidate",
+      "metrics": ["rhav", "realized_cap_hodl_waves"],
+      "sources": ["https://docs.glassnode.com/basic-api/endpoints/indicators", "https://docs.glassnode.com/basic-api/endpoints/supply", "https://docs.glassnode.com/basic-api/metadata"],
+      "coverage": {
+        "status": "eth_coverage_unverified",
+        "asset": "unknown",
+        "frequency": "unknown",
+        "first_date": null,
+        "last_date": null,
+        "evidence": "Available RHODL endpoint documentation describes BTC; ETH entitlement and history were not verified"
+      },
+      "rights": "plan_and_public_derived_commercial_rights_unverified",
+      "vintage": "history_and_revision_policy_unverified",
+      "decision": "do_not_implement_until_eth_coverage_formula_units_rights_and_history_are_verified"
+    },
+    {
+      "id": "E4",
+      "concept": "ETH Fee Activity Multiple; not Puell Multiple",
+      "role": "research_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["FeeTotNtv", "FeeTotUSD", "FeeBlobTotNtv", "FeePrioTotNtv"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/", "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/fees-and-revenue/fees"],
+      "coverage": {
+        "status": "native_fee_sample_access_only",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-07-30",
+        "last_date": "2026-10-01",
+        "evidence": "FeeTotNtv catalog range; 3/3 sample rows HTTP 200 in 2021; FeeTotUSD, FeeBlobTotNtv and FeePrioTotNtv sample timeseries returned HTTP 403"
+      },
+      "rights": "community_and_public_derived_commercial_rights_unconfirmed",
+      "vintage": "full_history_quality_availability_and_revisions_unverified",
+      "decision": "r_and_d_only_audit_full_history_and_test_semantics_across_merge_eip1559_and_blob_fees"
+    },
+    {
+      "id": "E5",
+      "concept": "ETH 2Y MA Stretch",
+      "role": "core_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["PriceUSD"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/"],
+      "coverage": {
+        "status": "full_history_audited",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "D03 private snapshot audit; 730-day warm-up required"
+      },
+      "rights": "provider_research_access_observed_public_derived_commercial_unconfirmed",
+      "vintage": "availability_and_revisions_unknown",
+      "decision": "core_candidate_not_validated_for_predictive_utility"
+    },
+    {
+      "id": "E6",
+      "concept": "ETH Log Trend Deviation",
+      "role": "core_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["PriceUSD"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/"],
+      "coverage": {
+        "status": "full_history_audited",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "D03 private snapshot audit; causal fit requires a versioned fixed age origin"
+      },
+      "rights": "provider_research_access_observed_public_derived_commercial_unconfirmed",
+      "vintage": "availability_and_revisions_unknown",
+      "decision": "core_candidate_not_validated_for_predictive_utility"
+    },
+    {
+      "id": "E7",
+      "concept": "ETH MVRV Z causal",
+      "role": "core_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["CapMrktCurUSD", "CapMVRVCur"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/", "https://github.com/coinmetrics/docs-website/blob/master/asset-metrics/market/caprealusd.md"],
+      "coverage": {
+        "status": "full_history_inputs_audited_realized_cap_derived",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "D03 private snapshot; direct CapRealUSD sample access returned HTTP 403; realized cap is market cap divided by MVRV"
+      },
+      "rights": "provider_research_access_observed_derived_output_rights_unconfirmed",
+      "vintage": "availability_and_revisions_unknown",
+      "decision": "core_candidate_with_derived_realized_cap_not_validated_for_predictive_utility"
+    },
+    {
+      "id": "E8",
+      "concept": "ETH dormancy / spending proxy; not Reserve Risk",
+      "role": "unverified_candidate",
+      "provider": "glassnode_and_coinmetrics_candidates",
+      "metrics": ["dormancy_account_based", "SplyAct1yr"],
+      "sources": ["https://docs.glassnode.com/basic-api/endpoints/indicators", "https://docs.coinmetrics.io/api/v4/", "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/supply/active-supply"],
+      "coverage": {
+        "status": "catalog_only_and_timeseries_access_blocked",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": null,
+        "last_date": null,
+        "evidence": "Coin Metrics catalog lists ETH SplyAct1yr but Community timeseries probe returned HTTP 403; Glassnode ETH entitlement/history not verified; active supply is not dormancy"
+      },
+      "rights": "provider_plan_and_public_derived_commercial_rights_unverified",
+      "vintage": "history_and_revision_policy_unverified",
+      "decision": "do_not_relabel_active_supply_as_dormancy_or_reserve_risk"
+    },
+    {
+      "id": "E9",
+      "concept": "ETH NVT proxy",
+      "role": "unverified_candidate",
+      "provider": "coinmetrics_community_api",
+      "metrics": ["TxTfrValAdjUSD"],
+      "sources": ["https://docs.coinmetrics.io/api/v4/", "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/transactions/transfer-value"],
+      "coverage": {
+        "status": "catalog_range_timeseries_access_blocked",
+        "asset": "eth",
+        "frequency": "1d",
+        "first_date": "2015-08-08",
+        "last_date": "2026-10-01",
+        "evidence": "Catalog range observed; 2021-01-01..03 Community timeseries probe returned HTTP 403"
+      },
+      "rights": "provider_plan_and_public_derived_commercial_rights_unverified",
+      "vintage": "full_history_quality_availability_and_revisions_unverified",
+      "decision": "not_selected_pending_access_adjustment_semantics_eth_validation_and_rights"
+    }
+  ]
+}

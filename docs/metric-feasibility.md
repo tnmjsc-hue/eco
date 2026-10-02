@@ -2,6 +2,8 @@
 
 **Ngày audit:** 2026-10-03. **Bằng chứng:** tài liệu provider chính thức, Coin Metrics Community catalog/live probes. Không mua API và không dùng key trả phí. Quyền công khai/derived/commercial vẫn chưa được xác nhận theo [data-rights.md](data-rights.md).
 
+Register máy đọc được tại [`configs/research/metric-feasibility-v0.1.0.json`](../configs/research/metric-feasibility-v0.1.0.json) chuẩn hóa coverage, quyền, vintage và quyết định cho E1–E9. Nó phản ánh đúng bằng chứng tại ngày audit; không tự refresh hay thay thế probe mới.
+
 ## Kết quả theo vị trí
 
 | ID | Định nghĩa ECO dự kiến | Nguồn/coverage đã xác minh | Quyền và rủi ro | Kết luận |

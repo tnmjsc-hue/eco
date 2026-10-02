@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / CORE_PROTOCOL_FROZEN / PRIVATE_SNAPSHOT_BACKED_UP / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / D04_D05_ARTIFACTS_VALIDATED / CORE_PROTOCOL_FROZEN / PRIVATE_SNAPSHOT_BACKED_UP / ENGINE_NOT_STARTED**.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -45,8 +45,8 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 | D01 | DONE | R00 | Probe capability từng metric; lưu raw response, request metadata/hash, report | Probe mẫu đúng ETH/1d; phân biệt HTTP access error với payload không có dữ liệu; không log key |
 | D02 | DONE | R00 | Chốt diễn giải nhãn/ngày UTC và ranh giới quyền Coin Metrics; `docs/data-contract.md`, `docs/data-rights.md` | Period mapping có nguồn chính thức; research local được giữ riêng tư; quyền public/derived/export/commercial và vintage lịch sử được nêu rõ là chưa xác nhận |
 | D03 | DONE | D01,D02 | Tải toàn lịch sử 4 input; report gaps, invalid, duplicates, first/last valid | Snapshot hash + range; report kiểm tra được; không công khai raw; mapping kỳ đã chốt |
-| D04 | DONE | D03 | Khóa Core config và protocol research; ADR-001 | Công thức, normalizer, split, label, baseline, bootstrap và success rule được ghi trước backtest; chưa tuyên bố đã code/test |
-| D05 | DONE | D01,D02 | Audit nguồn cho E3/E4/E8/E9, báo cáo khả thi 9 vị trí | Mỗi vị trí có nguồn/coverage/quyền/lịch sử hoặc phần chưa xác minh và lý do chưa chọn; không cần mua để lập report |
+| D04 | DONE | D03 | Khóa Core config và protocol research; ADR-001, machine validation | Invariants công thức/normalizer/label/test/baseline/bootstrap/success được code-validated trước backtest; chưa tuyên bố engine/backtest đã chạy |
+| D05 | DONE | D01,D02 | Audit nguồn cho E3/E4/E8/E9; report và JSON register 9 vị trí | E1-E9 có source, coverage/evidence, rights, vintage và quyết định; unknown được ghi rõ, không cần mua để lập report |
 
 **Gate G0:** Core inputs có lịch sử hữu dụng, timestamps và quyền nghiên cứu rõ; chốt giới hạn. D05 không chặn Core nhưng phải hoàn tất trước tuyên bố có kế hoạch dữ liệu đầy đủ cho cả 9 metric.
 
@@ -78,7 +78,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| Q01 | TODO | D04,M06 | Walk-forward harness, labels, purge/embargo | Chỉ đánh giá label hoàn tất; split và periods rõ; không random shuffle |
+| Q01 | TODO | D04,M06 | Primary evaluation harness, future-drawdown labels và calendar-year stability folds | Chỉ chấm label hoàn tất; baselines cùng ngày khả dụng; không thêm train/test split cho quy trình không fit model |
 | Q02 | TODO | Q01 | Báo cáo Core, baselines, correlation, ablation, regime analysis | Kết quả có uncertainty và giới hạn dữ liệu revised; không chỉ đưa chart đẹp |
 | Q03 | TODO | Q02 | Quyết định Experimental / cần sửa, ADR-002 | Lý do dựa evidence; nếu đổi model thì version mới, không lặp chọn trên cùng holdout |
 | Q04 | TODO | D05,Q02 | Nghiên cứu ứng viên mở rộng theo protocol riêng | Công thức và source đủ rõ mới code; kết quả nhận/loại từng metric |
@@ -298,3 +298,12 @@ Task tiếp theo:
 - Kiểm tra upload thực tế: lệnh `node scripts/upload-private-snapshot-r2.mjs data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z` thành công; 7/7 GET + SHA-256 đạt. Snapshot local được giữ nguyên và bị Git ignore.
 - Phát hành web: commit `1195b98` đã push lên `main`. `https://eco.tnmp.cloud/` và `https://eco-tnmp.pages.dev/` đều trả HTTP 200; HTML mới có dòng snapshot R2 private. `/data/status.json` trên cả hai host trả `private_r2_verified`, `score_available=false`, `data_release_available=false`.
 - Tiếp theo: kiểm tra restore độc lập, rồi S01-S03 (tooling, adapter/fixtures, canonical schema/quality); sau đó M01-M06 theo ADR-001. Không tạo endpoint đọc `raw/` hoặc public dataset trước khi rights gate thông qua.
+
+### Nhật ký 2026-10-03 — củng cố nghiệm thu D04/D05
+
+- Đối chiếu lại yêu cầu người dùng với repo. D04/D05 đã có research outputs, nhưng tìm thấy phần 8.2 của `MASTER_PLAN.md` còn holdout 2025 và label đỉnh tùy chọn mâu thuẫn ADR-001; D05 chưa có register máy đọc được.
+- ADR-001 và `configs/research/core-v0.1.0.json` giữ nguyên, không đổi methodology hay tham số đã khóa. Sửa phần 8.2 để ADR-001 là nguồn chuẩn duy nhất cho `core-v0.1.0`, và phân loại các phân tích ngoài protocol thành exploratory/version mới.
+- Thêm `configs/research/metric-feasibility-v0.1.0.json` cho E1-E9 với source URLs, coverage/evidence, rights, vintage và quyết định. Thêm `scripts/validate-research-artifacts.mjs` kiểm invariants D04 và completeness/safety policy của register D05. Đây là validation hợp đồng nghiên cứu, không phải test engine/backtest hoặc live refresh nguồn.
+- Cập nhật README, report feasibility và trang chủ để liên kết protocol/register, đồng bộ `MASTER_PLAN.md`, status JSON và HANDOFF. Không đổi dữ liệu đầu vào, điểm, `methodology_version`, quyền công bố hay trạng thái engine.
+- Kiểm tra: `node --check scripts/validate-research-artifacts.mjs`; `node scripts/validate-research-artifacts.mjs` trả `D04 protocol invariants: PASS` và `D05 feasibility register E1-E9: PASS`; parse JSON config/status; `git diff --check`. Engine/backtest chưa tồn tại, không ghi là đã kiểm thử.
+- Bước tiếp theo vẫn là S01-S03 rồi M01-M06; sau khi đủ engine mới chạy Q01 theo protocol ADR-001. E3/E8/E9 cần evidence entitlement/coverage trước khi chọn; E4 vẫn R&D-only.

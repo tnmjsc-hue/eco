@@ -6,6 +6,8 @@ Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm
 
 Chạy probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03` hoặc full history bằng `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03`. Raw response và manifest SHA-256 được ghi vào `data/raw/coinmetrics/` (bị Git ignore); không commit dữ liệu này. Báo cáo tại [data-audit.md](docs/data-audit.md), protocol nghiên cứu tại [ADR-001](docs/ADR-001-core-research-protocol.md), feasibility 9 vị trí tại [metric-feasibility.md](docs/metric-feasibility.md), và giới hạn quyền tại [data-rights.md](docs/data-rights.md). Upload snapshot private lên R2 dùng `node scripts/upload-private-snapshot-r2.mjs <snapshot-dir>` sau khi có `R2_ACCOUNT_ID` cùng credential trong process env.
 
+Kiểm tra bất biến protocol D04 và register feasibility D05 bằng `node scripts/validate-research-artifacts.mjs`. Lệnh này chỉ xác minh hợp đồng research/config, không chạy engine, backtest, live source probe hoặc xác nhận quyền phát hành.
+
 ## Đọc theo thứ tự
 
 1. [Kế hoạch chi tiết](docs/MASTER_PLAN.md): phạm vi, 9 chỉ số đối chiếu, công thức bản đầu, dữ liệu, kiến trúc, giao diện, kiểm định và tiêu chí hoàn thành.

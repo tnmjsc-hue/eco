@@ -11,6 +11,7 @@
     "D03": "complete",
     "D04": "complete",
     "D05": "complete",
+    "research_artifacts_validation": "passed",
     "core_capability_probe": {
       "provider": "Coin Metrics Community API",
       "asset": "ETH",

@@ -311,13 +311,11 @@ Tương tác điểm hiện tại và điểm lịch sử khi hover phải phân
 
 ### 8.2 Thiết kế nghiên cứu trước khi nhìn kết quả
 
-- Chốt research protocol và hash config trước khi chạy sweep; baseline chính là Core trong mục 4.
-- Fold mở rộng theo năm: train dữ liệu hợp lệ đến 31/12 năm trước, test năm sau; bắt đầu 2020 nếu đủ warm-up. Đưa 2021, giai đoạn 2022 và các năm sau vào báo cáo riêng, không chỉ chọn các đỉnh đẹp.
-- Giữ 2025-01-01 đến ngày mới nhất có label hoàn tất làm holdout ban đầu, với điều kiện người triển khai chưa dùng khoảng đó để chọn phương pháp. Đây là holdout lịch sử, không phải chứng minh prospective; nếu đã xem/tối ưu thì đánh dấu đã tiêu thụ.
-- Từ ngày bắt đầu vận hành lưu `as_published` để có kiểm định prospective thật. Không hứa đạt chất lượng chỉ sau 30 ngày; 30 ngày dùng kiểm tra vận hành.
-- Forward return: `r(t,h)=P(t+h)/P(t)-1`, h=90/180/365 ngày. Drawdown phía trước: `min(P(t+1..t+h)/P(t)-1)`; tên báo cáo phải phân biệt với max peak-to-trough drawdown trong cả cửa sổ.
-- Label đỉnh tùy chọn: đỉnh địa phương trong ±90 ngày và giảm >=40% trong 180 ngày sau; gom sự kiện gần nhau thành cụm. Đây là label chỉ dùng đánh giá hậu nghiệm, không làm feature. Pre-register quy tắc xử lý bằng giá và nhiều đỉnh.
-- Purge các training labels có khoảng kết quả chạm vào test; dùng khoảng cách tối thiểu theo horizon tương ứng. Chỉ chấm điểm các ngày mà label đã hoàn tất; cuối chuỗi phải loại 90/180/365 ngày theo từng báo cáo.
+- Protocol đã đăng ký trước cho `core-v0.1.0` là [ADR-001](ADR-001-core-research-protocol.md), cấu hình máy đọc được tại `configs/research/core-v0.1.0.json`. ADR-001 là nguồn chuẩn duy nhất cho primary label, test window, baselines, bootstrap và success rule; các gợi ý holdout 2025, label đỉnh thủ công hoặc sweep dưới đây không được áp dụng cho version này.
+- Primary evaluation dùng future drawdown 365 ngày, test từ 2020-01-01 đến ngày mới nhất có đủ nhãn hoàn tất; với snapshot D03 hiện tại dự kiến tối đa 2025-10-01 và phải tính lại từ manifest khi chạy. Không fit/tune trên primary test. Báo AP và prevalence; so sánh ba baseline đã khóa; paired moving-block bootstrap 90 ngày, 10.000 lần, seed cố định. Chỉ dùng success rule chính xác trong ADR-001.
+- Calendar-year folds có nhãn dương là kiểm tra ổn định bổ trợ theo ADR-001, không phải train/test model hay cơ hội thay đổi protocol. Vì Core không fit mô hình, purge/embargo không được tự thêm như thể đã có quy trình training.
+- Forward return, label đỉnh, cửa sổ/quantile thay thế và sensitivity khác primary chỉ được báo cáo exploratory/sensitivity với quy tắc khóa trước khi xem kết quả; chúng không thay primary cho `core-v0.1.0`. Thay protocol cần version và holdout mới.
+- Từ ngày bắt đầu vận hành, lưu `as_published` để có kiểm định prospective thật. Backtest hiện tại chỉ là reconstructed trên vintage hiện tại; không hứa đạt chất lượng chỉ sau 30 ngày, 30 ngày chỉ dùng kiểm tra vận hành.
 
 ### 8.3 Báo cáo bắt buộc
 
