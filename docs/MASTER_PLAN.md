@@ -137,9 +137,12 @@ Trọng số hiệu dụng: E1/E5/E6 mỗi metric `1/6`, E7 `1/2`. Đây là bas
 
 | Nguồn | Vai trò dự kiến | Bằng chứng hiện có | Việc còn phải kiểm tra |
 |---|---|---|---|
-| Coin Metrics Community API | Core ETH: PriceUSD, CapMrktCurUSD, SplyCur, CapMVRVCur | HTTP 200 với mẫu 2021 và 2026; giá/MVRV có mẫu từ 2015-08-08 | Toàn lịch sử, gaps, revision, timestamp, lag, terms cho hình thức xuất bản |
+| Coin Metrics Community API | Core ETH: PriceUSD, CapMrktCurUSD, SplyCur, CapMVRVCur | D03 snapshot riêng tư 2015-08-01..2026-10-01; 4.080 ngày unique; D02 đã map daily UTC | Có một ngày thiếu ở requested end; vintage/lag và quyền phát hành vẫn chưa xác nhận |
 | Coin Metrics `CapRealUSD` | Realized cap trực tiếp | HTTP 403 ở probe ETH | Không dựa vào endpoint này cho bản Core hiện tại |
 | Coin Metrics `FeeTotUSD` | E4 | HTTP 403 trong yêu cầu có trường này | Gói quyền phù hợp hoặc nguồn khác, không tự động mua |
+| Coin Metrics `FeeTotNtv` | E4 R&D candidate | Catalog ETH/1d từ 2015-07-30; live sample HTTP 200 3/3 ngày năm 2021 | Full history/quality, semantics qua Merge/EIP-1559/blob fees và quyền output cần nghiên cứu; không gọi là Puell |
+| Coin Metrics `TxTfrValAdjUSD` | E9 candidate | Catalog ETH/1d từ 2015-08-08; timeseries sample HTTP 403 | Cần quyền/plan và định nghĩa điều chỉnh; không đưa vào Core khi chưa xác minh |
+| Coin Metrics `SplyAct1yr` | E8 research-only candidate | Catalog liệt kê ETH; timeseries sample HTTP 403; active supply không đồng nghĩa dormancy | Không đổi tên thành Reserve Risk; cần entitlement, semantics và kiểm tra ảnh hưởng account/staking |
 | Coin Metrics CSV archive | Snapshot/fallback tải dữ liệu cùng hệ phương pháp | Repo chính thức mô tả archive và CC BY-NC 4.0 | Commit, ngày cập nhật thực tế, schema ETH, độ phủ từng cột |
 | Glassnode | Age bands / dormancy / đối chứng | Tài liệu có endpoint account-based | ETH coverage, lịch sử, plan, quyền API và quyền hiển thị; chưa gọi bằng key |
 | CoinGecko | Đối chiếu giá / fallback có kiểm soát | Demo document giới hạn 365 ngày lịch sử | Không đáp ứng SMA730 + warm-up nếu chỉ dùng Demo |

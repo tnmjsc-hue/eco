@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01_PROBE_COMPLETE / D02_SCOPED_COMPLETE / D03_AUDIT_COMPLETE / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / CORE_PROTOCOL_FROZEN / ENGINE_NOT_STARTED**.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -8,11 +8,11 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
 
-**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud` và một full-history snapshot Coin Metrics riêng tư đã audit. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
+**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud`, full-history snapshot Coin Metrics riêng tư đã audit và protocol Core/research đã khóa. Snapshot chưa được upload lên R2. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
 
 ## 2. Bắt đầu từ đâu
 
-Khi người dùng yêu cầu triển khai, bắt đầu **D01** và **D02**, sau đó **D03**. Mục tiêu đầu tiên là một audit dữ liệu có thể tái lập, chưa phải dashboard có số đẹp. Có thể bootstrap tối thiểu S01 để hỗ trợ audit, nhưng không mở rộng kiến trúc trước khi biết dữ liệu.
+Khi người dùng yêu cầu triển khai, kiểm tra task `IN_PROGRESS` và TODO đầu tiên có dependency đủ. D01-D05 đã có report; D04 chỉ khóa protocol, không có nghĩa đã code/test engine. S01 pipeline còn dang dở. Snapshot D03 chưa upload R2 và không được frontend đọc; snapshot hiện tại chưa được phép công khai.
 
 Nếu dữ liệu bị chặn, giữ evidence lỗi và làm task độc lập như schema/fixtures/UI; không dùng BTC thay ETH. Chỉ hỏi người dùng khi thực sự cần lựa chọn chi phí, tài khoản, mục đích thương mại hoặc phát hành, kèm kết quả cụ thể đã chuẩn bị.
 
@@ -45,8 +45,8 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 | D01 | DONE | R00 | Probe capability từng metric; lưu raw response, request metadata/hash, report | Probe mẫu đúng ETH/1d; phân biệt HTTP access error với payload không có dữ liệu; không log key |
 | D02 | DONE | R00 | Chốt diễn giải nhãn/ngày UTC và ranh giới quyền Coin Metrics; `docs/data-contract.md`, `docs/data-rights.md` | Period mapping có nguồn chính thức; research local được giữ riêng tư; quyền public/derived/export/commercial và vintage lịch sử được nêu rõ là chưa xác nhận |
 | D03 | DONE | D01,D02 | Tải toàn lịch sử 4 input; report gaps, invalid, duplicates, first/last valid | Snapshot hash + range; report kiểm tra được; không công khai raw; mapping kỳ đã chốt |
-| D04 | TODO | D03 | Khóa Core config và protocol research; ADR-001 | Thông số mục 4, split, label, baseline và tiêu chí được ghi trước khi xem kết quả |
-| D05 | TODO | D01,D02 | Audit nguồn cho E3/E4/E8/E9, báo cáo khả thi 9 vị trí | Mỗi vị trí có endpoint/plan/rights/history hoặc lý do không khả thi; không cần mua để lập report |
+| D04 | DONE | D03 | Khóa Core config và protocol research; ADR-001 | Công thức, normalizer, split, label, baseline, bootstrap và success rule được ghi trước backtest; chưa tuyên bố đã code/test |
+| D05 | DONE | D01,D02 | Audit nguồn cho E3/E4/E8/E9, báo cáo khả thi 9 vị trí | Mỗi vị trí có nguồn/coverage/quyền/lịch sử hoặc phần chưa xác minh và lý do chưa chọn; không cần mua để lập report |
 
 **Gate G0:** Core inputs có lịch sử hữu dụng, timestamps và quyền nghiên cứu rõ; chốt giới hạn. D05 không chặn Core nhưng phải hoàn tất trước tuyên bố có kế hoạch dữ liệu đầy đủ cho cả 9 metric.
 
@@ -173,7 +173,7 @@ Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmet
 Tiếp tục triển khai dự án ETH Cycle Index trong workspace này.
 Đọc AGENTS.md, README.md, docs/MASTER_PLAN.md, docs/RESEARCH.md, docs/HANDOFF.md và docs/DEPLOYMENT.md.
 Kiểm tra trạng thái thực tế trước khi làm. Bắt đầu task TODO đầu tiên đã đủ dependency.
-Hiện có trang giới thiệu công khai và private full-history audit; chưa có engine/dashboard/score. D01-D03 đã có bằng chứng; task sẵn sàng tiếp theo là S01 tooling/fixtures và D04 khóa protocol. Giữ dataset riêng tư.
+Hiện có trang giới thiệu công khai và private full-history audit; chưa có engine/dashboard/score, snapshot chưa lên R2. D01-D05 đã có bằng chứng; task tiếp theo S01/S02/S03 là pipeline, quality tests và cache/private storage integration theo rights gate. Giữ raw riêng tư.
 Giữ phạm vi Core E1/E5/E6/E7, daily UTC, causal normalization và provenance có version.
 Không dùng dữ liệu giả cho chỉ số thật; không gọi score là xác suất; không dùng BTC thay ETH.
 Website được phép tự deploy sau khi code và kiểm tra theo docs/DEPLOYMENT.md. Không tự mua dịch vụ hoặc công bố điểm ETH/dữ liệu khi các gate chưa đạt.
@@ -277,3 +277,14 @@ Task tiếp theo:
 - `/progress.css` và `/data/status.json` trả HTTP 200 trên cả ba host. JSON live trả `D01=complete`, `D02=in_progress`, `D03=not_started`, `score_available=false`, `data_release_available=false`, `methodology_version=null`.
 - Kiểm tra giao diện bằng trình duyệt tại viewport mặc định và 390×844: hero/progress hiển thị, nội dung xuống dòng đúng, không thấy chồng lấn; đã reset viewport. Kiểm tra cục bộ: `ConvertFrom-Json`, các asset tồn tại, `git diff --check` đều đạt. Không có engine/test engine để chạy.
 - Website vẫn là trang giới thiệu và tiến độ nghiên cứu, chưa phải dashboard ETH. Bước tiếp theo của sản phẩm giữ nguyên: hoàn tất D02 trước khi bắt đầu D03; S01 còn `IN_PROGRESS`.
+
+### Nhật ký 2026-10-03 — khóa D04/D05 và chuẩn bị lưu trữ R2
+
+- Yêu cầu: hoàn thiện D04-D05 và chuẩn bị dữ liệu để website gọi nhanh. Không bỏ qua quyền phát hành; raw snapshot phải giữ private.
+- D04 `DONE`: thêm [ADR-001](ADR-001-core-research-protocol.md) và `configs/research/core-v0.1.0.json`. Khóa 4 metric Core, công thức/warm-up, q05/q95 causal 1460 ngày, test window/label 365 ngày drawdown, baselines, average precision, paired 90-day block bootstrap và success rule trước khi chạy backtest. Protocol là đặc tả nghiên cứu, chưa có engine hoặc tests xác minh.
+- D05 `DONE`: thêm [metric-feasibility.md](metric-feasibility.md) cho E1-E9. `FeeTotNtv` có 3/3 sample rows HTTP 200 và catalog ETH 1d range; `FeeTotUSD`, `TxTfrValAdjUSD`, `SplyAct1yr` trả HTTP 403 trong probe timeseries; catalog vẫn mô tả một số cặp asset/metric. Glassnode docs có RHODL/dormancy endpoints nhưng entitlement và ETH coverage chưa xác minh. Giữ E4 là R&D candidate; không đổi Core hoặc giả đủ 9 metric.
+- R2: thêm `scripts/upload-private-snapshot-r2.mjs`, signer S3 SigV4 Node built-in, chỉ nhận complete snapshot dưới `data/raw/coinmetrics`, upload raw+canonical+manifest vào prefix versioned `raw/coinmetrics/<run-id>/`, GET từng object và verify SHA-256; `--dry-run` không upload. Dry-run snapshot D03 liệt kê 7 object, canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`.
+- Upload thật chưa thực hiện: R2 access/secret keys đã có DPAPI ngoài repo nhưng `R2_ACCOUNT_ID` không có trong repo/environment; API token Pages hiện tại không trả danh sách account. Đã yêu cầu người dùng cung cấp riêng Account ID (không cần secret). Không được ghi “đã lưu cloud” trước khi PUT + GET readback thành công.
+- Website: cập nhật progress để D04/D05 hoàn tất, Engine/dashboard chưa bắt đầu, snapshot raw còn local/private; `score_available=false`, `data_release_available=false`. R2 private không được frontend truy cập trực tiếp. Luồng nhanh sau khi qua rights gate: static versioned JSON trong Pages/CDN immutable cache; nếu dùng Worker/Pages Function thì chỉ đọc `public-releases/`, không đọc `raw/`.
+- Kiểm tra: D05 live catalog + các sample HTTP statuses đã được chạy và ghi trong báo cáo; `node --check scripts/upload-private-snapshot-r2.mjs` pass; dry-run xác nhận 7 object; JSON config/status parse pass, score/data release gates vẫn false; `git diff --check` sạch. Chưa có test R2 PUT/GET mới vì thiếu Account ID; chưa có tests engine.
+- Bước tiếp theo: hoàn tất upload+readback khi có Account ID; sau đó S01-S03 xây pipeline/fixtures/schema và M01-M06 engine theo ADR. Chỉ tạo public data endpoint sau xác nhận quyền, không phát raw snapshot.

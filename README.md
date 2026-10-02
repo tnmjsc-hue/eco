@@ -2,9 +2,9 @@
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
-**Trạng thái ngày 2026-10-03: trang giới thiệu ECO đang chạy tại [eco.tnmp.cloud](https://eco.tnmp.cloud); D01 đã probe khả năng truy cập 4 input Core; D02 đang xác minh thời gian và quyền dữ liệu.** Engine, dashboard ETH và full-history audit chưa có. Không có chỉ số ETH đã tính hoặc backtest đã chạy. Trang công khai hiện chỉ mô tả dự án và nêu rõ chưa có điểm số.
+**Trạng thái ngày 2026-10-03: trang giới thiệu ECO đang chạy tại [eco.tnmp.cloud](https://eco.tnmp.cloud); D01-D05 đã hoàn tất trong phạm vi probe, contract, full-history audit, protocol nghiên cứu và feasibility 9 vị trí.** Chưa có engine, dashboard ETH, điểm hoặc backtest. Snapshot full-history hiện lưu riêng tư trên máy; chưa upload lên R2. Quyền công khai dữ liệu và điểm dẫn xuất vẫn chưa được xác nhận.
 
-Chạy lại probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03`. Raw response và manifest SHA-256 được ghi vào `data/raw/coinmetrics/` (bị Git ignore); không commit dữ liệu này. Kết quả probe được mô tả trong [báo cáo audit](docs/data-audit.md), hợp đồng thời gian ở [data-contract.md](docs/data-contract.md), và giới hạn quyền ở [data-rights.md](docs/data-rights.md).
+Chạy probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03` hoặc full history bằng `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03`. Raw response và manifest SHA-256 được ghi vào `data/raw/coinmetrics/` (bị Git ignore); không commit dữ liệu này. Báo cáo tại [data-audit.md](docs/data-audit.md), protocol nghiên cứu tại [ADR-001](docs/ADR-001-core-research-protocol.md), feasibility 9 vị trí tại [metric-feasibility.md](docs/metric-feasibility.md), và giới hạn quyền tại [data-rights.md](docs/data-rights.md). Upload snapshot private lên R2 dùng `node scripts/upload-private-snapshot-r2.mjs <snapshot-dir>` sau khi có `R2_ACCOUNT_ID` cùng credential trong process env.
 
 ## Đọc theo thứ tự
 

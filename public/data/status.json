@@ -9,6 +9,8 @@
     "D01": "complete",
     "D02": "complete",
     "D03": "complete",
+    "D04": "complete",
+    "D05": "complete",
     "core_capability_probe": {
       "provider": "Coin Metrics Community API",
       "asset": "ETH",
@@ -21,6 +23,7 @@
       "full_history_last_available_date": "2026-10-01",
       "missing_requested_end_dates": 1
     },
+    "private_snapshot_storage": "local_only_pending_r2_account_id",
     "data_rights_confirmed": false,
     "engine_available": false
   }

@@ -91,7 +91,7 @@ Chưa lưu nguyên response body ra snapshot/hash trên đĩa trong phiên lập
 | [Coin Metrics API](https://docs.coinmetrics.io/api/v4/) | Community endpoint không cần key; có rate limits | Kiểm tra lại rate limit hiện hành lúc code, không hardcode theo suy đoán |
 | [Coin Metrics archive](https://github.com/coinmetrics/data) | CSV theo coin, README ghi CC BY-NC 4.0 và khả năng thay đổi bộ metric | Chưa tải CSV ETH, chưa xác minh đầy đủ lịch sử; không mặc định dùng thương mại |
 | [Coin Metrics realized cap account-based](https://github.com/coinmetrics/docs-website/blob/master/asset-metrics/market/caprealusd.md) | Quy ước lần hoạt động cuối theo tài khoản khác UTXO | Không coi đây là chi phí mua thực của từng người |
-| [Glassnode indicators](https://docs.glassnode.com/basic-api/endpoints/indicators) | Có các đường dẫn MVRV, NUPL, realized cap account-based | Không xác minh API key, quyền gói hoặc ETH age-band coverage |
+| [Glassnode indicators](https://docs.glassnode.com/basic-api/endpoints/indicators) | Có endpoint RHODL (docs ghi BTC) và account-based dormancy/NUPL | Không xác minh entitlement, quyền gói hoặc ETH coverage |
 | [Glassnode metadata](https://docs.glassnode.com/basic-api/metadata) | Metadata giúp xác định asset/metric coverage và đặc tính dữ liệu | Cần probe với quyền thực; nhãn sàn có thể thay đổi theo thời gian |
 | [CoinGecko Demo historical endpoint](https://docs.coingecko.com/demo/reference/coins-id-market-chart) | Tài liệu giới hạn 365 ngày lịch sử ở Demo | Không dùng làm nguồn duy nhất cho 2Y MA và backtest nhiều chu kỳ |
 | [Ethereum Merge](https://ethereum.org/roadmap/merge/) | ETH chuyển PoW → PoS, ngày 2022-09-15 | Puell dựa trên miner không giữ nguyên ý nghĩa |
@@ -100,12 +100,12 @@ Chưa lưu nguyên response body ra snapshot/hash trên đĩa trong phiên lập
 
 ## 5. Những điều chưa được chứng minh
 
-- Chưa có dữ liệu chuẩn hóa đầy đủ từ 2015 đến nay hoặc audit khoảng trống.
+- Chưa có production canonical dataset/engine; D03 đã audit full-history snapshot riêng tư. Còn một missing-row date ở requested end và 7 đầu ngày null cho ba metric định giá.
 - Chưa biết độ trễ công bố từng metric theo thời gian, lịch sử revision và vintage dữ liệu cũ.
 - Chưa có kết quả backtest, độ chính xác hoặc điểm ETH hiện tại.
 - Chưa có bằng chứng E1 với 111/350/2 có tác dụng báo đỉnh ETH.
-- Chưa xác minh E3/E8 có thể làm đúng nghĩa với dataset ETH nào và giá bao nhiêu.
-- Chưa xác minh tính hữu ích của phí hoặc NVT sau các thay đổi L1/L2.
+- D05: E3/E8 chưa có source/entitlement/ETH-history đủ xác minh; E4 `FeeTotNtv` là candidate có sample access; E9 adjusted transfer value có catalog range nhưng timeseries Community bị 403.
+- Chưa xác minh tính hữu ích của fee-native hoặc NVT proxy qua Merge, EIP-1559, blob fees, L2, bridge, MEV và internal transfers.
 - Chưa có quyền phát hành công khai hoặc thương mại cho mọi loại dữ liệu dự kiến.
 - Chưa có visual audit responsive, test app, build, hosting hoặc scheduler thực tế.
 
@@ -115,6 +115,6 @@ Mỗi xác minh mới thêm ngày, URL/endpoint, version/commit, loại bằng c
 
 ## 7. Probe cập nhật 2026-10-03
 
-Đã chạy lại capability probe riêng cho `PriceUSD`, `CapMrktCurUSD`, `SplyCur`, `CapMVRVCur` trên ETH/1d tại ba khoảng lịch sử. Cả 12 request trả HTTP 200 có dữ liệu. Đây là cập nhật cho bốn input Core; không thay thế kết quả cũ của `CapRealUSD`/`FeeTotUSD` (403) và không phải full audit. Bằng chứng, timestamp, hash và phạm vi xem [data-audit.md](data-audit.md); raw response vẫn ở local private/ignored.
+Đã chạy capability probe 12 request và D03 full-history 5 trang/4.080 rows cho bốn input Core. Bằng chứng, hash và phạm vi xem [data-audit.md](data-audit.md); raw response vẫn local private/ignored. D02 đã ghi period mapping; không có `source_available_at` hoặc revision vintage.
 
-Tài liệu hiện hành được đọc lại cho Community API, API Access và kho archive. Tài liệu access mô tả dùng phi thương mại theo Creative Commons; archive ghi CC BY-NC 4.0. Chưa giải quyết quyền thương mại và tái phân phối output ECO. API timestamp của mẫu là 00:00 UTC; period-end, availability lịch sử và revision vẫn chưa chốt. Ghi nhận chi tiết và nguồn tại [data-contract.md](data-contract.md), [data-rights.md](data-rights.md).
+Tài liệu hiện hành được đọc lại cho Community API, API Access và kho archive. Tài liệu access mô tả dùng phi thương mại theo Creative Commons; archive ghi CC BY-NC 4.0. Chưa giải quyết quyền thương mại và tái phân phối output ECO. API timestamp là 00:00 UTC; period-end được hiểu theo daily UTC docs, availability lịch sử và revision chưa chốt. Protocol frozen ở [ADR-001](ADR-001-core-research-protocol.md), map 9 vị trí ở [metric-feasibility.md](metric-feasibility.md), rights tại [data-rights.md](data-rights.md).

@@ -1,0 +1,81 @@
+{
+  "research_protocol_version": "core-v0.1.0-protocol-1",
+  "methodology_version": "core-v0.1.0",
+  "status": "frozen_for_research_only",
+  "frozen_at_utc": "2026-10-03",
+  "asset": "eth",
+  "provider": "coinmetrics_community_api",
+  "frequency": "1d",
+  "metrics": [
+    "PriceUSD",
+    "CapMrktCurUSD",
+    "SplyCur",
+    "CapMVRVCur"
+  ],
+  "components": ["E1", "E5", "E6", "E7"],
+  "timestamp_policy": {
+    "observation_date": "utc_date_component_of_source_time",
+    "period_end_boundary": "exclusive_next_utc_midnight",
+    "include_open_day": false,
+    "source_available_at_required_for_as_published": true
+  },
+  "raw_features": {
+    "E1": "ln(SMA111(PriceUSD) / (2 * SMA350(PriceUSD)))",
+    "E5": "ln(PriceUSD / SMA730(PriceUSD))",
+    "E6": "causal_ols_ln_price_on_ln_age_using_only_u_lt_t_min_observations_730",
+    "E7": "(CapMrktCurUSD - derived_realized_cap) / rolling_std_population(CapMrktCurUSD, u_lt_t, min_observations_365)",
+    "derived_realized_cap": "CapMrktCurUSD / CapMVRVCur"
+  },
+  "normalizer": {
+    "lookback_calendar_days": 1460,
+    "window_excludes_current_day": true,
+    "min_raw_observations": 365,
+    "lower_quantile": 0.05,
+    "upper_quantile": 0.95,
+    "quantile_method": "linear",
+    "clip_min": 0,
+    "clip_max": 100,
+    "degenerate_epsilon": 1e-12
+  },
+  "aggregation": {
+    "price_group": ["E1", "E5", "E6"],
+    "valuation_group": ["E7"],
+    "price_group_weight": 0.5,
+    "valuation_group_weight": 0.5,
+    "require_all_components": true,
+    "missing_score": null
+  },
+  "evaluation": {
+    "primary_label": {
+      "type": "future_drawdown",
+      "horizon_calendar_days": 365,
+      "lookahead_starts_next_day": true,
+      "drawdown_threshold": -0.5,
+      "not_a_cycle_top_label": true
+    },
+    "primary_test_start": "2020-01-01",
+    "primary_test_end": "derive_from_latest_observation_minus_365_days",
+    "primary_metric": "average_precision",
+    "secondary_metrics": ["roc_auc", "precision_recall_at_score_90"],
+    "sensitivity_only": [
+      {"horizon_calendar_days": 180, "drawdown_threshold": -0.5},
+      {"horizon_calendar_days": 365, "drawdown_threshold": -0.3}
+    ],
+    "baselines": ["normalized_E7_only", "equal_weight_four_components", "normalized_price_group_only"],
+    "bootstrap": {
+      "method": "paired_moving_block",
+      "block_calendar_days": 90,
+      "replicates": 10000,
+      "seed": 20261003,
+      "confidence_level": 0.95
+    },
+    "success_rule": "lower_95pct_CI_of_average_precision_delta_gt_zero_vs_each_baseline_and_positive_delta_in_most_calendar_year_folds_with_positive_labels"
+  },
+  "limitations": [
+    "reconstructed_current_vintage_only",
+    "historical_source_availability_unknown",
+    "historical_revision_vintages_unknown",
+    "public_and_commercial_data_rights_unconfirmed",
+    "score_0_100_is_not_probability"
+  ]
+}
