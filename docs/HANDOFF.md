@@ -155,6 +155,7 @@ Lệnh đã chạy: `node --version` → `v24.19.0`; `node scripts/audit-coinmet
 - D02: đã ghi timestamp UTC, tách các khái niệm thời gian, quan sát gần nhất, giới hạn revision và quyền CC BY-NC/non-commercial. Chưa biết mapping period-end, source availability lịch sử, revision policy và quyền commercial/public display/download; giữ `IN_PROGRESS`.
 - Dữ liệu/version: Coin Metrics Community API v4, không key; raw run local tại `data/raw/coinmetrics/coinmetrics-2026-10-03-2026-10-02T175134924Z/`, không commit. Không có snapshot full history hoặc `methodology_version`.
 - Kiểm tra: Node v24.19.0; chạy probe thành công 12 request; manifest xác nhận request URL không chứa key; `git check-ignore` xác nhận raw được ignore. Chưa chạy test sản phẩm vì engine chưa tồn tại.
+- Phát hành: commit `b134ea349d87105ee1fe8b33f620b9ddf702ff0b` đã push `main`; Cloudflare Pages deployment `119e2b9f-02fd-49ea-821c-150165d97926` là `production/success`, stage `deploy`, branch `main`, đúng commit. Pages hostname theo deployment và `https://eco-tnmp.pages.dev/`, cùng `https://eco.tnmp.cloud/`, đều HTTP 200, đúng title ECO và nhãn chưa có điểm. `/data/status.json` trên deployment và custom domain đều HTTP 200, `score_available=false`, `data_release_available=false`.
 - Trở ngại: D02 chưa đủ cơ sở khóa cách gán kỳ/ngày và chưa rõ quyền sử dụng đầu ra public/commercial. Bước kế tiếp: lấy xác nhận chính thức về timestamp/availability/revision và quyền sử dụng; khi D02 đủ điều kiện thì chạy D03 full-history audit. S01 vẫn `IN_PROGRESS`.
 
 ## 7. Quyết định chờ đến đúng giai đoạn
