@@ -259,4 +259,8 @@ Task tiếp theo:
 - Người dùng phản hồi trang chủ chưa có thay đổi nhìn thấy. Nguyên nhân: commit trước chỉ cập nhật tài liệu và script audit, không sửa `public/`.
 - Đã cập nhật hero và mục tiến độ để thể hiện D01 probe mẫu đã xong, D02 đang xác minh thời gian/quyền, D03 full-history và engine/dashboard chưa bắt đầu; có link tới báo cáo probe. Thêm `public/progress.css` cho bố cục responsive của danh sách trạng thái.
 - `public/data/status.json` công khai metadata tiến độ D01-D03, số request mẫu và cờ sẵn sàng; giữ `score_available=false`, `data_release_available=false`, `methodology_version=null`. Không public raw response hoặc điểm ETH.
-- File liên quan được đồng bộ: `docs/DEPLOYMENT.md`, `docs/STORAGE.md`. Chưa push/deploy trong lúc ghi mục này; sẽ bổ sung SHA và kết quả HTTP sau kiểm tra.
+- File liên quan được đồng bộ: `docs/DEPLOYMENT.md`, `docs/STORAGE.md`.
+- Commit `8bcf69ba7e85f02ac078473ee68a52c769fa9f1c` đã push `main`; Pages deployment `e72d41f9-213e-4c7a-8c3b-900d2a2b4ddb` là `production/success`, đúng commit. `https://e72d41f9.eco-tnmp.pages.dev/`, `https://eco-tnmp.pages.dev/` và `https://eco.tnmp.cloud/` đều trả HTTP 200; kiểm tra nội dung xác nhận hero D01, tiến độ D02, link báo cáo và CSS mới.
+- `/progress.css` và `/data/status.json` trả HTTP 200 trên cả ba host. JSON live trả `D01=complete`, `D02=in_progress`, `D03=not_started`, `score_available=false`, `data_release_available=false`, `methodology_version=null`.
+- Kiểm tra giao diện bằng trình duyệt tại viewport mặc định và 390×844: hero/progress hiển thị, nội dung xuống dòng đúng, không thấy chồng lấn; đã reset viewport. Kiểm tra cục bộ: `ConvertFrom-Json`, các asset tồn tại, `git diff --check` đều đạt. Không có engine/test engine để chạy.
+- Website vẫn là trang giới thiệu và tiến độ nghiên cứu, chưa phải dashboard ETH. Bước tiếp theo của sản phẩm giữ nguyên: hoàn tất D02 trước khi bắt đầu D03; S01 còn `IN_PROGRESS`.
