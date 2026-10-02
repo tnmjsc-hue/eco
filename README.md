@@ -1,8 +1,35 @@
-# ETH Cycle Index — kế hoạch dự án
+# ECO — Dashboard Ethereum Core
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
-**Trạng thái ngày 2026-10-03: trang giới thiệu ECO đang chạy tại [eco.tnmp.cloud](https://eco.tnmp.cloud); D01-D05 đã hoàn tất trong phạm vi probe, contract, full-history audit, protocol nghiên cứu và feasibility 9 vị trí.** Chưa có engine, dashboard ETH, điểm hoặc backtest. Snapshot full-history được giữ local và đã sao lưu vào R2 private; website không đọc raw. Quyền công khai dữ liệu và điểm dẫn xuất vẫn chưa được xác nhận.
+**Phiên 2026-10-03: đã xây engine và dashboard Core nghiên cứu với dữ liệu ETH thật.** Điểm gần nhất 41.379812239861 (UI 41/100) cho 2026-10-01; 4 metric E1/E5/E6/E7, lịch sử reconstructed. Primary evaluation đã chạy; chưa chứng minh cải thiện so với mọi baseline. Đây là **Experimental research preview**, không phải xác suất, tín hiệu đầu tư hay bản đủ 9 metric. Quyết định và quyền phi thương mại: [ADR-002](docs/ADR-002-experimental-research-preview.md). Xác minh production được ghi trong HANDOFF sau deploy.
+
+Dashboard dùng native ES modules, ECharts và Lucide trên Pages static `public`; engine Python 3.12 + NumPy 2.3.5. Snapshot raw giữ local/R2 private; web lấy versioned JSON đã tính sẵn, không gọi API provider hay bucket raw. Chưa có scheduler/as-published/shadow 30 ngày.
+
+## Lệnh thực tế
+
+Setup với Python 3.12, Node 24 và pnpm 11.19.0:
+
+```text
+python -m pip install -r requirements.txt
+pnpm install --frozen-lockfile
+pnpm build
+python -m unittest discover -s tests -v
+node --test tests/web.test.mjs
+node scripts/validate-research-artifacts.mjs
+python -m http.server 8876 --bind 127.0.0.1 --directory public
+```
+
+Mở `http://127.0.0.1:8876/`. `pnpm build` copy vendor assets + licences vào `public/vendor`; không build/publish dữ liệu mới. Pages vẫn không cần build command. CI kiểm engine/gate, lockfile/build vendor, public hashes và research protocol; browser QA script `scripts/check-dashboard.mjs` cần Playwright cùng Chromium hoặc biến `PLAYWRIGHT_MODULE`/`CHROME_EXECUTABLE` cho runtime có sẵn.
+
+Tính từ snapshot private đã audit, sau đó publish đúng scope phi thương mại được chấp thuận (thay snapshot/release bằng path thực; không chạy placeholder):
+
+```text
+python -m eco.pipeline compute data/raw/coinmetrics/coinmetrics-backfill-2026-10-03-2026-10-02T182337734Z
+python -m eco.pipeline publish data/computed/core-c899a808bda65db96be3
+```
+
+Lệnh compute kiểm hash raw/canonical, ETH/schema/timestamps và frozen protocol. Output private `data/computed`; public publisher có rights gate và allowlist, không copy engine details hoặc raw. Không đổi policy thành commercial để bỏ gate. Release assets immutable; pointer đổi sau xác minh. `.gitattributes` giữ nguyên bytes JSON versioned qua Windows/Linux để checksum không đổi do CRLF.
 
 Chạy probe mẫu bằng `node scripts/audit-coinmetrics.mjs 2026-10-03` hoặc full history bằng `node scripts/backfill-coinmetrics.mjs 2015-08-01 2026-10-03`. Raw response và manifest SHA-256 được ghi vào `data/raw/coinmetrics/` (bị Git ignore); không commit dữ liệu này. Báo cáo tại [data-audit.md](docs/data-audit.md), protocol nghiên cứu tại [ADR-001](docs/ADR-001-core-research-protocol.md), feasibility 9 vị trí tại [metric-feasibility.md](docs/metric-feasibility.md), và giới hạn quyền tại [data-rights.md](docs/data-rights.md). Upload snapshot private lên R2 dùng `node scripts/upload-private-snapshot-r2.mjs <snapshot-dir>` sau khi có `R2_ACCOUNT_ID` cùng credential trong process env.
 
@@ -27,4 +54,4 @@ Chạy live probe D05 không cần API key bằng `node scripts/audit-d05-feasib
 - Điểm thể hiện mức nóng/lạnh tương đối theo mô hình; **80/100 không có nghĩa là 80% xác suất tạo đỉnh**.
 - Tách lịch sử tính lại theo dữ liệu hiện có và lịch sử điểm thực sự đã công bố; không dùng biểu đồ hồi cứu để tuyên bố khả năng dự báo.
 
-Tên làm việc trong mã: `eth-cycle-index`. `ETH-CBBI` là tên thư mục hiện tại; trang giới thiệu dùng tên ECO, còn tên của chỉ số phát hành chính thức sẽ được chốt khi làm sản phẩm.
+Tên làm việc trong mã: `eth-cycle-index`; dashboard preview dùng ECO. `ETH-CBBI` là tên thư mục. Phát hành sản phẩm vận hành đầy đủ còn các gate riêng trong HANDOFF.

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ECO reconstructed Core history 1.0.0",
+  "type": "object",
+  "required": ["schema_version", "release_id", "methodology_version", "series_type", "asset", "frequency", "rows"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "release_id": {"type": "string", "pattern": "^core-[a-f0-9]{20}$"},
+    "methodology_version": {"const": "core-v0.1.0"},
+    "series_type": {"const": "reconstructed"},
+    "asset": {"const": "eth"},
+    "frequency": {"const": "1d"},
+    "rows": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["date", "price_usd", "score", "coverage", "components", "reasons", "source_row_present", "period_closed_at_retrieval"],
+        "properties": {
+          "date": {"type": "string", "format": "date"},
+          "price_usd": {"type": ["number", "null"], "exclusiveMinimum": 0},
+          "score": {"$ref": "#/$defs/score"},
+          "coverage": {"type": "integer", "minimum": 0, "maximum": 4},
+          "source_row_present": {"type": "boolean"},
+          "period_closed_at_retrieval": {"type": "boolean"},
+          "components": {
+            "type": "object", "required": ["E1", "E5", "E6", "E7"], "additionalProperties": false,
+            "properties": {"E1": {"$ref": "#/$defs/score"}, "E5": {"$ref": "#/$defs/score"}, "E6": {"$ref": "#/$defs/score"}, "E7": {"$ref": "#/$defs/score"}}
+          },
+          "reasons": {
+            "type": "object", "required": ["E1", "E5", "E6", "E7"], "additionalProperties": false,
+            "properties": {"E1": {"$ref": "#/$defs/reason"}, "E5": {"$ref": "#/$defs/reason"}, "E6": {"$ref": "#/$defs/reason"}, "E7": {"$ref": "#/$defs/reason"}}
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [{"if": {"properties": {"period_closed_at_retrieval": {"const": false}}}, "then": {"properties": {"score": {"type": "null"}, "price_usd": {"type": "null"}, "coverage": {"const": 0}}}}]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+    "reason": {"enum": [null, "raw_unavailable", "normalizer_warmup", "degenerate_normalizer"]}
+  }
+}

@@ -12,7 +12,7 @@ Token R2 `eco-eth-snapshot-pipeline` đã được tạo với quyền **Object 
 | R2 `eco-eth-private` | Snapshot raw, hash, manifest chạy batch, bản sao lưu release và tài liệu kiểm toán riêng tư | Snapshot D03 đã upload; 7/7 object đọc ngược và khớp SHA-256 |
 | D1 / KV | Chỉ mục truy vấn hoặc trạng thái cập nhật nhiều lần nếu sau này có nhu cầu thật | Chưa tạo; bản đầu không cần database server |
 
-Trang giới thiệu chưa có engine, dữ liệu ETH đã kiểm định hoặc điểm số. `public/data/status.json` công khai trạng thái nghiên cứu/các gate và cờ phát hành; không chứa time series, snapshot hay điểm ETH. Việc bucket tồn tại **không** đồng nghĩa pipeline đã kết nối hoặc dữ liệu được sao lưu. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline.
+Dashboard Core nghiên cứu đã có engine và score reconstructed, không phải sản phẩm vận hành realtime. `public/data/status.json` ghi scope experimental/noncommercial; `public/data/latest.json` trỏ manifest/history/research versioned. Raw snapshot vẫn ở R2 private với 7/7 hash đã xác minh. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline; scheduler chưa có.
 
 ## Quy tắc dữ liệu
 
@@ -37,7 +37,7 @@ Lệnh upload cần `R2_ACCOUNT_ID`, `R2_BUCKET=eco-eth-private`, `R2_ACCESS_KEY
 
 Bucket private không được gọi trực tiếp từ browser và không bind prefix `raw/` vào Pages Functions. Frontend không được giữ S3 key, API key hay signed URL dài hạn. Dữ liệu public chỉ được xuất sau rights/release gates: ưu tiên JSON release đã version hóa trong Pages/CDN, ví dụ `data/releases/<release-id>/history.json` với `Cache-Control: public, max-age=31536000, immutable`; một manifest/latest pointer nhỏ dùng cache ngắn hoặc revalidate. Nếu cần endpoint, Worker/Pages Function chỉ đọc prefix `public-releases/` đã được duyệt, không đọc raw. Browser tải đúng release theo manifest để nhanh và không trộn version.
 
-Cho tới khi quyền hiển thị/derived/export được xác nhận, website không được đọc hoặc hiển thị snapshot D03, kể cả qua proxy không xác thực. Có thể dùng private R2 như archive cho pipeline sau này; điều đó chưa tạo data release.
+Phiên 2026-10-03, người dùng xác nhận nghiên cứu phi thương mại; [ADR-002](ADR-002-experimental-research-preview.md) áp dụng CC BY-NC 4.0 cho Community chart/derived scores/CSV với attribution. Preview đã có publisher `eco/pipeline.py`: raw/canonical/engine details không nằm trong allowlist, chỉ history/research/manifest được xuất. Frontend xác minh SHA-256 và phiên bản, không gọi provider/R2. `_headers` đặt immutable cache cho release và revalidate pointer. Quyền thương mại, nguồn mở rộng và gate vận hành đầy đủ không được suy rộng từ preview.
 
 ## Kết nối pipeline với bucket khi S02/S04 bắt đầu
 

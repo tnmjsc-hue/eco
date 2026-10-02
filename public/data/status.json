@@ -1,10 +1,17 @@
 {
   "project": "ECO",
-  "state": "research",
+  "state": "experimental_research_preview",
   "updated_at": "2026-10-03",
-  "score_available": false,
-  "data_release_available": false,
-  "methodology_version": null,
+  "score_available": true,
+  "data_release_available": true,
+  "methodology_version": "core-v0.1.0",
+  "release_id": "core-c899a808bda65db96be3",
+  "series_type": "reconstructed",
+  "last_valid_score_date": "2026-10-01",
+  "last_valid_score": 41.379812239861,
+  "license_scope": "noncommercial_research_CC_BY_NC_4_0",
+  "product_operational_release": false,
+  "scheduler_available": false,
   "progress": {
     "D01": "complete",
     "D02": "complete",
@@ -26,7 +33,12 @@
       "missing_requested_end_dates": 1
     },
     "private_snapshot_storage": "private_r2_verified",
-    "data_rights_confirmed": false,
-    "engine_available": false
+    "data_rights_confirmed": true,
+    "data_rights_scope": "noncommercial_Community_research_only",
+    "engine_available": true,
+    "dashboard_available": true,
+    "primary_research_evaluation": "complete_incremental_utility_not_demonstrated",
+    "closed_before_at_retrieval_utc": "2026-10-02",
+    "pending_open_at_retrieval_dates": ["2026-10-02"]
   }
 }

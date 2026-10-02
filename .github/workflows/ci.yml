@@ -1,0 +1,40 @@
+name: Verify research dashboard
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Install locked web dependencies
+        run: |
+          npm install --global pnpm@11.19.0
+          pnpm install --frozen-lockfile
+      - name: Rebuild vendored chart and icon assets
+        run: |
+          pnpm build
+          git diff --exit-code -- public/vendor
+      - name: Engine and publication gate tests
+        run: python -m unittest discover -s tests -v
+      - name: Frozen research artifacts
+        run: node scripts/validate-research-artifacts.mjs
+      - name: Browser data contract and release checksums
+        run: node --test tests/web.test.mjs
+      - name: JavaScript syntax
+        run: node --check public/app.js
+      - name: Whitespace
+        run: git diff --check HEAD^ HEAD

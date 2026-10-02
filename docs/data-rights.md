@@ -1,6 +1,12 @@
 # Quyền sử dụng dữ liệu Coin Metrics
 
-**Trạng thái: D02 đã ghi nhận ranh giới; quyền phát hành vẫn cần xác nhận.** Đây là ghi nhận tài liệu công khai, không phải tư vấn pháp lý hay xác nhận quyền thương mại.
+**Trạng thái: được áp dụng CC BY-NC 4.0 cho preview nghiên cứu phi thương mại sau xác nhận của người dùng ngày 2026-10-03.** Không phải quyền thương mại hay thư chấp thuận riêng của provider. Quyết định mới ở [ADR-002](ADR-002-experimental-research-preview.md); các ghi nhận dưới đây giữ bối cảnh trước xác nhận và được giới hạn bởi quyết định mới.
+
+## Phạm vi đã giải quyết
+
+Tài liệu [Coin Metrics Community Data](https://docs.coinmetrics.io/packages/coin-metrics-community-data) liên kết trực tiếp CC BY-NC 4.0. Người dùng đã xác nhận “Phi thương mại, công bố nghiên cứu”. Section 2/3 của [legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en) cho phép chia sẻ/biến đổi trong phạm vi NonCommercial với attribution, license link, ghi modifications và không endorsement. Áp dụng cho chart giá Community, derived Core/CSV và lưu snapshot nghiên cứu. UI/manifest/CSV đều ghi nguồn/licence/thay đổi/disclaimer. Raw vẫn private, không commit.
+
+Không đòi thư riêng cho phạm vi được giấy phép công khai này cấp. Vẫn phải xin quyền phù hợp nếu thương mại hóa hoặc dùng nguồn/licence khác. Không tự suy diễn API Pro/Glassnode hay candidate chưa truy cập được cũng được cấp quyền. Availability/revision lịch sử vẫn chưa biết.
 
 ## Bằng chứng đã đọc
 
@@ -13,8 +19,8 @@
 
 - Tiếp tục audit local như nghiên cứu phi thương mại theo điều khoản áp dụng; lưu request, response hash và provenance riêng tư. Đây không phải kết luận pháp lý hay quyền tái phân phối.
 - Không đưa raw response, CSV archive hoặc snapshot chưa rõ quyền lên repo public, Pages hay bucket public.
-- Chưa xác nhận mục đích thương mại của sản phẩm. Vì vậy quyền hiển thị dashboard công khai, tải CSV, cache, phân phối derived score và sử dụng thương mại vẫn **chưa được giải quyết**.
-- Trước khi công bố, kiểm tra điều khoản Community hiện hành và xin Coin Metrics xác nhận bằng văn bản về từng mục: derived scores, chart, public display, redistribution/download, retention/cache và commercial use. Nếu quyền không đủ, cần nguồn/licence khác được nghiên cứu và version hóa; không đổi provider ngầm.
+- Mục đích đã xác nhận phi thương mại; quyền preview theo giấy phép nêu trên. Quyền thương mại **chưa được cấp**.
+- Trước khi thương mại hóa hoặc thay phạm vi/nguồn, review quyền và xin giấy phép tương ứng. Không đổi provider ngầm dưới cùng version.
 - Không dùng CapRealUSD hoặc FeeTotUSD khi Community probe trả 403. `CapMrktCurUSD / CapMVRVCur` là giá trị dẫn xuất đại số với cùng provider/ngày; quyền sử dụng đầu vào và dẫn xuất vẫn cần được xác nhận cho kiểu phát hành đã chọn.
 
 ## Nguồn và lần xem
@@ -27,10 +33,8 @@
 - [Kho archive và ghi chú CC BY-NC 4.0](https://github.com/coinmetrics/data/blob/master/README.md)
 - [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
-## Chưa xác minh
+## Chưa được cấp hoặc chưa biết
 
-- Bản điều khoản pháp lý hiện hành áp dụng trực tiếp cho API Community và việc lưu snapshot.
-- Quyền commercial/publication đối với số liệu và derived outputs cụ thể của ECO.
+- Quyền sử dụng thương mại hoặc licence ngoài Community; không suy rộng preview thành quyền bán tín hiệu/quảng cáo.
 - Chính sách revision/backfill và thời điểm availability lịch sử theo từng metric.
-- Attribution format mà Coin Metrics yêu cầu cho hình thức hiển thị dự kiến.
-- Điều khoản Community hiện hành có cho phép snapshot lưu riêng tư dài hạn theo nhu cầu dự án hay không; review lại trước khi đưa pipeline vào vận hành liên tục.
+- Điều khoản/entitlement riêng của nguồn mở rộng chưa chọn. Review lại quyền khi đổi mục đích hoặc phạm vi vận hành.

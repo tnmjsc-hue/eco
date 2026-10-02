@@ -3,136 +3,85 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101a26">
-  <meta name="description" content="ECO đang nghiên cứu một chỉ số chu kỳ Ethereum với dữ liệu, phương pháp và lịch sử có thể kiểm chứng.">
-  <title>ECO — Nghiên cứu chu kỳ Ethereum</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/progress.css">
+  <meta name="theme-color" content="#fafbfb">
+  <meta name="description" content="Dashboard nghiên cứu chu kỳ Ethereum: điểm Core, giá ETH, thành phần và kiểm định có thể kiểm chứng.">
+  <title>ECO | Dashboard Ethereum Core</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles.css?v=dashboard-1">
+  <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
+  <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
+  <script type="module" src="/app.js?v=dashboard-1"></script>
 </head>
 <body>
-  <div class="page-shell">
-    <header class="site-header">
-      <a class="brand" href="#dau-trang" aria-label="ECO, về đầu trang">
-        <span class="brand-mark" aria-hidden="true">e<span>.</span></span>
-        <span class="brand-name">ECO</span>
-      </a>
-      <nav aria-label="Điều hướng chính">
-        <a href="#du-an">Dự án</a>
-        <a href="#phuong-phap">Phương pháp</a>
-        <a href="#tien-do">Tiến độ</a>
-      </nav>
-      <a class="header-link" href="https://github.com/tnmjsc-hue/eco" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
-    </header>
-
-    <main id="dau-trang">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> D05 LIVE PROBE VERIFIED · ETH / 1D</div>
-          <h1 id="hero-title">Hiểu chu kỳ <em>Ethereum</em> qua dữ liệu có thể kiểm chứng.</h1>
-          <p class="hero-description">Đã kiểm tra toàn bộ lịch sử trả về cho 4 input Core trên ETH/1d và live probe 9 vị trí metric. Một ngày thiếu ở cuối cửa sổ được giữ nguyên; quyền công bố dữ liệu và điểm ECO vẫn chưa được xác nhận.</p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="#du-an">Tìm hiểu dự án <span aria-hidden="true">↗</span></a>
-            <a class="button button-secondary" href="#tien-do">Xem tiến độ <span aria-hidden="true">↓</span></a>
-          </div>
-        </div>
-        <div class="hero-visual" aria-label="Minh họa đường dữ liệu chu kỳ, chưa phải dữ liệu ETH thực tế" role="img">
-          <div class="visual-header"><span>ETH / CYCLE RESEARCH</span><span class="visual-live">EXPERIMENTAL</span></div>
-          <svg class="chart" viewBox="0 0 600 360" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#79e6c5" stop-opacity=".27"/><stop offset="100%" stop-color="#79e6c5" stop-opacity="0"/></linearGradient>
-              <linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6687f5"/><stop offset="100%" stop-color="#9af4c9"/></linearGradient>
-            </defs>
-            <path class="grid-line" d="M0 60H600M0 140H600M0 220H600M0 300H600"/>
-            <path class="grid-line vertical" d="M70 0V360M190 0V360M310 0V360M430 0V360M550 0V360"/>
-            <path d="M0 281 C43 278 56 250 89 257 S137 296 167 254 S217 197 252 215 S289 262 326 234 S365 155 403 173 S457 200 489 132 S552 97 600 54 V360 H0Z" fill="url(#area)"/>
-            <path d="M0 281 C43 278 56 250 89 257 S137 296 167 254 S217 197 252 215 S289 262 326 234 S365 155 403 173 S457 200 489 132 S552 97 600 54" fill="none" stroke="url(#line)" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="489" cy="132" r="6" fill="#101a26" stroke="#9af4c9" stroke-width="3"/>
-          </svg>
-          <div class="visual-footer"><span>MINH HỌA Ý TƯỞNG</span><span>CHƯA CÓ ĐIỂM SỐ CÔNG BỐ</span></div>
-        </div>
+  <a class="skip" href="#main">Đến nội dung</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="ECO dashboard"><span class="brand-mark">E</span><strong>ECO</strong><span class="brand-detail">ETHEREUM CORE</span></a>
+    <nav aria-label="Điều hướng chính">
+      <button class="nav-tab active" data-view="dashboard" aria-current="page"><i data-lucide="chart-no-axes-combined"></i><span>Dashboard</span></button>
+      <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
+      <button class="nav-tab" data-view="methodology"><i data-lucide="notebook-text"></i><span>Phương pháp</span></button>
+    </nav>
+    <span class="badge experimental">Experimental</span>
+  </header>
+  <main id="main">
+    <div id="error" class="notice error" role="alert" hidden><span id="error-text"></span><button id="retry" class="text-button"><i data-lucide="rotate-cw"></i>Thử lại</button></div>
+    <div id="loading" class="loading" role="status"><span class="spinner"></span>Đang xác minh bản dữ liệu…</div>
+    <div id="workspace" hidden>
+      <section id="view-dashboard" class="view">
+        <div class="page-heading"><div><p class="eyebrow">ETH / USD · DAILY UTC</p><h1>Ethereum Core</h1></div><div class="heading-actions"><span class="badge">Reconstructed</span><button id="refresh" class="icon-button" title="Kiểm tra bản dữ liệu mới" aria-label="Kiểm tra bản dữ liệu mới"><i data-lucide="refresh-cw"></i></button><button id="export" class="icon-button" title="Tải CSV của khoảng ngày đang xem" aria-label="Tải CSV"><i data-lucide="download"></i></button></div></div>
+        <div class="notice research-notice"><i data-lucide="info"></i><span>Điểm nghiên cứu 0–100, không phải xác suất hay khuyến nghị đầu tư. Core gồm 4 metric; không phải bản đủ 9 metric.</span></div>
+        <div id="freshness" class="data-status"></div>
+        <section class="overview" aria-label="Tổng quan ngày đã chọn">
+          <div class="score-block"><div class="label" id="score-label">ECO Core</div><div class="score-line"><strong id="score-value">—</strong><span>/ 100</span></div><div class="heat-scale" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><b id="heat-marker"></b></div><div class="scale-labels"><span>Thấp</span><span>Cao</span></div><div id="custom-comparison" class="small muted" hidden></div></div>
+          <div class="overview-cell"><div class="label">Giá ETH</div><strong class="stat-value" id="price-value">—</strong><div class="small muted">USD · đóng ngày UTC</div><div id="price-change" class="daily-change"></div></div>
+          <div class="overview-cell"><div class="label">Thành phần khả dụng</div><strong class="stat-value" id="coverage-value">—</strong><div class="small muted" id="coverage-note">Core cần đủ 4/4</div><div class="small version">core-v0.1.0</div></div>
+          <div class="overview-cell date-cell"><label class="label" for="selected-date">Ngày đang xem · UTC</label><div class="date-picker"><button id="previous-day" class="icon-button" title="Ngày trước" aria-label="Ngày trước"><i data-lucide="chevron-left"></i></button><input id="selected-date" type="date"><button id="next-day" class="icon-button" title="Ngày sau" aria-label="Ngày sau"><i data-lucide="chevron-right"></i></button></div><button id="latest-day" class="text-button small"><i data-lucide="calendar-check"></i>Ngày có điểm gần nhất</button><div class="small muted" id="day-reason"></div></div>
+        </section>
+        <section class="chart-section" aria-labelledby="chart-title">
+          <div class="section-toolbar"><div><h2 id="chart-title">Giá ETH & điểm Core</h2><p class="small muted" id="range-label"></p></div><div class="chart-controls"><div class="segmented" role="group" aria-label="Khoảng lịch sử"><button data-range="1y" aria-pressed="false">1 năm</button><button data-range="3y" aria-pressed="false">3 năm</button><button class="active" data-range="all" aria-pressed="true">Tất cả</button></div><label class="check small"><input id="log-price" type="checkbox" checked>Giá log</label></div></div>
+          <div class="chart-legend"><span><b class="legend-dot core-dot"></b>Core</span><span id="custom-legend" hidden><b class="legend-dot custom-dot"></b>Tùy chỉnh</span><span><b class="legend-line"></b>Giá ETH</span><span class="legend-hint">Lịch sử tính lại · không phải as-published</span></div>
+          <div id="history-chart" class="history-chart" role="img" aria-label="Biểu đồ lịch sử điểm Ethereum Core và giá ETH"></div>
+        </section>
+        <section class="components-section" aria-labelledby="component-title">
+          <div class="section-toolbar"><div><h2 id="component-title">Thành phần Core</h2><p class="small muted">Nhóm giá 50% · định giá 50%</p></div><div class="segmented" role="group" aria-label="Chế độ điểm"><button class="active" data-mode="core" aria-pressed="true">Core</button><button data-mode="custom" aria-pressed="false">Tùy chỉnh</button></div></div>
+          <div id="selection-note" class="notice" hidden></div>
+          <div class="table-wrap"><table class="metric-table"><thead><tr><th class="selection-column">Chọn</th><th>Metric</th><th>Điểm</th><th>Trọng số</th><th>Trạng thái</th></tr></thead><tbody id="component-rows"></tbody></table></div>
+          <div class="small muted component-footnote">E2 (NUPL dẫn xuất) không thêm phiếu: có phụ thuộc đại số với MVRV. E3/E4/E8/E9 chưa tham gia Core.</div>
+        </section>
       </section>
-
-      <section class="intro section" id="du-an" aria-labelledby="intro-title">
-        <div class="section-label">01 / DỰ ÁN</div>
-        <div class="section-main">
-          <h2 id="intro-title">Một chỉ số dễ đọc. Một phương pháp có thể truy vết.</h2>
-          <p>Mục tiêu của ECO là giúp người xem đặt giá ETH trong bối cảnh chu kỳ dài hạn. Chỉ số dự kiến dùng thang 0–100 để mô tả mức nóng hoặc lạnh tương đối theo mô hình, cùng biểu đồ lịch sử và đóng góp của từng thành phần.</p>
-          <p class="note"><strong>Hiện trạng:</strong> chưa có điểm ECO nào được tính hoặc phát hành. Một giá trị 80/100, khi có, cũng không có nghĩa là 80% xác suất ETH tạo đỉnh.</p>
-        </div>
+      <section id="view-research" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">CORE-V0.1.0-PROTOCOL-1</p><h1>Kiểm định nghiên cứu</h1></div><span class="badge">Reconstructed</span></div>
+        <div id="research-conclusion" class="notice research-notice"></div>
+        <div class="research-summary" id="research-summary"></div>
+        <div class="section-toolbar"><h2>Average Precision · cùng ngày đánh giá</h2><span class="small muted">Cao hơn là tốt hơn</span></div>
+        <div id="research-chart" class="research-chart" role="img" aria-label="So sánh Average Precision của Core với ba baseline"></div>
+        <h2>Chênh lệch Core so với baseline</h2>
+        <div class="table-wrap"><table><thead><tr><th>Baseline</th><th>Δ AP</th><th>CI 95%</th><th>Năm Δ dương</th><th>Kết luận</th></tr></thead><tbody id="comparison-rows"></tbody></table></div>
+        <div class="research-details"><section><h2>Protocol đã khóa</h2><p>Nhãn dương khi giá thấp nhất trong 365 ngày kế tiếp giảm ít nhất 50% so với giá đóng ngày đang xét. Chỉ đánh giá ngày có horizon hoàn tất.</p><p>Paired moving-block bootstrap 90 ngày, 10.000 lần, seed 20261003. Không tối ưu lại trọng số hoặc ngưỡng sau kết quả.</p></section><section><h2>Giới hạn bằng chứng</h2><p>Snapshot hiện tại không biết thời điểm nguồn từng sẵn có và các bản sửa đổi trong lịch sử. Backtest này không chứng minh hiệu quả realtime.</p><p>Không có mô hình xác suất, calibration hay chứng nhận giao dịch. Bản preview chưa có chuỗi vận hành shadow 30 ngày.</p></section></div>
+        <details><summary>ROC-AUC và ngưỡng Core ≥ 90</summary><div id="secondary-results"></div></details>
       </section>
-
-      <section class="principles section" id="phuong-phap" aria-labelledby="principles-title">
-        <div class="section-heading"><div class="section-label">02 / PHƯƠNG PHÁP</div><h2 id="principles-title">Xây trên dữ liệu thật, công bố đúng giới hạn.</h2></div>
-        <div class="card-grid">
-          <article class="principle-card"><div class="card-number">01</div><h3>Dữ liệu ETH</h3><p>Kiểm tra nguồn, ngày quan sát, thời điểm dữ liệu sẵn có và điều khoản sử dụng trước khi đưa vào chỉ số.</p></article>
-          <article class="principle-card"><div class="card-number">02</div><h3>Không nhìn tương lai</h3><p>Mỗi giá trị tại ngày tính chỉ dùng thông tin có thể biết vào thời điểm đó. Lịch sử tính lại được tách khỏi điểm đã công bố.</p></article>
-          <article class="principle-card"><div class="card-number">03</div><h3>Có thể kiểm chứng</h3><p>Phương pháp, phiên bản, trạng thái thiếu dữ liệu và giới hạn của mô hình sẽ được trình bày cùng kết quả.</p></article>
-        </div>
+      <section id="view-methodology" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">PHƯƠNG PHÁP / DỮ LIỆU</p><h1>Một điểm, bốn thành phần</h1></div><span class="badge">core-v0.1.0</span></div>
+        <div class="method-grid"><section><h2>Điểm đo điều gì?</h2><p>Mức nóng/lạnh tương đối của giá và định giá ETH so với chính lịch sử trước đó. Điểm cao biểu thị các feature nằm gần hoặc trên biên lịch sử cao; không khẳng định ETH sẽ tạo đỉnh.</p><p>Normalizer dùng q05/q95 tuyến tính của tối đa 1.460 ngày trước, ít nhất 365 quan sát raw. Không đưa ngày đang tính vào biên chuẩn hóa. Điểm được giới hạn 0–100; thiếu bất kỳ thành phần nào thì Core là null.</p></section><section><h2>Trọng số và chế độ tùy chỉnh</h2><p>Core = 50% × mean(E1, E5, E6) + 50% × E7. E1/E5/E6 mỗi metric có trọng số 1/6; E7 là 1/2.</p><p>Tùy chỉnh dùng lại trọng số gốc trên tập đã chọn và chuẩn hóa tổng về 100%. Đây không phải Core chính thức. Tập rỗng hoặc một metric đã chọn thiếu dữ liệu sẽ không có điểm.</p></section></div>
+        <div class="table-wrap"><table class="formula-table"><thead><tr><th>Thành phần</th><th>Công thức raw</th><th>Điều kiện</th></tr></thead><tbody>
+          <tr><td>E1 · MA Cycle</td><td><code>ln(SMA111(P) / (2 × SMA350(P)))</code></td><td>350 ngày giá liên tục</td></tr>
+          <tr><td>E5 · MA 2 năm</td><td><code>ln(P / SMA730(P))</code></td><td>730 ngày giá liên tục</td></tr>
+          <tr><td>E6 · Log Trend</td><td><code>ln(P) − a − b × ln(age)</code></td><td>OLS chỉ dữ liệu u &lt; t, ít nhất 730 giá; gốc 08/08/2015</td></tr>
+          <tr><td>E7 · MVRV Z</td><td><code>(M − M/V) / std(M trước t)</code></td><td>Population std, toàn bộ quá khứ, ít nhất 365 vốn hóa</td></tr>
+        </tbody></table></div>
+        <div class="method-grid"><section><h2>Nguồn và quyền sử dụng</h2><p><a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a>, ETH native mainnet, USD, daily UTC. P = PriceUSD, M = CapMrktCurUSD, V = CapMVRVCur. Raw được lưu riêng tư tại Cloudflare R2; website chỉ lấy JSON dẫn xuất tính sẵn từ Pages/CDN.</p><p>Dữ liệu và dẫn xuất công bố cho nghiên cứu phi thương mại theo <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a>. ECO đã chuẩn hóa và tổng hợp dữ liệu; Coin Metrics không bảo trợ ECO. Không bảo đảm tính chính xác hay phù hợp đầu tư.</p></section><section><h2>Ngày, lịch sử và phiên bản</h2><p>Ngày quan sát là ngày UTC của nguồn, kết thúc ở nửa đêm ngày kế tiếp. Chỉ dùng ngày đã đóng. Ngày tải snapshot và ngày tính score được ghi riêng trong manifest.</p><p>Toàn bộ biểu đồ hiện tại là reconstructed. Các release được giữ bất biến theo hash; correction phải tạo release mới. Chưa có scheduler tự cập nhật hay chuỗi as-published.</p></section></div>
+        <h2>Mục tiêu nghiên cứu 9 metric</h2>
+        <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
+          <tr><td>E1 / E5 / E6 / E7</td><td>4 thành phần Core</td><td><span class="status-pill ready">Đã tính</span></td></tr>
+          <tr><td>E2 · NUPL</td><td>Diagnostic dẫn xuất</td><td>Không thêm trọng số độc lập</td></tr>
+          <tr><td>E3 / E8 / E9</td><td>Ứng viên mở rộng</td><td>Chưa đủ coverage, entitlement hoặc quyền</td></tr>
+          <tr><td>E4 · Fee candidate</td><td>R&amp;D</td><td>Mẫu FeeTotNtv truy cập được; chưa có công thức Core</td></tr>
+        </tbody></table></div>
+        <details><summary>Manifest và khả năng tái lập</summary><dl id="provenance" class="provenance"></dl><a id="manifest-link" class="text-button" target="_blank" rel="noreferrer"><i data-lucide="file-json"></i>Manifest JSON</a></details>
       </section>
-
-      <section class="progress section" id="tien-do" aria-labelledby="progress-title">
-        <div class="section-label">03 / TIẾN ĐỘ</div>
-        <div class="section-main">
-          <div class="progress-heading">
-            <div>
-              <h2 id="progress-title">Đã audit dữ liệu. Chưa có điểm ETH.</h2>
-              <p>Tiến độ nghiên cứu được cập nhật theo đầu việc đã kiểm chứng, không theo phần trăm ước lượng.</p>
-            </div>
-            <time class="progress-date" datetime="2026-10-03">Cập nhật 03.10.2026</time>
-          </div>
-          <div class="progress-list" aria-label="Trạng thái các công việc nghiên cứu">
-            <article class="progress-row is-done">
-              <span class="progress-index" aria-hidden="true">01</span>
-              <div class="progress-detail"><h3>Probe khả năng truy cập Core</h3><p>Coin Metrics Community · ETH · 1d · 4 input, 3 khoảng ngày · 12/12 request có dữ liệu</p></div>
-              <strong class="progress-state">Đã hoàn thành</strong>
-            </article>
-            <article class="progress-row is-done">
-              <span class="progress-index" aria-hidden="true">02</span>
-              <div class="progress-detail"><h3>Chốt quy ước thời gian và ranh giới quyền</h3><p>Ngày UTC gắn với kỳ cuối ngày; quyền công bố, tải xuống và sử dụng thương mại vẫn cần xác nhận.</p></div>
-              <strong class="progress-state">Đã hoàn thành</strong>
-            </article>
-            <article class="progress-row is-done">
-              <span class="progress-index" aria-hidden="true">03</span>
-              <div class="progress-detail"><h3>Audit toàn bộ lịch sử</h3><p>4.080 ngày unique; 0 duplicate và 0 giá trị invalid. Thiếu row ngày 02.10.2026; snapshot raw đã lưu R2 riêng tư, website chưa đọc dữ liệu này.</p></div>
-              <strong class="progress-state">Đã hoàn thành</strong>
-            </article>
-            <article class="progress-row">
-              <span class="progress-index" aria-hidden="true">04</span>
-              <div class="progress-detail"><h3>Protocol Core và feasibility 9 vị trí</h3><p>Protocol đã khóa, register E1–E9 và live probe D05 đã kiểm tra. FeeTotNtv có 3/3 mẫu; các candidate còn lại vẫn bị giới hạn quyền hoặc chưa xác minh coverage. Chưa có backtest.</p><a class="text-link" href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-001-core-research-protocol.md" target="_blank" rel="noopener noreferrer">Protocol</a><span aria-hidden="true"> · </span><a class="text-link" href="https://github.com/tnmjsc-hue/eco/blob/main/docs/metric-feasibility.md" target="_blank" rel="noopener noreferrer">Feasibility 9 metric</a></div>
-              <strong class="progress-state">Đã hoàn thành</strong>
-            </article>
-            <article class="progress-row">
-              <span class="progress-index" aria-hidden="true">05</span>
-              <div class="progress-detail"><h3>Engine và dashboard</h3><p>Chưa có phép tính hoặc dashboard điểm số. Không dùng dữ liệu mẫu để tạo điểm.</p></div>
-              <strong class="progress-state">Chưa bắt đầu</strong>
-            </article>
-          </div>
-          <section class="d05-evidence" aria-labelledby="d05-evidence-title">
-            <div class="d05-evidence-heading">
-              <div>
-                <div class="section-label">LIVE PROBE D05</div>
-                <h3 id="d05-evidence-title">Nguồn đã kiểm tra, giới hạn được giữ nguyên.</h3>
-              </div>
-              <span class="evidence-status">VERIFIED · 03.10.2026</span>
-            </div>
-            <div class="evidence-grid">
-              <div class="evidence-stat"><strong>7</strong><span>metric ETH/1d trong catalog</span></div>
-              <div class="evidence-stat"><strong>1 / 7</strong><span>timeseries mẫu truy cập được</span></div>
-              <div class="evidence-stat"><strong>3 / 3</strong><span>FeeTotNtv rows hợp lệ</span></div>
-              <div class="evidence-stat"><strong>6</strong><span>candidate timeseries trả 403</span></div>
-            </div>
-            <p class="evidence-note">Catalog không đồng nghĩa quyền tải dữ liệu. Glassnode mới được kiểm tra tài liệu; chưa xác minh entitlement, lịch sử hoặc quyền derived/public. Khối này không tạo điểm ETH.</p>
-          </section>
-          <div class="progress-footer">
-            <p class="score-disclosure"><span class="status-dot" aria-hidden="true"></span> Chưa có điểm ECO nào được tính hoặc công bố.</p>
-            <a class="text-link" href="https://github.com/tnmjsc-hue/eco/blob/main/docs/data-audit.md" target="_blank" rel="noopener noreferrer">Đọc báo cáo audit <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer"><span class="footer-brand">ECO<span>.</span></span><p>Nghiên cứu chu kỳ Ethereum — nội dung hiện tại chỉ giới thiệu dự án, không phải tín hiệu đầu tư.</p><a href="#dau-trang">Lên đầu trang ↑</a></footer>
-  </div>
+      <footer><div><strong>ECO</strong><span>Ethereum Core · Nghiên cứu phi thương mại</span></div><p>Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data">Coin Metrics Community</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a> · Dữ liệu đã chuyển đổi, không được bảo đảm.</p><a href="https://github.com/tnmjsc-hue/eco" target="_blank" rel="noreferrer">Mã nguồn & báo cáo <i data-lucide="arrow-up-right"></i></a></footer>
+    </div>
+    <noscript>Dashboard cần JavaScript. Bản dữ liệu công khai: <a href="/data/latest.json">release pointer</a>.</noscript>
+  </main>
 </body>
 </html>

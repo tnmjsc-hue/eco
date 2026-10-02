@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái tổng: **D01-D05_RESEARCH_COMPLETE / D04_D05_ARTIFACTS_VALIDATED / CORE_PROTOCOL_FROZEN / PRIVATE_SNAPSHOT_BACKED_UP / ENGINE_NOT_STARTED**.
+**Cập nhật: 2026-10-03.** Trạng thái: **CORE_ENGINE_TESTED / PRIMARY_RESEARCH_EVALUATED / DASHBOARD_PREVIEW_READY / DEPLOY_VERIFICATION_PENDING**. Core score reconstructed gần nhất 41.379812239861 ngày 2026-10-01; không phải sản phẩm vận hành realtime.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -8,11 +8,11 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
 
-**Đã có Git repository, trang giới thiệu tĩnh tại `eco.tnmp.cloud`, full-history snapshot Coin Metrics riêng tư đã audit và sao lưu lên R2, cùng protocol Core/research đã khóa. Chưa có engine, lockfile, điểm ETH, test engine, backtest, dashboard hoặc scheduler.** Trang giới thiệu không phải bản phát hành chỉ số. Không có API trả phí được mua. Không có công việc nào đang chạy nền. Không có agent khác đang giữ task.
+**Đã có engine Python, lockfile web, 19 test Python + 3 test web, primary backtest khóa trước và dashboard ETH với score thật.** Lịch sử 2.978 điểm là reconstructed; Core không đạt success rule so với tất cả baseline. Dashboard có custom toàn lịch sử, ngày/null/warm-up, chart, CSV, report, methodology và checksum. Raw D03 đã backup R2 private. Scope công bố phi thương mại được người dùng xác nhận; [ADR-002](ADR-002-experimental-research-preview.md) ghi quyết định preview. Chưa có scheduler/incremental vintage/as-published/shadow 30 ngày/restore drill. Không mua API trả phí, không có agent khác.
 
 ## 2. Bắt đầu từ đâu
 
-Khi người dùng yêu cầu triển khai, kiểm tra task `IN_PROGRESS` và TODO đầu tiên có dependency đủ. D01-D05 đã có report; D04 chỉ khóa protocol, không có nghĩa đã code/test engine. S01 pipeline còn dang dở. Snapshot D03 đã upload R2 private và không được frontend đọc; snapshot hiện tại chưa được phép công khai.
+Khi tiếp tục, kiểm tra trạng thái Git/deploy mới nhất bên dưới. Phần preview đã tính từ D03 và qua tests; công việc vận hành tiếp theo là S02 adapter fixtures, S04 incremental/vintage, rồi O02 scheduled batch/O03 fault+restore drills/O04 shadow. Q02 còn correlation/ablation/regime analysis; Q04 cần protocol mở rộng trước khi code metric mới. Không đổi weights trên cùng holdout để ép kết quả.
 
 Nếu dữ liệu bị chặn, giữ evidence lỗi và làm task độc lập như schema/fixtures/UI; không dùng BTC thay ETH. Chỉ hỏi người dùng khi thực sự cần lựa chọn chi phí, tài khoản, mục đích thương mại hoặc phát hành, kèm kết quả cụ thể đã chuẩn bị.
 
@@ -28,10 +28,10 @@ Nếu dữ liệu bị chặn, giữ evidence lỗi và làm task độc lập n
 | Weights | Nhóm giá 50%, định giá 50%; không cộng NUPL thành phiếu mới |
 | Thiếu input | Core null, giữ last valid có ngày/stale rõ ràng |
 | Lịch sử | Reconstructed lúc backfill; as_published chỉ từ lúc vận hành |
-| Tech | Python batch + React/TypeScript; JSON tĩnh có manifest |
+| Tech | Python batch + static ES modules/ECharts/Lucide; JSON tĩnh có manifest, ADR-002 |
 | Dữ liệu trả phí | Chưa chọn và chưa mua; không chặn Core nếu Community đủ |
 | Giao diện | Tiếng Việt trước, cấu trúc tương tự CBBI, tên/nhận diện riêng |
-| Phạm vi hiện tại | Trang giới thiệu đã chạy tại `eco.tnmp.cloud`; engine/dashboard chưa triển khai |
+| Phạm vi hiện tại | Dashboard Core reconstructed Experimental; gate sản phẩm vận hành còn riêng |
 
 ## 4. Backlog thực thi
 
@@ -56,7 +56,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 |---|---|---|---|---|
 | S01 | IN_PROGRESS | R00 | Init cấu trúc dự án, Git nếu chưa có, lockfile, lint/test, `.gitignore`, `.env.example` | Lệnh setup Windows và Linux được thử; chưa commit dữ liệu riêng hoặc secret |
 | S02 | TODO | D03,S01 | Coin Metrics adapter với pagination, retry và cache raw | Fixtures 200/403/429/schema mismatch; backfill không mất/trùng ngày |
-| S03 | TODO | S02,D02 | Canonical schema và quality validation | Date/period_end đúng; negative/zero/null có reason; lưu provenance |
+| S03 | IN_PROGRESS | S02,D02 | Canonical schema và quality validation | Offline loader đã kiểm hash/schema/calendar/closed-day/provenance bằng tests; adapter/network fixtures S02 còn thiếu |
 | S04 | TODO | S03 | Incremental update và revision store | Chạy hai lần idempotent; đổi raw input tạo revision, không ghi đè vintage |
 
 **Gate G1:** từ snapshot dựng được cùng canonical dataset, checksum và quality report. Live source fail không phá snapshot hợp lệ cũ.
@@ -65,12 +65,12 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| M01 | TODO | D04,S03 | E1/E5 raw functions | Rolling đúng ngày lịch, đủ warm-up, fixture tính tay |
-| M02 | TODO | D04,S03 | E6 causal log trend | Fit chỉ `u<t`, ngày gốc khóa, prefix invariance |
-| M03 | TODO | D04,S03 | E7 và E2 diagnostic | R=M/V có provenance; sigma quá khứ; E2 không được tính vào Core |
-| M04 | TODO | M01,M02,M03 | Causal normalizer và configuration version | q05/q95 đúng cửa sổ, min observations, clipping/null/degenerate tests |
-| M05 | TODO | M04 | Group composite và custom aggregation | 4/4 policy, weights, empty selection, fixture trung bình |
-| M06 | TODO | M05,S04 | Replay theo ngày và audit không nhìn tương lai | Same snapshot + same version tái lập; future append không đổi prefix |
+| M01 | DONE | D04,S03 | E1/E5 raw functions | Fixture SMA tính tay, gap ngày lịch và warm-up đạt trên offline D03 |
+| M02 | DONE | D04,S03 | E6 causal log trend | OLS so NumPy, fit chỉ u<t, gốc cố định và prefix đạt |
+| M03 | DONE | D04,S03 | E7 và E2 diagnostic | R=M/V, population std toàn quá khứ; E2 không bỏ phiếu, tests đạt |
+| M04 | DONE | M01,M02,M03 | Causal normalizer và configuration version | q05/q95 linear, ngày biên, min obs, clipping/null/degenerate đạt |
+| M05 | DONE | M04 | Group composite và custom aggregation | 4/4, weights, empty/invalid/missing và custom toàn chuỗi đạt |
+| M06 | IN_PROGRESS | M05,S04 | Replay theo ngày và audit không nhìn tương lai | Offline replay/prefix/future shock đã đạt; vận hành incremental/vintage S04 chưa có |
 
 **Gate G2:** engine đúng công thức và không rò rỉ thời gian trong tính toán. Gate này chưa chứng minh chỉ số dự báo hữu ích.
 
@@ -78,9 +78,9 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| Q01 | TODO | D04,M06 | Primary evaluation harness, future-drawdown labels và calendar-year stability folds | Chỉ chấm label hoàn tất; baselines cùng ngày khả dụng; không thêm train/test split cho quy trình không fit model |
-| Q02 | TODO | Q01 | Báo cáo Core, baselines, correlation, ablation, regime analysis | Kết quả có uncertainty và giới hạn dữ liệu revised; không chỉ đưa chart đẹp |
-| Q03 | TODO | Q02 | Quyết định Experimental / cần sửa, ADR-002 | Lý do dựa evidence; nếu đổi model thì version mới, không lặp chọn trên cùng holdout |
+| Q01 | DONE | D04,M06 | Primary evaluation harness, future-drawdown labels và calendar-year stability folds | Offline reconstructed evaluation 2101 ngày, 10000 bootstrap cùng ngày/baseline; future-label tests đạt |
+| Q02 | IN_PROGRESS | Q01 | Báo cáo Core, baselines, correlation, ablation, regime analysis | Primary report + CI/folds/sensitivity đã có; correlation/ablation/regime mở rộng chưa làm |
+| Q03 | DONE | Q02 | Quyết định Experimental / cần sửa, ADR-002 | Preview nghiên cứu; chưa chứng minh incremental utility; không đổi model/holdout, không thay gate vận hành |
 | Q04 | TODO | D05,Q02 | Nghiên cứu ứng viên mở rộng theo protocol riêng | Công thức và source đủ rõ mới code; kết quả nhận/loại từng metric |
 
 **Gate G3:** báo cáo giải thích được điều chỉ số đo, điều chưa đo và mức phát hành phù hợp. Không ép kết quả đạt bằng việc chọn lại các đỉnh.
@@ -89,11 +89,11 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| A01 | TODO | M05,D02 | JSON Schema, manifest, history/latest/methodology và export contract | null/status/version thống nhất; chỉ dữ liệu được phép công khai |
+| A01 | DONE | M05,D02 | JSON Schema, manifest, history/latest/methodology và export contract | Schema 1.0.0, hash/pointer/version/null; CSV có provenance/licence; scope phi thương mại |
 | U01 | TODO | R00 | UI audit CBBI và wireframe ETH | Có ảnh/ghi nhận chức năng thực, responsive, danh sách khác biệt có lý do |
-| U02 | TODO | U01,A01 | Dashboard bằng fixture rõ nhãn | Hero, charts, metric cards, trạng thái lỗi; không giả fixture là live |
-| U03 | TODO | U02,M06 | Tích hợp dữ liệu thật và custom mode | Toggle đúng toàn lịch sử; ngày hover và điểm gần nhất không lẫn |
-| U04 | TODO | U03,Q03 | Methodology/FAQ, CSV, accessibility, responsive | UI/JSON/CSV khớp; 360/768/1440px; keyboard và null gaps đúng |
+| U02 | DONE | U01,A01 | Dashboard nghiên cứu | Thay intro bằng app thật, không mock/fixture live; chart/null/error states được kiểm browser |
+| U03 | DONE | U02,M06 | Tích hợp dữ liệu thật và custom mode | Reconstructed snapshot; custom toàn 366 ngày so engine; selected date/nearest/null kiểm trực tiếp |
+| U04 | DONE | U03,Q03 | Methodology/CSV/accessibility/responsive | 360/390/768/1440 không overflow; semantic controls, UI/JSON/CSV khớp; chưa audit accessibility bằng screen reader |
 
 **Gate G4:** người dùng hiểu được điểm, nguồn, ngày, version, custom mode và tình trạng dữ liệu; không có số giả được trình bày như chỉ số thật.
 
@@ -101,7 +101,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
-| O01 | TODO | S04,A01 | Atomic release publisher, checksums, release pointer | Gián đoạn upload không sinh mixed-version; rollback bằng pointer |
+| O01 | IN_PROGRESS | S04,A01 | Atomic release publisher, checksums, release pointer | Local publisher/immutable allowlist/hash/pointer tests đạt; fault/rollback drill và incremental còn thiếu |
 | O02 | TODO | O01,M06 | CI và scheduled batch theo hosting thực | Logs không secret; retry hữu hạn; freshness status độc lập score record |
 | O03 | TODO | O02,U04 | Runbook, backup và fault drills | Thử provider outage, missing day, bad payload, rollback và restore |
 | O04 | TODO | O03 | Chạy shadow >=30 ngày, lưu as_published | Báo cáo đủ scheduled/actual runs, lag, incidents; không tự coi 30 ngày là chứng minh mô hình |
@@ -110,9 +110,9 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 
 **Gate G6:** ứng dụng vận hành và dữ liệu trung thực; nếu E3/E8 hoặc metric khác chưa đạt thì công bố đúng phạm vi Core, không ghi “bản ETH giống hệt 9 metric của CBBI”.
 
-## 5. Lệnh CLI mục tiêu — chưa tồn tại
+## 5. Lệnh CLI thực tế và mục tiêu
 
-Các lệnh dưới đây là giao diện đề xuất cho agent triển khai, **chưa chạy được ở trạng thái hiện tại**. S01 phải tạo package/entry point trước, sau đó thay phần này bằng lệnh thực tế đã xác minh.
+Lệnh thực tế đã chạy có trong [README](../README.md): `python -m eco.pipeline compute`, `python -m eco.pipeline publish`, unittest, Node tests, browser QA. Các lệnh `uv/eth-cycle` bên dưới là thiết kế cũ, **vẫn chưa có entry point**; không nhầm với CLI đã implement.
 
 ```text
 uv sync --frozen
@@ -128,6 +128,17 @@ uv run ruff check .
 `--frozen` chỉ có ý nghĩa sau khi S01 tạo lockfile hợp lệ. Không dán nguyên placeholder `<...>` vào shell; thay bằng ID thực. Lệnh web/build sẽ bổ sung sau khi scaffold theo môi trường triển khai được chọn.
 
 ## 6. Kiểm tra đã thực hiện trong phiên lập kế hoạch
+
+### Phiên dashboard 2026-10-03 — trước deploy
+
+- Yêu cầu: hoàn thiện dashboard có score thật trong một phiên; người dùng xác nhận nghiên cứu phi thương mại. Scope/điều chỉnh rights và hosting được ghi ADR-002; không mua API, đổi provider/weights hay giả 9 metric.
+- Files: `eco/*`, `tests/*`, `requirements.txt`, package/lockfile/build/browser QA, CI, `.gitattributes`, `.env.example`, `configs/release-policy.json`, `public/index.html/styles.css/app.js/data-model.js/_headers/vendor`, data schema/pointer/status/versioned release; README/AGENTS/DEPLOYMENT/STORAGE/rights/research/report/ADR/HANDOFF.
+- Data: D03 canonical SHA-256 `aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03`; release `core-c899a808bda65db96be3`, schema 1.0.0, `core-v0.1.0`, `reconstructed`. 4080 source rows, 4081 calendar rows (1 pending), 2978 scores. Latest 41.379812239861 ngày 2026-10-01. 2026-10-02 chưa đóng tại retrieval UTC, không có score; không sửa manifest/raw cũ.
+- Engine: Python 3.12.14 / NumPy 2.3.5, `python -m unittest discover -s tests -v` 19/19 PASS. SMA tính tay/calendar gap, causal OLS so NumPy, population std, linear quantiles/boundary/degenerate, weights/custom/null, prefix/future shock, actual retrieval cutoff, hash/path/schema, rights/allowlist/immutable/idempotent publication đều có tests. Replay 3000 ngày đầu snapshot thật khớp full engine; compute lần hai `idempotent=true`.
+- Research: 2101 complete-label days, 10000/10000 bootstrap hợp lệ, AP Core 0.55424872, success=false; report công khai không tuyên bố cải thiện.
+- Web: Node 24.19.0, pnpm 11.19.0; install frozen lockfile và build vendor thành công. `node --test tests/web.test.mjs` 3/3 PASS; research artifact validator D04/D05 PASS; syntax PASS. Browser Playwright 1.62.1 + Chrome local: 1440/768/390/360 PASS, không overflow/page errors; chart 43667 nonblank pixels; custom E7 toàn 366 ngày khớp; CSV verified; thiếu nguồn/warm-up/empty selection null; refresh lỗi giữ dataset tốt, retry phục hồi.
+- Preview local `http://127.0.0.1:8876/` đang chạy bằng Python HTTP server hidden, PID 30216. Raw/computed/test screenshots bị ignore; versioned public JSON bảo toàn bytes qua `.gitattributes`. Không có token trong frontend/Git.
+- Chưa có Linux CI result, production deploy mới hoặc Pages status của commit mới tại thời điểm ghi phần này; phải xác minh sau push trước báo hoàn thành. Scheduler/vintage/shadow/restore/fault drills và Q02 mở rộng vẫn còn.
 
 | Việc | Kết quả | Không được suy rộng thành |
 |---|---|---|

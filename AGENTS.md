@@ -16,7 +16,7 @@ If `.codegraph/` exists, use it before grep/find:
 
 ## Ràng buộc thực hiện
 
-- Trang giới thiệu ECO đã được triển khai công khai; engine và dashboard ETH vẫn chưa có. Người dùng đã yêu cầu agent sau khi code xong tự triển khai website lên `eco.tnmp.cloud` theo `docs/DEPLOYMENT.md`. Quyền này áp dụng cho lần deploy code website thông thường sau kiểm tra, không phải quyền mua API hoặc bỏ qua các cổng dữ liệu/phương pháp trước khi công bố điểm ETH.
+- Dashboard Core Experimental đã được xây với lịch sử ETH reconstructed; xem trạng thái deploy thực tế trong HANDOFF. Người dùng đã cho phép tự triển khai lên `eco.tnmp.cloud` theo DEPLOYMENT và xác nhận nghiên cứu phi thương mại (ADR-002). Không suy rộng thành quyền thương mại/mua API hoặc bỏ cổng phương pháp/vận hành của sản phẩm đầy đủ.
 - Khi người dùng yêu cầu triển khai tiếp, thực hiện các task sẵn sàng; không hỏi lại về lựa chọn kỹ thuật thường lệ đã có mặc định trong kế hoạch.
 - Viết giải thích và tài liệu sản phẩm bằng tiếng Việt; tên biến, metric ID và schema bằng tiếng Anh.
 - Không thay ETH bằng dữ liệu BTC, không suy diễn metric chưa có thành số 0 hoặc số 50.
@@ -36,10 +36,10 @@ Cập nhật `docs/HANDOFF.md` sau mỗi phiên: task, file đã sửa, lệnh k
 
 Khi sửa website, dùng GitHub `main` → Cloudflare Pages `eco-tnmp` theo `docs/DEPLOYMENT.md`, xác minh build và `https://eco.tnmp.cloud/` trước khi báo hoàn thành. Push `main` là hành động phát hành; không push khi chưa kiểm tra diff, secret và các cổng phát hành dữ liệu áp dụng.
 
-Bucket R2 `eco-eth-private` đã tạo, mặc định riêng tư. Token giới hạn bucket đã lưu DPAPI ngoài repo và thao tác ghi/đọc/xóa thử thành công; pipeline thật chưa có. Dùng theo `docs/STORAGE.md`; không bind bucket raw vào frontend/Pages Functions hoặc tạo token rộng quyền theo quán tính.
+Bucket R2 `eco-eth-private` riêng tư, snapshot D03 đã upload và 7/7 readback hash đạt. Token giới hạn bucket lưu DPAPI ngoài repo. Pipeline compute/publish offline đã có, scheduled/incremental chưa có. Dùng STORAGE; không bind bucket raw vào frontend/Pages Functions hoặc tạo token rộng quyền theo quán tính.
 
 ## Công cụ và cấu trúc
 
-Stack đề xuất là Python cho pipeline và TypeScript/React cho web. Đây là lựa chọn thiết kế, chưa cài đặt. Nếu môi trường hiện tại có quy trình Sites được người dùng áp dụng khi triển khai website, sử dụng quy trình đó cho lớp web/hosting và giữ nguyên hợp đồng dữ liệu của engine.
+Stack thực tế: Python batch + native ES modules/ECharts/Lucide trên Pages static `public`; ADR-002 ghi lý do không thêm React/TypeScript vào preview một chỉ số. Giữ hợp đồng engine và cấu hình hosting thực tế khi tiếp tục.
 
 Chỉ dùng subagent khi người dùng hoặc chỉ dẫn áp dụng yêu cầu; bộ tài liệu này không tự cấp quyền tạo agent song song.
