@@ -23,6 +23,8 @@ const e2Evidence = await readJson('docs/evidence/e2-nupl-diagnostic-2026-10-03.j
 const e4Evidence = await readJson('docs/evidence/e4-fee-backfill-2026-10-03.json');
 const e4Evaluation = await readJson('docs/evidence/e4-candidate-evaluation-2026-10-03.json');
 const remainingSourceAudit = await readJson('docs/evidence/remaining-source-audit-2026-10-03.json');
+const e9Protocol = await readJson('configs/research/e9-nvt-candidate-v0.1.0.json');
+const e9Access = await readJson('docs/evidence/e9-source-access-2026-10-03.json');
 
 assert.equal(protocol.status, 'frozen_for_research_only');
 assert.equal(protocol.methodology_version, 'core-v0.1.0');
@@ -222,3 +224,23 @@ assert.equal(remainingSourceAudit.coinmetrics.sample_status.TxTfrValAdjUSD.http_
 process.stdout.write('D04 protocol invariants: PASS\nD05 feasibility register E1-E9: PASS\n');
 process.stdout.write('X00 source contracts E2/E3/E4/E8/E9: PASS\n');
 process.stdout.write('E2 diagnostic contract and E4 candidate protocol: PASS\n');
+assert.equal(createHash('sha256').update(JSON.stringify(e9Protocol) + '\n').digest('hex'),
+  'f7c2efc2882de1dc6073ecf49ffe811894ccd5418cc18415f3bb61f4c74d7f85');
+assert.equal(await sha256('docs/evidence/e9-source-access-2026-10-03.json'),
+  'd6b748cafc3081dc833ba14b4a06725e948f40d4b88205502ab55d736311c9f2');
+assert.equal(e9Protocol.methodology_version, 'e9-nvt-candidate-v0.1.0');
+assert.equal(e9Protocol.rights.public_candidate_release, 'blocked');
+assert.deepEqual(e9Protocol.input.metrics, ['CapMrktCurUSD', 'TxTfrValAdjUSD']);
+assert.equal(e9Protocol.raw_feature.formula, 'ln(CapMrktCurUSD / SMA90(TxTfrValAdjUSD))');
+assert.equal(e9Protocol.normalizer.window_excludes_current_day, true);
+assert.equal(e9Access.source_gate, 'blocked_source_entitlement');
+assert.equal(e9Access.technical_pair_access, false);
+assert.equal(e9Access.full_history_verified, false);
+assert.equal(e9Access.authorization, 'none');
+assert.equal(e9Access.probes.find(p => p.id === 'CapMrktCurUSD').technical_sample_access, true);
+for (const id of ['TxTfrValAdjUSD', 'TxTfrValAdjNtv', 'NVTAdj90', 'NVTAdj', 'NVTAdjFF90']) {
+  assert.equal(e9Access.probes.find(p => p.id === id).http_status, 403);
+  assert.equal(e9Access.probes.find(p => p.id === id).technical_sample_access, false);
+}
+assert.equal(e9Access.documentation_probes.find(p => p.id === 'current_eth_csv').required_fields_present, false);
+process.stdout.write('E9 frozen candidate protocol and historical access evidence: PASS (source remains blocked)\n');

@@ -1,0 +1,379 @@
+{
+  "audit_id": "E9-01",
+  "schema_version": "1.0.0",
+  "retrieved_at": "2026-10-03T04:44:58.424Z",
+  "authorization": "none",
+  "asset": "eth",
+  "frequency": "1d",
+  "probes": [
+    {
+      "id": "catalog_available",
+      "url": "https://community-api.coinmetrics.io/v4/catalog-v2/asset-metrics?assets=eth",
+      "http_status": 200,
+      "requested_at": "2026-10-03T04:44:58.428Z",
+      "completed_at": "2026-10-03T04:44:59.167Z",
+      "response_sha256": "b59263a3ec91f952846d41cb041beeb80886ef947ae0a2a65a1c0086c86a4deb",
+      "raw_file": "catalog_available.json",
+      "entries": [
+        {
+          "metric": "CapMrktCurUSD",
+          "frequency": "1d",
+          "first_time": "2015-08-08T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        }
+      ],
+      "catalog_is_not_entitlement_proof": false
+    },
+    {
+      "id": "catalog_all",
+      "url": "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics?assets=eth&metrics=CapMrktCurUSD%2CTxTfrValAdjUSD%2CTxTfrValAdjNtv%2CNVTAdj90%2CNVTAdj%2CNVTAdjFF90",
+      "http_status": 200,
+      "requested_at": "2026-10-03T04:44:59.972Z",
+      "completed_at": "2026-10-03T04:45:00.268Z",
+      "response_sha256": "62cc13a47888221da1d1d40b6cebe1c855ff3fc07f6600806cb697594e9b6d56",
+      "raw_file": "catalog_all.json",
+      "entries": [
+        {
+          "metric": "CapMrktCurUSD",
+          "frequency": "1d",
+          "first_time": "2015-08-08T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "metric": "NVTAdj",
+          "frequency": "1d",
+          "first_time": "2015-08-07T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "metric": "NVTAdj90",
+          "frequency": "1d",
+          "first_time": "2015-11-05T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "metric": "NVTAdjFF90",
+          "frequency": "1d",
+          "first_time": "2015-11-06T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "metric": "TxTfrValAdjNtv",
+          "frequency": "1d",
+          "first_time": "2015-07-30T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "metric": "TxTfrValAdjUSD",
+          "frequency": "1d",
+          "first_time": "2015-08-08T00:00:00.000000000Z",
+          "last_time": "2026-10-02T00:00:00.000000000Z"
+        }
+      ],
+      "catalog_is_not_entitlement_proof": true
+    },
+    {
+      "id": "CapMrktCurUSD",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=CapMrktCurUSD&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 200,
+      "requested_at": "2026-10-03T04:45:01.073Z",
+      "completed_at": "2026-10-03T04:45:01.372Z",
+      "response_sha256": "e0c09b24734c415b82efbff1e1f010e93c1986fbeeabee9dc28143899e2e67cf",
+      "raw_file": "CapMrktCurUSD.json",
+      "rows": 3,
+      "quality": {
+        "response_row_count": 3,
+        "unique_date_count": 3,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 0,
+        "missing_row_dates": [],
+        "fields": {
+          "CapMrktCurUSD": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": "2021-01-01",
+            "last_valid_date": "2021-01-03",
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": true
+    },
+    {
+      "id": "TxTfrValAdjUSD",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=TxTfrValAdjUSD&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 403,
+      "requested_at": "2026-10-03T04:45:02.173Z",
+      "completed_at": "2026-10-03T04:45:06.651Z",
+      "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c",
+      "raw_file": "TxTfrValAdjUSD.json",
+      "rows": 0,
+      "quality": {
+        "response_row_count": 0,
+        "unique_date_count": 0,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 3,
+        "missing_row_dates": [
+          "2021-01-01",
+          "2021-01-02",
+          "2021-01-03"
+        ],
+        "fields": {
+          "TxTfrValAdjUSD": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": null,
+            "last_valid_date": null,
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": false
+    },
+    {
+      "id": "TxTfrValAdjNtv",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=TxTfrValAdjNtv&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 403,
+      "requested_at": "2026-10-03T04:45:07.454Z",
+      "completed_at": "2026-10-03T04:45:08.565Z",
+      "response_sha256": "5b0cd67d4bb47876eac3b4ed8d87f9a30f7591d1b253de84633129b2c1ee0399",
+      "raw_file": "TxTfrValAdjNtv.json",
+      "rows": 0,
+      "quality": {
+        "response_row_count": 0,
+        "unique_date_count": 0,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 3,
+        "missing_row_dates": [
+          "2021-01-01",
+          "2021-01-02",
+          "2021-01-03"
+        ],
+        "fields": {
+          "TxTfrValAdjNtv": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": null,
+            "last_valid_date": null,
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": false
+    },
+    {
+      "id": "NVTAdj90",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=NVTAdj90&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 403,
+      "requested_at": "2026-10-03T04:45:09.376Z",
+      "completed_at": "2026-10-03T04:45:09.842Z",
+      "response_sha256": "0a7bfc46385349661bcb745f2a73cf6df3e33987cce3db82a44e4129dcf1ac56",
+      "raw_file": "NVTAdj90.json",
+      "rows": 0,
+      "quality": {
+        "response_row_count": 0,
+        "unique_date_count": 0,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 3,
+        "missing_row_dates": [
+          "2021-01-01",
+          "2021-01-02",
+          "2021-01-03"
+        ],
+        "fields": {
+          "NVTAdj90": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": null,
+            "last_valid_date": null,
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": false
+    },
+    {
+      "id": "NVTAdj",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=NVTAdj&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 403,
+      "requested_at": "2026-10-03T04:45:10.658Z",
+      "completed_at": "2026-10-03T04:45:11.110Z",
+      "response_sha256": "7f939fb4a7006f79040519953b051dfe8a51dd526cb4d58c01e9f849c44b38b6",
+      "raw_file": "NVTAdj.json",
+      "rows": 0,
+      "quality": {
+        "response_row_count": 0,
+        "unique_date_count": 0,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 3,
+        "missing_row_dates": [
+          "2021-01-01",
+          "2021-01-02",
+          "2021-01-03"
+        ],
+        "fields": {
+          "NVTAdj": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": null,
+            "last_valid_date": null,
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": false
+    },
+    {
+      "id": "NVTAdjFF90",
+      "url": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=NVTAdjFF90&frequency=1d&start_time=2021-01-01&end_time=2021-01-03",
+      "http_status": 403,
+      "requested_at": "2026-10-03T04:45:11.923Z",
+      "completed_at": "2026-10-03T04:45:12.284Z",
+      "response_sha256": "088578cb0e4ef98a746c00c06f8ccdccb8c94db1dfe9e25b1c60d850b5cdfdf5",
+      "raw_file": "NVTAdjFF90.json",
+      "rows": 0,
+      "quality": {
+        "response_row_count": 0,
+        "unique_date_count": 0,
+        "duplicate_row_count": 0,
+        "out_of_order_row_count": 0,
+        "invalid_timestamp_count": 0,
+        "wrong_asset_count": 0,
+        "missing_row_date_count": 3,
+        "missing_row_dates": [
+          "2021-01-01",
+          "2021-01-02",
+          "2021-01-03"
+        ],
+        "fields": {
+          "NVTAdjFF90": {
+            "missing_field_count": 0,
+            "null_count": 0,
+            "invalid_count": 0,
+            "zero_count": 0,
+            "negative_count": 0,
+            "first_valid_date": null,
+            "last_valid_date": null,
+            "revision_status_counts": {}
+          }
+        }
+      },
+      "technical_sample_access": false
+    }
+  ],
+  "full_history_verified": false,
+  "private_cache_rights": "unverified",
+  "public_rights": "unverified",
+  "documentation_probes": [
+    {
+      "id": "nvt_definition",
+      "url": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/economics/valuation.md",
+      "final_url": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/economics/valuation.md",
+      "http_status": 200,
+      "response_sha256": "057b7abc6e870b8a2d29d74a0da4b9c0d443e2ddf8fabde71a030c849546c89a",
+      "raw_file": "nvt_definition.txt"
+    },
+    {
+      "id": "transfer_definition",
+      "url": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/transactions/transfer-value.md",
+      "final_url": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/transactions/transfer-value.md",
+      "http_status": 200,
+      "response_sha256": "c3c88385669f9d8b9f9b40fb825add49f5ee241720c031ecf4132cee2f13ed7e",
+      "raw_file": "transfer_definition.txt"
+    },
+    {
+      "id": "community_archive_licence",
+      "url": "https://raw.githubusercontent.com/coinmetrics/data/master/README.md",
+      "final_url": "https://raw.githubusercontent.com/coinmetrics/data/master/README.md",
+      "http_status": 200,
+      "response_sha256": "9c9d798a88a688f4d25791a953d1f01acda99b9ef5cb5d2481ec577b28af84ae",
+      "raw_file": "community_archive_licence.txt"
+    },
+    {
+      "id": "current_eth_csv",
+      "url": "https://raw.githubusercontent.com/coinmetrics/data/master/csv/eth.csv",
+      "final_url": "https://raw.githubusercontent.com/coinmetrics/data/master/csv/eth.csv",
+      "http_status": 200,
+      "response_sha256": "46b18f3df967405374b1f6ee8a3d11ee1b7a5b176ac9fb4342caf6bf8648f2cc",
+      "raw_file": "current_eth_csv.csv",
+      "header": [
+        "time",
+        "AdrActCnt",
+        "AdrBalCnt",
+        "AssetCompletionTime",
+        "AssetEODCompletionTime",
+        "BlkCnt",
+        "CapMVRVCur",
+        "CapMrktCurUSD",
+        "CapMrktEstUSD",
+        "FeeTotNtv",
+        "FlowInExNtv",
+        "FlowInExUSD",
+        "FlowOutExNtv",
+        "FlowOutExUSD",
+        "HashRate",
+        "IssTotNtv",
+        "IssTotUSD",
+        "PriceBTC",
+        "PriceUSD",
+        "ROI1yr",
+        "ROI30d",
+        "ReferenceRate",
+        "ReferenceRateBTC",
+        "ReferenceRateEUR",
+        "ReferenceRateUSD",
+        "SplyCur",
+        "SplyExNtv",
+        "SplyExUSD",
+        "SplyExpFut10yr",
+        "TxCnt",
+        "TxTfrCnt",
+        "volume_reported_spot_usd_1d"
+      ],
+      "required_fields_present": false
+    },
+    {
+      "id": "academic_access",
+      "url": "https://www.talos.com/academic-program",
+      "final_url": "https://www.talos.com/academic-program",
+      "http_status": 200,
+      "response_sha256": "7a74f3bc572b10cdedd1d753e55ab60854d2487937f054a17957f7235086cf94",
+      "raw_file": "academic_access.txt"
+    }
+  ],
+  "technical_pair_access": false,
+  "source_gate": "blocked_source_entitlement",
+  "decision": "do_not_publish_or_invent_E9_score",
+  "manifest_sha256": "dae3f4ec7a1816a47a30d29873021c572396646d901cdf39c1203af531906cc4",
+  "private_snapshot_directory": "data/raw/e9-source/e9-source-2026-10-03T044458424Z"
+}

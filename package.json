@@ -7,7 +7,8 @@
     "build": "node scripts/build-web.mjs",
     "test": "node --test tests/web.test.mjs",
     "validate": "node scripts/validate-research-artifacts.mjs",
-    "audit:remaining-sources": "node scripts/audit-remaining-source-gates.mjs"
+    "audit:remaining-sources": "node scripts/audit-remaining-source-gates.mjs",
+    "audit:e9": "node scripts/e9-coinmetrics.mjs audit"
   },
   "dependencies": {
     "echarts": "6.1.0",

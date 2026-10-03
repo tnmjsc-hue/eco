@@ -41,6 +41,8 @@ Chạy live probe D05 không cần API key bằng `node scripts/audit-d05-feasib
 
 ## Đọc theo thứ tự
 
+E9 NVT proxy có adapter có key/licence, engine và harness nghiên cứu riêng; nguồn adjusted transfer ETH hiện vẫn bị chặn, chưa có backfill/backtest E9 thật. Hướng chạy và điều kiện tiếp tục ở [E9_RUNBOOK.md](docs/E9_RUNBOOK.md). `pnpm audit:e9` chỉ kiểm truy cập, không phát hành E9 hoặc thay Core.
+
 1. [Kế hoạch chi tiết](docs/MASTER_PLAN.md): phạm vi, 9 chỉ số đối chiếu, công thức bản đầu, dữ liệu, kiến trúc, giao diện, kiểm định và tiêu chí hoàn thành.
 2. [Nghiên cứu và bằng chứng](docs/RESEARCH.md): nguồn chính thức, phiên bản CBBI đã đọc, kết quả thử API và giới hạn chưa xác minh.
 3. [Danh sách công việc và bàn giao](docs/HANDOFF.md): thứ tự thực hiện, điều kiện nghiệm thu, trạng thái và prompt cho agent kế tiếp.

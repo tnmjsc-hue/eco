@@ -1,0 +1,76 @@
+{
+  "research_protocol_version": "e9-nvt-v0.1.0-protocol-1",
+  "methodology_version": "e9-nvt-candidate-v0.1.0",
+  "status": "implementation_ready_source_blocked",
+  "locked_at_utc": "2026-10-03",
+  "asset": "eth",
+  "provider": "coinmetrics_network_data",
+  "frequency": "1d",
+  "input": {
+    "metrics": ["CapMrktCurUSD", "TxTfrValAdjUSD"],
+    "units": {"CapMrktCurUSD": "USD", "TxTfrValAdjUSD": "USD per daily period"},
+    "start_date": "2015-08-08",
+    "source_available_at": "unknown",
+    "vintage": "reconstructed_current_snapshot",
+    "source_status": "blocked_until_entitlement_and_private_cache_rights_verified",
+    "substitution_policy": "reject_unadjusted_native_free_float_or_provider_direct_NVT_under_this_version"
+  },
+  "source_contract": {
+    "endpoint": "/v4/timeseries/asset-metrics",
+    "asset_scope": "Ethereum L1 native ETH; not ERC20, stablecoin, L2 transaction volume or exchange volume",
+    "adjustment": "account_based_hourly_net_balance_change_adjustment_as_documented_by_provider",
+    "adjustment_details": "sum of native units received by accounts whose balance changed that hour; daily USD conversion follows provider definition",
+    "filters_not_proven": ["complete_bridge_filter", "complete_MEV_filter", "entity_level_self_transfer_filter"],
+    "historical_revision_policy": "retain_each_snapshot; no_known_as_published_vintages",
+    "time_mapping": "source label date is UTC observation day; exclusive period end is next midnight",
+    "zero_transfer_policy": "retain_observed_zero; never_impute_missing",
+    "market_cap_policy": "positive_or_null",
+    "private_snapshot_required": true,
+    "raw_and_canonical_sha256_required": true
+  },
+  "raw_feature": {
+    "id": "E9",
+    "formula": "ln(CapMrktCurUSD / SMA90(TxTfrValAdjUSD))",
+    "window_semantics": "calendar_UTC_days_inclusive_of_t",
+    "denominator_window_days": 90,
+    "requires_complete_calendar_windows": true,
+    "guard": "null_when_market_cap_missing_or_window_incomplete_or_denominator_nonpositive",
+    "orientation": "higher_raw_means_higher_market_value_relative_to_adjusted_L1_native_transfer_value",
+    "not_called": ["CVDD", "cycle_top_probability"]
+  },
+  "normalizer": {
+    "lookback_calendar_days": 1460,
+    "window_excludes_current_day": true,
+    "min_raw_observations": 365,
+    "lower_quantile": 0.05,
+    "upper_quantile": 0.95,
+    "quantile_method": "linear",
+    "clip_min": 0,
+    "clip_max": 100,
+    "degenerate_epsilon": 1e-12,
+    "score_meaning": "relative historical NVT score, not probability"
+  },
+  "evaluation": {
+    "status": "exploratory_until_new_holdout_or_prospective_vintage",
+    "primary_start": "2020-01-01",
+    "label": {"horizon_calendar_days": 365, "drawdown_threshold": -0.5},
+    "compare_with": ["core", "normalized_E7_only", "normalized_price_group_only"],
+    "experimental_composite": {"price_group_weight": 0.5, "E7_weight": 0.25, "E9_weight": 0.25},
+    "ablation": ["remove_E9_restore_Core", "remove_E7", "remove_price_group"],
+    "bootstrap": {"method": "paired_moving_block", "block_calendar_days": 90, "replicates": 10000, "seed": 20261003, "confidence_level": 0.95},
+    "regime_boundaries": ["2021-08-05", "2022-09-15", "2024-03-13"],
+    "primary_core_holdout_reuse": "descriptive_only; do_not_claim_incremental_utility",
+    "success_rule": "no_promotion_without_new_holdout_or_prospective_vintage_and_metric_specific_rights",
+    "no_parameter_search_after_holdout": true
+  },
+  "rights": {
+    "cache": "unverified",
+    "private_research": "unverified",
+    "chart": "unverified",
+    "derived": "unverified",
+    "csv": "unverified",
+    "raw_storage": "private_git_ignored",
+    "public_candidate_release": "blocked",
+    "commercial_use": "not_granted"
+  }
+}

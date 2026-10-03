@@ -2,7 +2,7 @@
 
 **Lập ngày 2026-10-03, cập nhật sau chuỗi triển khai cùng ngày.** Phạm vi: bóc tách Q04 thành backlog E2/E3/E4/E8/E9. Chuỗi Q02 → X00 → E2-01 → E4-04 đã hoàn tất; E2 chỉ là diagnostic và E4 chỉ giữ ở R&D-only, chưa trở thành Core/public.
 
-Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py), contract diagnostic và evidence; publisher vẫn chỉ xuất bốn component Core. E4 đã có full-history audit, protocol, engine riêng và đánh giá exploratory, nhưng bị giữ R&D-only. E3/E8/E9 chưa có source/entitlement/history/rights đủ để code. Bằng chứng nguồn dùng ở đây là D05 ngày 2026-10-03 trong [metric-feasibility.md](metric-feasibility.md) và [live probe](evidence/d05-live-probe-2026-10-03.json).
+Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py), contract diagnostic và evidence; publisher vẫn chỉ xuất bốn component Core. E4 đã có full-history audit, protocol, engine riêng và đánh giá exploratory, nhưng bị giữ R&D-only. E9 đã có code/protocol/fixtures riêng; nguồn vẫn chặn backfill và kiểm định ETH thật. E3/E8 chưa có source/entitlement/history/rights đủ để tính. Bằng chứng D05 tại [metric-feasibility.md](metric-feasibility.md); tiến độ E9 tại [E9_RUNBOOK.md](E9_RUNBOOK.md).
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
@@ -55,10 +55,10 @@ Không viết lại hàm raw như thể chưa có. Phần chưa hoàn thành là
 
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
-| E9-01 | BLOCKED | D05 | Đã audit source gate: catalog có `TxTfrValAdjUSD` ETH/1d nhưng sample Community HTTP 403; adjusted-transfer filters, history, vintage và quyền derived/public chưa xác minh. Evidence [remaining-source-audit](evidence/remaining-source-audit-2026-10-03.json). Cần entitlement hoặc alternative cụ thể trước E9-02; không tự mua. |
-| E9-02 | BLOCKED | E9-01, X00 | Tải full history và audit cặp vốn hóa/transfer value cùng provider, currency và ngày UTC. Document filters cho internal transfers/contracts/bridge/MEV, revision và gaps; mẫu số phải dương. Nguồn mới là candidate dataset có provenance riêng. |
-| E9-03 | BLOCKED | E9-02, X01 | Implement giả thuyết đã khóa `ln(M/SMA90(adjusted_native_transfer_value_USD))` cùng normalizer causal; kiểm rolling calendar, missing/zero, đơn vị và prefix. Không đổi sang volume chưa điều chỉnh mà giữ cùng định nghĩa/version. |
-| E9-04 | BLOCKED | E9-03 | Báo cáo utility tăng thêm, correlation/ablation, độ ổn định và sai lệch transfer value. ADR nhận/giữ Experimental/loại; tên công khai là NVT proxy, không gọi là CVDD. |
+| E9-01 | BLOCKED | D05 | Probe riêng mới: catalog thực sự có quyền chỉ cho vốn hóa; adjusted USD/native và NVT tính sẵn đều 403; CSV chính thức không có transfer/NVT. Đã đọc định nghĩa netting theo giờ, kiểm Gmail và đường cấp quyền miễn phí. [Evidence](evidence/e9-source-access-2026-10-03.json); thiếu key và licence đúng scope, không mua gói. |
+| E9-02 | BLOCKED | E9-01, X00 | Adapter backfill có licence/expiry/hash và khử key đã có. Chưa tải full history ETH thật, chưa audit coverage/gaps/revisions. Cần cặp vốn hóa/adjusted transfer USD cùng provider/UTC; không thay nguồn ngầm. |
+| E9-03 | IN_PROGRESS | E9-02, X01 | Protocol [ADR-004](ADR-004-e9-nvt-candidate.md) và engine riêng đã implement/test công thức, calendar/null/zero, warm-up/prefix; pipeline kiểm raw/canonical/provenance/licence. Nghiệm thu trên snapshot ETH thật còn bị dependency E9-02 chặn; chưa DONE. |
+| E9-04 | BLOCKED | E9-03 | Harness correlation/ablation/regime/paired bootstrap đã có, fixture đã chạy. Chưa có kết quả ETH thật, không ghi AP hoặc utility giả. Chờ snapshot hợp lệ để ra quyết định nghiên cứu; tên là NVT proxy, không phải CVDD. |
 
 ## 6. E3 — ETH realized-value age ratio
 

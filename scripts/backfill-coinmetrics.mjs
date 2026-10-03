@@ -42,10 +42,12 @@ function isDailyTimestamp(value) {
   return isoDate(new Date(`${date}T00:00:00.000Z`)) === date;
 }
 
-export function validateNextUrl(value, firstUrl) {
+export function validateNextUrl(value, firstUrl, allowedOrigin = apiOrigin) {
   if (!value) return null;
   const url = new URL(value);
-  if (url.origin !== apiOrigin || url.pathname !== endpoint || url.searchParams.has('api_key')) {
+  if (!['https://community-api.coinmetrics.io', 'https://api.coinmetrics.io'].includes(allowedOrigin)
+    || url.origin !== allowedOrigin || url.username || url.password
+    || url.pathname !== endpoint || url.searchParams.has('api_key')) {
     throw new Error('Coin Metrics returned an unexpected pagination URL; refusing to follow it.');
   }
   for (const name of ['assets', 'metrics', 'frequency', 'start_time', 'end_time', 'paging_from']) {
@@ -162,7 +164,11 @@ export function qualityReport(rows, start, end, metrics = coreMetrics) {
 export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date()), {
   outputRoot = join(root, 'data', 'raw', 'coinmetrics'), request = requestPage, sleep = pause, now = () => new Date(),
   metrics = coreMetrics, runPrefix = 'coinmetrics-backfill', allowZeroMetrics = [],
+  origin = apiOrigin, provider = 'coinmetrics_community_api', authorization = 'none', sourceRights = null,
 } = {}) {
+  if (!['https://community-api.coinmetrics.io', 'https://api.coinmetrics.io'].includes(origin)) {
+    throw new Error('Unexpected Coin Metrics origin.');
+  }
   if (!Array.isArray(metrics) || !metrics.length || metrics.some(metric => typeof metric !== 'string' || !/^[A-Za-z][A-Za-z0-9]*$/.test(metric))) {
     throw new Error('metrics must be a non-empty list of safe Coin Metrics field names.');
   }
@@ -183,7 +189,7 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
   await mkdir(outputRoot, { recursive: true });
   await mkdir(runDirectory);
 
-  const firstUrl = new URL(endpoint, apiOrigin);
+  const firstUrl = new URL(endpoint, origin);
   firstUrl.search = new URLSearchParams({
     assets: 'eth',
     metrics: metrics.join(','),
@@ -196,7 +202,7 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
 
   const manifest = {
     schema_version: '1.0.0',
-    provider: 'coinmetrics_community_api',
+    provider,
     endpoint,
     asset: 'eth',
     frequency: '1d',
@@ -205,7 +211,8 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
     end_date_requested: end,
     as_of_utc: asOf,
     retrieved_at: retrievedAt,
-    authorization: 'none',
+    authorization,
+    ...(sourceRights ? { source_rights: sourceRights } : {}),
     storage_scope: 'private, git-ignored data/raw',
     quality_policy: {
       zero_values_allowed_for: allowZeroMetrics,
@@ -244,6 +251,8 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
       http_status: page.status,
       response_headers: page.headers,
       response_sha256: hash(page.body),
+      ...(page.transportSha256 ? { transport_response_sha256: page.transportSha256,
+        credentials_redacted_before_storage: page.credentialsRedacted } : {}),
       response_bytes: Buffer.byteLength(page.body),
       row_count: page.payload.data.length,
       first_time: page.payload.data[0]?.time ?? null,
@@ -251,7 +260,7 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
       raw_file: rawFile,
     });
     console.log(`page ${pageIndex}: ${page.payload.data.length} rows; sha256=${hash(page.body)}`);
-    url = validateNextUrl(page.payload.next_page_url, firstUrl);
+    url = validateNextUrl(page.payload.next_page_url, firstUrl, origin);
     if (url) await sleep(1000);
   }
 
