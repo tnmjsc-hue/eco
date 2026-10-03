@@ -1,5 +1,7 @@
 # E2, nguồn cung và số dư sàn ETH
 
+**Tích hợp Core 10 (2026-10-03):** ba raw series này đã được chuẩn hóa riêng trong `core-v0.2.0`, [ADR-008](ADR-008-core-ten-experimental.md), [CORE_TEN](CORE_TEN.md). Raw contract `diagnostics-v0.1.0` bên dưới vẫn không có normalizer/composite; mọi điểm Core 4/ECO 7 cũ giữ nguyên. Trạng thái phát hành Core 10 thực tế xem HANDOFF.
+
 Ngày thực hiện: 2026-10-03. Protocol [diagnostics-v0.1.0](../configs/research/diagnostics-v0.1.0.json) khóa trước implementation theo [ADR-007](ADR-007-raw-eth-diagnostics.md). Đã hoàn thiện và xác minh production tại [eco.tnmp.cloud/#diagnostics](https://eco.tnmp.cloud/#diagnostics). Commit/CI/Pages/domain/browser và hai hosted workflow đã đạt; bằng chứng ở [HANDOFF](HANDOFF.md) và [audit publication](evidence/diagnostics-publication-2026-10-03.json). Không có điểm tổng hợp, normalizer hoặc tuyên bố hiệu quả dự báo cho ba chỉ số này.
 
 ## Định nghĩa và kết quả

@@ -2,4 +2,6 @@
 public/data/releases/** -text
 public/data/network-proxies/** -text
 public/data/extended/** -text
+public/data/diagnostics/** -text
+public/data/core-v2/** -text
 public/vendor/** -text

@@ -48,6 +48,11 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: python -m eco.diagnostic_pipeline daily
+      - name: Integrate qualified metrics into Core 10 Experimental
+        id: core_ten
+        if: always() && steps.extended.outcome == 'success' && steps.diagnostics.outcome == 'success'
+        continue-on-error: true
+        run: python -m eco.core_ten
       - name: Validate before publication
         if: steps.batch.outcome == 'success'
         id: verify
@@ -63,10 +68,14 @@ jobs:
           BATCH_OUTCOME: ${{ steps.batch.outcome }}
           EXTENDED_OUTCOME: ${{ steps.extended.outcome }}
           DIAGNOSTICS_OUTCOME: ${{ steps.diagnostics.outcome }}
+          CORE_TEN_OUTCOME: ${{ steps.core_ten.outcome }}
         run: |
           git config user.name 'eco-daily[bot]'
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
           git add -- public/data/status.json
+          if [ "$CORE_TEN_OUTCOME" != 'skipped' ] && [ -f public/data/core-v2/status.json ]; then
+            git add -- public/data/core-v2/status.json
+          fi
           if [ "$DIAGNOSTICS_OUTCOME" != 'skipped' ] && [ -f public/data/diagnostics/status.json ]; then
             git add -- public/data/diagnostics/status.json
           fi
@@ -74,6 +83,9 @@ jobs:
             git add -- public/data/extended/status.json
           fi
           if [ "$BATCH_OUTCOME" = 'success' ]; then
+            if [ "$CORE_TEN_OUTCOME" = 'success' ]; then
+              git add -- public/data/core-v2/latest.json public/data/core-v2/releases public/data/core-v2/revisions public/data/core-v2/publications
+            fi
             git add -- public/data/latest.json public/data/releases
             for path in public/data/revisions public/data/publications; do
               if [ -d "$path" ]; then git add -- "$path"; fi
@@ -99,5 +111,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-daily-deploy.mjs
       - name: Fail visibly if source or backup failed
-        if: always() && (steps.batch.outcome == 'failure' || steps.extended.outcome == 'failure' || steps.diagnostics.outcome == 'failure')
+        if: always() && (steps.batch.outcome == 'failure' || steps.extended.outcome == 'failure' || steps.diagnostics.outcome == 'failure' || steps.core_ten.outcome == 'failure')
         run: exit 1

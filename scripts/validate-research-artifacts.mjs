@@ -284,3 +284,15 @@ assert.equal(diagnosticProtocol.metrics.supply_change_30d.window_days,31);
 assert.equal(diagnosticProtocol.metrics.exchange_balance_change_30d.unit,'ETH');
 for (const m of Object.values(diagnosticProtocol.metrics)) assert.equal(m.independent_vote,false);
 process.stdout.write('Frozen raw NUPL, supply and exchange diagnostics protocol: PASS\n');
+const tenProtocol=await readJson('configs/research/core-v0.2.0.json');
+assert.equal(createHash('sha256').update(JSON.stringify(tenProtocol)+'\n').digest('hex'),
+  '43fc1f29c02868f4d1f5b02ed0f121fc15d9e79e5f886dbaf2061e8b8837d404');
+assert.equal(tenProtocol.required_coverage,10);
+assert.equal(Object.values(tenProtocol.weights).reduce((s,w)=>s+w,0),1);
+assert.equal(tenProtocol.weights.E2+tenProtocol.weights.E7,.375);
+assert.equal(tenProtocol.weights.exchange_share+tenProtocol.weights.exchange_balance_pressure,.0625);
+assert.equal(tenProtocol.normalizer.exclude_current,true);
+assert.equal(tenProtocol.new_features.supply_scarcity.sign,-1);
+assert.equal(tenProtocol.evaluation.status,'exploratory_reused_holdout');
+assert.equal(tenProtocol.release_scope,'noncommercial_experimental_research_preview');
+process.stdout.write('Frozen Core 10 family budgets, signed feature hypotheses and causal normalization: PASS\n');

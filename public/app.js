@@ -1,15 +1,16 @@
 import { METRICS, REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
 import { initProxies, resizeProxies } from './proxies.js?v=proxies-1';
 import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=diagnostics-1';
-import { EXTENDED_METRICS, extendedScore, validateExtendedPointer, validateExtended, exportExtendedCSV } from './extended-model.js?v=extended-1';
+import { EXTENDED_METRICS } from './extended-model.js?v=extended-1';
+import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-1';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const dateLabel = date => date.split('-').reverse().join('/');
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const state = { rows: [], manifest: null, coreManifest: null, research: null, extendedResearch: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'extended', selected: EXTENDED_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
+const state = { rows: [], manifest: null, coreManifest: null, extendedManifest: null, research: null, extendedResearch: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'ten', selected: CORE_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
 let historyChart, researchChart;
-const baselineNames = { core: 'Core', normalized_E7_only: 'E7 độc lập', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá độc lập' };
+const baselineNames = { core: 'Core 4', extended: 'ECO 7', normalized_E7_only: 'E7 riêng', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá riêng' };
 
 async function getBytes(url, fresh = false) {
   const response = await fetch(url, { cache: fresh ? 'no-cache' : 'default', signal: AbortSignal.timeout(20000) });
@@ -30,9 +31,10 @@ async function load() {
   try {
     if (!window.echarts || !window.lucide) throw new Error('Thư viện giao diện chưa tải được. Vui lòng tải lại trang.');
     let status = null;
-    try { status = JSON.parse(new TextDecoder().decode(await getBytes('/data/extended/status.json', true))); } catch { /* Data remains usable when operational status is unavailable. */ }
-    const pointer = JSON.parse(new TextDecoder().decode(await getBytes('/data/extended/latest.json', true)));
-    validateExtendedPointer(pointer);
+    try { status = JSON.parse(new TextDecoder().decode(await getBytes('/data/core-v2/status.json', true))); } catch { /* Data remains usable when operational status is unavailable. */ }
+    const pointer = JSON.parse(new TextDecoder().decode(await getBytes('/data/core-v2/latest.json', true)));
+    validateCorePointer(pointer);
+    if (state.manifest?.release_id === pointer.release_id && state.pointerHash !== pointer.manifest_sha256) throw new Error('Release bất biến đã đổi checksum.');
     state.lastChecked = Date.now();
     if (state.manifest?.release_id === pointer.release_id && state.pointerHash === pointer.manifest_sha256) {
       state.status = status?.release_id === pointer.release_id ? status : null;
@@ -41,11 +43,13 @@ async function load() {
     }
     const manifest = await verify(await getBytes(pointer.manifest_url), pointer.manifest_sha256);
     if (manifest.release_id !== pointer.release_id) throw new Error('Manifest không đúng release.');
-    const base = `/data/extended/releases/${pointer.release_id}/`;
+    const base = `/data/core-v2/releases/${pointer.release_id}/`;
     const [data, extendedResearch] = await Promise.all(['history.json', 'research.json'].map(async name => verify(await getBytes(base + name), manifest.files[name])));
-    validateExtended(data, manifest, extendedResearch);
+    validateCore(data, manifest, extendedResearch);
+    const parents = Object.fromEntries(await Promise.all(Object.entries(manifest.parents).map(async ([kind,ref])=>[kind,await verify(await getBytes(ref.manifest_url),ref.manifest_sha256)])));
+    validateCoreParents(manifest, parents);
     const coreParent = manifest.parents.core;
-    const coreManifest = await verify(await getBytes(coreParent.manifest_url), coreParent.manifest_sha256);
+    const coreManifest = parents.core;
     if (coreManifest.release_id !== coreParent.release_id || coreManifest.methodology_version !== 'core-v0.1.0'
         || coreManifest.files['history.json'] !== coreParent.history_sha256) throw new Error('Core cha không khớp.');
     const research = await verify(await getBytes(`/data/releases/${coreParent.release_id}/research.json`), coreManifest.files['research.json']);
@@ -53,6 +57,7 @@ async function load() {
     state.rows = data.rows;
     state.manifest = manifest;
     state.coreManifest = coreManifest;
+    state.extendedManifest = parents.extended;
     state.pointerHash = pointer.manifest_sha256;
     state.research = research;
     state.extendedResearch = extendedResearch;
@@ -101,22 +106,22 @@ function renderOverview() {
   const index = state.rows.findIndex(r => r.date === state.date);
   const row = state.rows[index];
   if (!row) return;
-  const score = state.mode === 'core' ? row.core_score : state.mode === 'extended' ? row.score : extendedScore(row, state.selected);
-  $('score-label').textContent = state.mode === 'core' ? 'ECO Core · 4' : state.mode === 'extended' ? 'ECO 7 · Experimental' : 'Điểm tùy chỉnh · Experimental';
-  $('score-version').textContent = state.mode === 'core' ? 'core-v0.1.0' : 'extended-v0.1.0';
+  const score = state.mode === 'core' ? row.core_score : state.mode === 'extended' ? row.extended_score : state.mode === 'ten' ? row.score : coreScore(row, state.selected);
+  $('score-label').textContent = state.mode === 'core' ? 'ECO Core · 4' : state.mode === 'extended' ? 'ECO 7 · Experimental' : state.mode === 'ten' ? 'ECO Core · 10 Experimental' : 'Điểm tùy chỉnh · Experimental';
+  $('score-version').textContent = state.mode === 'core' ? 'core-v0.1.0' : state.mode === 'extended' ? 'extended-v0.1.0' : CORE_VERSION;
   $('score-value').textContent = displayScore(score);
   $('score-value').title = score === null ? 'Không có điểm hợp lệ' : fmt(score, 4);
   $('score-value').style.color = scoreColor(score);
   $('heat-marker').hidden = score === null;
   $('heat-marker').style.left = `calc(${score ?? 0}% - 1px)`;
   $('custom-comparison').hidden = false;
-  $('custom-comparison').textContent = state.mode === 'core' ? `ECO 7 cùng ngày: ${displayScore(row.score)} / 100` : `Core 4 cùng ngày: ${displayScore(row.core_score)} / 100`;
+  $('custom-comparison').textContent = `Cùng ngày · Core 10: ${displayScore(row.score)} · ECO 7: ${displayScore(row.extended_score)} · Core 4: ${displayScore(row.core_score)}`;
   $('price-value').textContent = row.price_usd === null ? '—' : `$${fmt(row.price_usd)}`;
   const previousPrice = state.rows[index - 1]?.price_usd;
   const change = row.price_usd !== null && previousPrice ? (row.price_usd / previousPrice - 1) * 100 : null;
   $('price-change').textContent = change === null ? 'Không đủ dữ liệu ngày liền trước' : `${change >= 0 ? '+' : ''}${fmt(change)}% so với ngày trước`;
   $('price-change').className = `daily-change ${change === null ? '' : change >= 0 ? 'positive' : 'negative'}`;
-  const selected = state.mode === 'core' ? METRICS.map(m=>m.id) : state.mode === 'custom' ? state.selected : EXTENDED_METRICS.map(m=>m.id);
+  const selected = state.mode === 'custom' ? state.selected : activeMetrics().map(m=>m.id);
   const available = selected.filter(id=>row.components[id] !== null).length;
   $('coverage-value').textContent = `${available} / ${selected.length}`;
   $('coverage-note').textContent = score !== null ? 'Đủ thành phần đã chọn' : 'Thiếu thành phần / tập chọn rỗng';
@@ -139,23 +144,27 @@ function renderOverview() {
   const revision = state.manifest.revision?.changed_dates?.length ? ` Revision nguồn: ${state.manifest.revision.changed_dates.length} ngày lịch sử; release cũ được giữ nguyên.` : '';
   $('freshness').innerHTML = `<b class="status-dot"></b><span>Nguồn đến ${dateLabel(last)} · cách hiện tại ${age} ngày UTC${missing ? ` · ${missing} ngày đã đóng thiếu dữ liệu` : ''}${pending.length ? ` · ngày chờ ${pending.map(d => escape(dateLabel(d))).join(', ')} (chưa đóng lúc tải)` : ''}. ${schedule}${warning}${revision}</span>`;
 }
+function activeMetrics() { return state.mode === 'core' ? METRICS : state.mode === 'extended' ? EXTENDED_METRICS : CORE_METRICS; }
 function renderComponents() {
   const row = state.rows.find(r => r.date === state.date);
-  const active = state.mode === 'core' ? METRICS.map(m => m.id) : state.mode === 'extended' ? EXTENDED_METRICS.map(m=>m.id) : state.selected;
-  const total = EXTENDED_METRICS.filter(m => active.includes(m.id)).reduce((sum, m) => sum + m.weight, 0);
-  $('component-rows').innerHTML = EXTENDED_METRICS.map(m => {
+  const active = state.mode === 'custom' ? state.selected : activeMetrics().map(m=>m.id);
+  const activeWeights = Object.fromEntries(activeMetrics().map(m=>[m.id,m.weight]));
+  const total = active.reduce((sum,id)=>sum+(activeWeights[id]??0),0);
+  $('component-rows').innerHTML = CORE_METRICS.map(m => {
     const value = row.components[m.id];
+    const input = row.new_features[m.id];
+    const original = input && input.input_value!==null ? `${fmt(input.input_unit==='ratio'?input.input_value*100:input.input_value,input.input_unit==='ETH'?2:4)} ${input.input_unit==='ETH'?'ETH':'%'}` : null;
     const reason = REASONS[row.reasons[m.id]] ?? ({parent_date_unavailable:'Chờ proxy cùng ngày',window_unavailable:'Thiếu dữ liệu cửa sổ',nonpositive_log_argument:'Đối số log không dương'}[row.reasons[m.id]]) ?? row.reasons[m.id] ?? 'Chưa có dữ liệu';
-    const weight = active.includes(m.id) && total ? m.weight / total * 100 : 0;
+    const weight = active.includes(m.id) && total ? activeWeights[m.id] / total * 100 : 0;
     const flash = row.source_flags[m.id].includes('flash');
-    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="Chọn ${m.slot} ${m.name}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode !== 'custom' ? 'disabled' : ''}></td><td><span class="metric-id">${m.slot}${m.formula?' · proxy':''}</span><span class="metric-name">${m.name}</span><div class="metric-description">${m.description}${m.limitation?`<br><span title="${escape(m.limitation)}">${escape(m.interpretation)}</span>`:''}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? escape(reason) : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 2)}%</td><td><span class="status-pill ${value === null || flash ? 'missing' : 'ready'}" title="${value === null ? escape(reason) : flash ? 'Nhãn sàn và số liệu tạm thời; có thể sửa hồi cứu' : 'Đã chuẩn hóa causal q05/q95'}">${value === null ? 'Chưa đủ' : flash ? 'Tạm thời · flash' : 'Khả dụng'}</span></td></tr>`;
+    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="Chọn ${m.slot} ${m.name}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode !== 'custom' ? 'disabled' : ''}></td><td><span class="metric-id">${m.slot}${m.kind==='proxy'?' · proxy':m.kind==='derived'?' · dẫn xuất':''}</span><span class="metric-name">${m.name}</span><div class="metric-description">${m.description}${m.limitation?`<br><span title="${escape(m.limitation)}">${escape(m.interpretation)}</span>`:''}${original?`<br>Giá trị gốc: ${escape(original)}`:''}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? escape(reason) : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 3)}%</td><td><span class="status-pill ${value === null || flash ? 'missing' : 'ready'}" title="${value === null ? escape(reason) : flash ? 'Nhãn sàn và số liệu tạm thời; có thể sửa hồi cứu' : 'Đã chuẩn hóa causal q05/q95'}">${value === null ? 'Chưa đủ' : flash ? 'Tạm thời · flash' : 'Khả dụng'}</span></td></tr>`;
   }).join('');
   $('component-rows').querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
     state.selected = input.checked ? [...state.selected, input.dataset.metric] : state.selected.filter(id => id !== input.dataset.metric);
     render();
   }));
   $('selection-note').hidden = state.mode !== 'custom';
-  $('selection-note').textContent = state.selected.length ? `Tùy chỉnh ${state.selected.length}/7 metric. Trọng số Extended được chuẩn hóa trên tập đã chọn; chỉ có điểm khi mọi metric đã chọn đều hợp lệ.` : 'Tập chọn rỗng · không có điểm tùy chỉnh.';
+  $('selection-note').textContent = state.selected.length ? `Tùy chỉnh ${state.selected.length}/10 metric. Trọng số Core 10 được chuẩn hóa trên tập đã chọn; chỉ có điểm khi mọi metric đã chọn đều hợp lệ.` : 'Tập chọn rỗng · không có điểm tùy chỉnh.';
 }
 function renderChart() {
   const rows = filteredRows();
@@ -163,9 +172,10 @@ function renderChart() {
   const custom = state.mode === 'custom';
   $('range-label').textContent = `${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString('vi-VN')} ngày`;
   $('custom-legend').hidden = !custom;
-  const series = [{ name: 'ECO 7', type: 'line', data: rows.map(r => [r.date, r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: state.mode === 'core'?1.2:1.9, color: '#087f72' }, itemStyle: { color: '#087f72' }, z: 3 },
+  const series = [{ name: 'Core 10', type: 'line', data: rows.map(r => [r.date, r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: state.mode === 'ten'?1.9:1.2, color: '#087f72' }, itemStyle: { color: '#087f72' }, z: 3 },
+    { name:'ECO 7',type:'line',data:rows.map(r=>[r.date,r.extended_score]),showSymbol:false,connectNulls:false,lineStyle:{width:state.mode==='extended'?1.9:1.1,color:'#a87b48',type:'dotted'},itemStyle:{color:'#a87b48'},z:2 },
     { name: 'Core 4', type: 'line', data: rows.map(r=>[r.date,r.core_score]),showSymbol:false,connectNulls:false,lineStyle:{width:state.mode==='core'?1.9:1.2,color:'#7b62a3',type:'dashed'},itemStyle:{color:'#7b62a3'},z:2 }];
-  if (custom) series.push({ name: 'Tùy chỉnh', type: 'line', data: rows.map(r => [r.date, extendedScore(r, state.selected)]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.5, color: '#bb790b', type: 'dashed' }, itemStyle: { color: '#bb790b' }, z: 4 });
+  if (custom) series.push({ name: 'Tùy chỉnh', type: 'line', data: rows.map(r => [r.date, coreScore(r, state.selected)]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.5, color: '#bb790b', type: 'dashed' }, itemStyle: { color: '#bb790b' }, z: 4 });
   series.push({ name: 'Giá ETH', type: 'line', yAxisIndex: 1, data: rows.map(r => [r.date, r.price_usd]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.2, color: '#455554', opacity: .7 }, itemStyle: { color: '#455554' }, z: 1 });
   historyChart.setOption({ animation: false, aria: { enabled: true }, grid: { left: mobile ? 34 : 42, right: mobile ? 50 : 66, top: 28, bottom: 48 }, textStyle: { fontFamily: 'Segoe UI, Arial, sans-serif' }, tooltip: { trigger: 'axis', confine: true, backgroundColor: '#fff', borderColor: '#dfe6e5', textStyle: { color: '#232b2b' }, formatter: params => {
     const date = params[0]?.value?.[0];
@@ -194,15 +204,16 @@ function plotResearch() {
 function renderProvenance() {
   const m = state.manifest;
   $('provenance').replaceChildren();
-  for (const [label, value] of [ ['Release ECO 7', m.release_id], ['Core cha', m.parents.core.release_id], ['Proxy cha', m.parents.proxies.release_id], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.rows} ngày lịch · ${m.score_rows} ngày có ECO 7 · bắt đầu ${m.first_score_date}`] ]) {
+  for (const [label, value] of [ ['Release Core 10', m.release_id], ['Core 4 cha', m.parents.core.release_id], ['Proxy cha', m.parents.proxies.release_id], ['ECO 7 cha',m.parents.extended.release_id], ['Diagnostics cha',m.parents.diagnostics.release_id], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id??'không có'}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.rows} ngày lịch · ${m.score_rows} ngày có Core 10 · bắt đầu ${m.first_score_date}`] ]) {
     const dt = document.createElement('dt'); dt.textContent = label;
     const dd = document.createElement('dd'); dd.textContent = value;
     $('provenance').append(dt, dd);
   }
   const r = state.extendedResearch;
-  $('extended-evaluation').textContent = `${r.n.toLocaleString('vi-VN')} ngày đánh giá ${dateLabel(r.start)}–${dateLabel(r.end)}, ${r.positive_labels} nhãn dương. Holdout đã dùng lại; kết quả thăm dò, chưa chứng minh cải thiện dự báo.`;
-  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='extended'?'ECO 7':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='extended'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='extended'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
-  $('extended-research-link').href = `/data/extended/releases/${m.release_id}/research.json`;
+  $('core-ten-performance').textContent = `AP thăm dò: Core 10 ${fmt(r.statistics.core_ten.average_precision,3)} / Core 4 ${fmt(r.statistics.core.average_precision,3)}. Xem Kiểm định.`;
+  $('extended-evaluation').textContent = `${r.n.toLocaleString('vi-VN')} ngày đánh giá ${dateLabel(r.start)}–${dateLabel(r.end)}, ${r.positive_labels} nhãn dương. AP Core 10 ${fmt(r.statistics.core_ten.average_precision,4)}, Core 4 ${fmt(r.statistics.core.average_precision,4)}; Δ AP ${fmt(r.comparisons.core.ap_delta,4)}. Holdout đã dùng lại; kết quả thăm dò, ${r.comparisons.core.upper_95<0?'thấp hơn Core 4 trong khoảng tin cậy này':'chưa chứng minh cải thiện dự báo'}.`;
+  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='core_ten'?'Core 10':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='core_ten'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='core_ten'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
+  $('extended-research-link').href = `/data/core-v2/releases/${m.release_id}/research.json`;
 }
 function view(name) {
   state.view = name;
@@ -229,13 +240,13 @@ function start() {
   $('selected-date').addEventListener('change', event => selectDate(event.target.value));
   $('previous-day').addEventListener('click', () => selectDate(dateMinus(state.date, 1)));
   $('next-day').addEventListener('click', () => selectDate(dateMinus(state.date, -1)));
-  $('latest-day').addEventListener('click', () => { if (state.rows.length) selectDate(state.mode==='core'?state.coreManifest.last_valid_score_date:state.manifest.last_valid_score_date, true); });
+  $('latest-day').addEventListener('click', () => { if (state.rows.length) selectDate(state.mode==='core'?state.coreManifest.last_valid_score_date:state.mode==='extended'?state.extendedManifest.last_valid_score_date:state.manifest.last_valid_score_date, true); });
   $('log-price').addEventListener('change', renderChart);
   $('refresh').addEventListener('click', load);
   $('retry').addEventListener('click', load);
   $('export').addEventListener('click', () => {
     if (!state.rows.length) return;
-    const csv = exportExtendedCSV(filteredRows(), state.selected, state.mode, state.manifest);
+    const csv = exportCoreCSV(filteredRows(), state.selected, state.mode, state.manifest);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a'); link.href = url; link.download = `eco-${state.manifest.release_id}-${state.mode}-${state.range}.csv`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);

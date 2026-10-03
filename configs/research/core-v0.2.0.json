@@ -1,0 +1,21 @@
+{
+  "methodology_version": "core-v0.2.0",
+  "protocol": "core-v0.2.0-protocol-1",
+  "frozen_on": "2026-10-03",
+  "asset": "eth",
+  "frequency": "1d",
+  "series_type": "reconstructed",
+  "parent_versions": {"core": "core-v0.1.0", "proxies": "network-proxies-v0.1.0", "extended": "extended-v0.1.0", "diagnostics": "diagnostics-v0.1.0"},
+  "components": ["E1", "E5", "E6", "E7", "exchange_share", "address_activity", "value_per_transfer", "E2", "supply_scarcity", "exchange_balance_pressure"],
+  "weights": {"E1": 0.125, "E5": 0.125, "E6": 0.125, "E7": 0.1875, "exchange_share": 0.03125, "address_activity": 0.0625, "value_per_transfer": 0.0625, "E2": 0.1875, "supply_scarcity": 0.0625, "exchange_balance_pressure": 0.03125},
+  "groups": {"price": {"weight": 0.375, "members": ["E1", "E5", "E6"]}, "valuation": {"weight": 0.375, "members": ["E7", "E2"], "dependence": "shared_MVRV_family_not_independent_votes"}, "network": {"weight": 0.25, "families": {"exchange": {"weight": 0.0625, "members": ["exchange_share", "exchange_balance_pressure"]}, "supply": {"weight": 0.0625, "members": ["supply_scarcity"]}, "addresses": {"weight": 0.0625, "members": ["address_activity"]}, "transfers": {"weight": 0.0625, "members": ["value_per_transfer"]}}}},
+  "new_features": {"E2": {"input": "nupl_diagnostic", "unit": "ratio", "sign": 1, "hypothesis": "larger_unrealized_profit_higher_valuation_heat"}, "supply_scarcity": {"input": "supply_change_30d", "unit": "percent", "sign": -1, "hypothesis": "lower_net_supply_growth_higher_relative_scarcity_heat_not_price_forecast"}, "exchange_balance_pressure": {"input": "exchange_balance_change_30d", "unit": "ETH", "sign": 1, "hypothesis": "larger_exchange_balance_increase_higher_potential_selling_availability_not_gross_inflow"}},
+  "normalizer": {"method": "past_only_linear_q05_q95_clip_0_100", "window_calendar_days": 1460, "minimum_valid_observations": 365, "exclude_current": true, "epsilon": 1e-12, "input_calendar": "full_pinned_diagnostics_calendar"},
+  "weight_rationale": "Keep ECO7 top-level budgets; split valuation equally inside its existing budget; split network equally across four families and exchange equally inside its family; no search or tuning on evaluation outcomes",
+  "required_coverage": 10,
+  "missing_policy": "null_if_any_selected_component_missing; no_forward_fill; join_same_UTC_observation_date; require_matching_parent_lineages",
+  "source_available_at": null,
+  "evaluation": {"status": "exploratory_reused_holdout", "start": "2020-01-01", "horizon_calendar_days": 365, "drawdown": -0.5, "baselines": ["core", "extended", "normalized_E7_only", "normalized_price_group_only"], "bootstrap": {"replicates": 10000, "block_calendar_days": 90, "seed": 20261003}, "ablation": "drop_one_component_and_renormalize_frozen_weights"},
+  "release_scope": "noncommercial_experimental_research_preview",
+  "limitations": ["not_probability", "not_validated_predictive_model", "unknown_historical_availability", "provisional_exchange_labels", "proxy_not_original_metric", "correlated_components", "MVRV_NUPL_shared_family", "supply_direction_is_research_hypothesis", "London_Merge_Dencun_structural_breaks", "exchange_change_not_gross_flow", "native_ETH_L1_only", "reused_holdout_is_exploratory"]
+}

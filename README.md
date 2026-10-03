@@ -1,6 +1,8 @@
-# ECO — Dashboard Ethereum 7 chỉ số
+# ECO — Ethereum Core 10 Experimental
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
+
+**Phiên mới Core 10:** `core-v0.2.0` đã hoàn thiện local, đang nghiệm thu phát hành trong [HANDOFF](docs/HANDOFF.md). E2 NUPL, C1 khan hiếm nguồn cung và C2 biến động số dư sàn đã tích hợp từ diagnostic đã xác minh. Điểm 37.71262149722105 (UI 38), đủ 10/10 ngày 2026-10-02; E2 chia ngân sách định giá với E7. Core 4/ECO 7 giữ nguyên và là hai chế độ đối chiếu. Backtest thăm dò AP 0,5226 thấp hơn Core 4 0,5547; chưa có bằng chứng cải thiện dự báo. [ADR-008](docs/ADR-008-core-ten-experimental.md), [coverage và daily](docs/CORE_TEN.md). Các mục ECO 7 bên dưới ghi nhận phiên triển khai trước.
 
 **Phiên 2026-10-03: ECO 7 đã chạy trên [production](https://eco.tnmp.cloud/) với dữ liệu ETH thật.** Điểm ngày 2026-10-02 là 31.979753577249287 (UI 32/100), đủ 7/7 thành phần; Core 4 đối chiếu giữ nguyên 40.009962172523664 (UI 40/100). Lịch sử reconstructed; kiểm định mở rộng chưa chứng minh cải thiện so với Core. Đây là **Experimental research preview**, không phải xác suất, tín hiệu đầu tư hay bản đủ 9 metric. Quyền phi thương mại và phiên bản riêng: [ADR-002](docs/ADR-002-experimental-research-preview.md), [ADR-006](docs/ADR-006-extended-experimental-dashboard.md). CI, hosted daily và production hashes/browser đã xác minh, xem [HANDOFF](docs/HANDOFF.md).
 

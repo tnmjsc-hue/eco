@@ -1,5 +1,7 @@
 # Cập nhật chỉ số hằng ngày
 
+**Core 10 bổ sung (2026-10-03):** hai workflow chạy `python -m eco.core_ten` sau ECO 7 và diagnostics thành công. Version mới `core-v0.2.0` dùng bốn release cha cùng lineage; lỗi giữ pointer `/data/core-v2/latest.json`. Commit allowlist có status/releases/revisions/publications riêng; deploy verifier kiểm thêm chuỗi Core 10 và manifest cha. [Runbook](CORE_TEN.md); nghiệm thu hosted/production trong HANDOFF.
+
 ## Lịch Và Phạm Vi
 
 - Workflow `.github/workflows/daily-update.yml` trên nhánh `main`: dự kiến **10:17 giờ Việt Nam**, kiểm tra lại **14:17**. Có `workflow_dispatch` để chạy thủ công; không phụ thuộc máy cá nhân bật.

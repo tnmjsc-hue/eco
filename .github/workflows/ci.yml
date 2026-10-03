@@ -37,6 +37,8 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check public/app.js
+          node --check public/core-model.js
+          node --check scripts/verify-daily-deploy.mjs
           node --check public/diagnostics.js
           node --check public/diagnostic-model.js
           node --check scripts/restore-private-snapshot-r2.mjs

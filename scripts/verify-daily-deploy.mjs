@@ -11,6 +11,8 @@ const expectedExtendedPointer = await readFile('public/data/extended/latest.json
 const expectedExtendedStatus = await readFile('public/data/extended/status.json');
 const expectedDiagnosticPointer = await readFile('public/data/diagnostics/latest.json');
 const expectedDiagnosticStatus = await readFile('public/data/diagnostics/status.json');
+const expectedCoreTenPointer = await readFile('public/data/core-v2/latest.json');
+const expectedCoreTenStatus = await readFile('public/data/core-v2/status.json');
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
 if (!hook || new URL(hook).hostname !== 'api.cloudflare.com') throw new Error('Missing or unexpected Cloudflare deployment hook.');
 try {
@@ -75,8 +77,25 @@ for (let attempt = 0; attempt < 40; attempt++) {
     for (const [file,sha] of Object.entries(diagnosticManifest.files)) {
       if (hash(await bytes(`/data/diagnostics/releases/${diagnostic.release_id}/${file}`))!==sha) throw new Error('Diagnostic checksum mismatch');
     }
+    if (hash(await bytes('/data/core-v2/latest.json')) !== hash(expectedCoreTenPointer)
+        || hash(await bytes('/data/core-v2/status.json')) !== hash(expectedCoreTenStatus)) continue;
+    const ten = JSON.parse(expectedCoreTenPointer);
+    if (!/^core10-[a-f0-9]{20}$/.test(ten.release_id) || ten.methodology_version!=='core-v0.2.0'
+        || ten.manifest_url!==`/data/core-v2/releases/${ten.release_id}/manifest.json`) throw new Error('Invalid Core 10 pointer');
+    const tenBytes = await bytes(ten.manifest_url);
+    if (hash(tenBytes)!==ten.manifest_sha256) continue;
+    const tm=JSON.parse(tenBytes);
+    if (tm.required_coverage!==10 || tm.research_only!==true || tm.protocol_sha256!=='43fc1f29c02868f4d1f5b02ed0f121fc15d9e79e5f886dbaf2061e8b8837d404'
+        || Object.keys(tm.files).sort().join(',')!=='history.json,research.json') throw new Error('Invalid Core 10 methodology');
+    // A failed upstream join deliberately retains the previous valid composite and its pinned parents.
+    for (const ref of Object.values(tm.parents)) {
+      if (hash(await bytes(ref.manifest_url))!==ref.manifest_sha256) throw new Error('Core 10 parent checksum mismatch');
+    }
+    for (const [file,sha] of Object.entries(tm.files)) {
+      if (hash(await bytes(`/data/core-v2/releases/${ten.release_id}/${file}`))!==sha) throw new Error('Core 10 checksum mismatch');
+    }
     verified = true;
-    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id, extended_release_id:extended.release_id, diagnostic_release_id:diagnostic.release_id }));
+    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id, extended_release_id:extended.release_id, diagnostic_release_id:diagnostic.release_id, core_ten_release_id:ten.release_id }));
     break;
   } catch { /* Keep waiting for the complete new deployment, never accept a mixed release. */ }
 }
