@@ -1,0 +1,74 @@
+name: Daily ETH index update
+on:
+  schedule:
+    - cron: '17 3,7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: daily-eth-publication
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned computation dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Fetch, verify private backup and prepare daily release
+        id: batch
+        continue-on-error: true
+        env:
+          R2_ACCOUNT_ID: '3ebcb7a2f66c7ae9b5804ff91e6ec702'
+          R2_BUCKET: eco-eth-private
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: python -m eco.daily
+      - name: Validate before publication
+        if: steps.batch.outcome == 'success'
+        id: verify
+        run: |
+          python -m unittest discover -s tests -v
+          node --test tests/*.test.mjs
+          node scripts/validate-research-artifacts.mjs
+          git diff --check
+      - name: Commit public artifacts only
+        id: commit
+        if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure')
+        env:
+          BATCH_OUTCOME: ${{ steps.batch.outcome }}
+        run: |
+          git config user.name 'eco-daily[bot]'
+          git config user.email 'eco-daily[bot]@users.noreply.github.com'
+          git add -- public/data/status.json
+          if [ "$BATCH_OUTCOME" = 'success' ]; then
+            git add -- public/data/latest.json public/data/releases
+            for path in public/data/revisions public/data/publications; do
+              if [ -d "$path" ]; then git add -- "$path"; fi
+            done
+          fi
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            git diff --cached --check
+            git commit -m "Update daily ETH research data ($(date -u +%F))"
+            git push origin HEAD:main
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy main and verify public checksums
+        if: always() && steps.commit.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: node scripts/verify-daily-deploy.mjs
+      - name: Fail visibly if source or backup failed
+        if: always() && steps.batch.outcome == 'failure'
+        run: exit 1

@@ -20,7 +20,7 @@
 
 Cloudflare Dashboard: **Workers & Pages → eco-tnmp → Deployments / Custom domains / Settings**. [Tài liệu Git integration](https://developers.cloudflare.com/pages/configuration/git-integration/) và [build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/) của Cloudflare là nguồn đối chiếu khi giao diện hoặc hành vi thay đổi.
 
-**Hiện trạng sản phẩm:** `public/index.html` đã chuyển thành dashboard Core **Experimental research preview** với điểm ETH reconstructed thật, research report và custom/CSV. Engine Python offline; web static ES modules + vendor ECharts/Lucide. Không phải bản vận hành as-published; chưa có scheduler/shadow 30 ngày. [ADR-002](ADR-002-experimental-research-preview.md) ghi evidence và scope phi thương mại.
+**Hiện trạng sản phẩm:** `public/index.html` là dashboard Core **Experimental research preview** với điểm ETH reconstructed thật, research report và custom/CSV. Engine Python batch; web static ES modules + vendor ECharts/Lucide. Đã bổ sung scheduled daily batch theo [DAILY_UPDATES](DAILY_UPDATES.md); chưa hoàn thành shadow 30 ngày hoặc gate sản phẩm vận hành. [ADR-002](ADR-002-experimental-research-preview.md) ghi scope phi thương mại.
 
 ## 2. Quy trình triển khai cho agent
 
@@ -59,7 +59,7 @@ HTTP 200 chỉ chứng minh server trả trang; agent còn phải kiểm tra n�
 
 Không giữ cấu hình `public` theo quán tính. Sau khi scaffold và thử build local, vào **Pages → Settings → Builds** để đặt root directory, build command và output directory theo cấu trúc thật. Ví dụ Vite ở root thường dùng build command `npm run build` và output `dist`; nếu ứng dụng nằm trong `web/`, đường dẫn phải điều chỉnh theo cấu trúc đó. Cập nhật bảng mục 1 và lệnh mục 2 sau khi xác minh Cloudflare build thành công. [Cloudflare build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/).
 
-Cloudflare Pages phục vụ web tĩnh. Pipeline compute/publish offline đã tồn tại trong `eco/pipeline.py`; `.github/workflows/ci.yml` chỉ kiểm tra code/artifact, không tải provider, không compute release từ raw hay lên lịch batch. Scheduler/incremental/vintage/30-day shadow chưa có. Không coi Pages hoặc CI success là bằng chứng các phần đó hoàn tất.
+Cloudflare Pages phục vụ web tĩnh. `eco/pipeline.py` compute/publish offline; CI chỉ kiểm code/artifact. `.github/workflows/daily-update.yml` chạy provider → private R2 readback → compute/diff/immutable revision → tests → bot commit main → deploy hook main → production checksums. GitHub `GITHUB_TOKEN` không tự kích hoạt CI push, nên daily job tự kiểm trước commit. Lịch chạy và manual-run evidence xem HANDOFF/DAILY_UPDATES. Network incremental, restore drill và 30-day shadow chưa hoàn tất; không coi CI/Pages success là bằng chứng cho các phần đó.
 
 Lưu trữ theo [STORAGE.md](STORAGE.md): R2 `eco-eth-private` giữ snapshot raw đã readback verify; web chỉ đọc `data/latest.json` → versioned manifest/history/research trên Pages. Scope phi thương mại preview được người dùng xác nhận; status được phép `score_available=true` cho reconstructed experimental, không suy rộng thành product-release/as-published/commercial gates. CDN cache immutable versioned data, revalidate pointer; UI kiểm hash và giữ bản tốt khi refresh lỗi.
 

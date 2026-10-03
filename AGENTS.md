@@ -36,7 +36,7 @@ Cập nhật `docs/HANDOFF.md` sau mỗi phiên: task, file đã sửa, lệnh k
 
 Khi sửa website, dùng GitHub `main` → Cloudflare Pages `eco-tnmp` theo `docs/DEPLOYMENT.md`, xác minh build và `https://eco.tnmp.cloud/` trước khi báo hoàn thành. Push `main` là hành động phát hành; không push khi chưa kiểm tra diff, secret và các cổng phát hành dữ liệu áp dụng.
 
-Bucket R2 `eco-eth-private` riêng tư, snapshot D03 đã upload và 7/7 readback hash đạt. Token giới hạn bucket lưu DPAPI ngoài repo. Pipeline compute/publish offline đã có, scheduled/incremental chưa có. Dùng STORAGE; không bind bucket raw vào frontend/Pages Functions hoặc tạo token rộng quyền theo quán tính.
+Bucket R2 `eco-eth-private` riêng tư, snapshot D03 và daily snapshot đã upload/readback hash. Token giới hạn bucket lưu DPAPI ngoài repo và Actions Secrets. Scheduled daily batch, revision và first-publication records theo DAILY_UPDATES; xem evidence kích hoạt/deploy trong HANDOFF. Network incremental/restore drill/shadow chưa hoàn tất. Không bind bucket raw vào frontend/Pages Functions hoặc tạo token rộng quyền theo quán tính.
 
 ## Công cụ và cấu trúc
 

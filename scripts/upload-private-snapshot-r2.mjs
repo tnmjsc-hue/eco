@@ -77,6 +77,7 @@ async function signedRequest(method, objectKey, body) {
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
   return fetch(`https://${host}${path}`, {
     method,
+    signal: AbortSignal.timeout(60000),
     headers: {
       authorization,
       'x-amz-content-sha256': payloadHash,
@@ -88,6 +89,14 @@ async function signedRequest(method, objectKey, body) {
 }
 
 async function putObject(objectKey, body, checksum) {
+  const existing = await signedRequest('GET', objectKey);
+  if (existing.ok) {
+    const bytes = Buffer.from(await existing.arrayBuffer());
+    if (createHash('sha256').update(bytes).digest('hex') !== checksum) throw new Error('Private snapshot object is immutable.');
+    return;
+  }
+  await existing.body?.cancel();
+  if (existing.status !== 404) throw new Error(`R2 existence check failed with HTTP ${existing.status}.`);
   const response = await signedRequest('PUT', objectKey, body);
   if (!response.ok) {
     await response.body?.cancel();

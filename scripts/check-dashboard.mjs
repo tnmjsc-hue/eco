@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -8,20 +9,28 @@ const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_E
 await mkdir('test-results', { recursive: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
+  await page.clock.install({ time: new Date() });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.locator('#workspace').waitFor({ state: 'visible', timeout: 30000 });
-  assert.equal(await page.locator('#score-value').innerText(), '41');
-  assert.equal(await page.locator('#selected-date').inputValue(), '2026-10-01');
+  const pointer = await (await page.request.get(new URL('/data/latest.json', url).href)).json();
+  const manifest = await (await page.request.get(new URL(pointer.manifest_url, url).href)).json();
+  const history = await (await page.request.get(new URL(`/data/releases/${pointer.release_id}/history.json`, url).href)).json();
+  const latestScore = String(Math.floor(manifest.last_valid_score + .5));
+  const latestDate = manifest.last_valid_score_date;
+  const previousDate = new Date(Date.parse(latestDate) - 86400000).toISOString().slice(0, 10);
+  assert.equal(await page.locator('#score-value').innerText(), latestScore);
+  assert.equal(await page.locator('#selected-date').inputValue(), latestDate);
   assert.equal(await page.locator('#coverage-value').innerText(), '4 / 4');
   await page.locator('#previous-day').focus();
   await page.locator('#previous-day').press('Enter');
-  assert.equal(await page.locator('#selected-date').inputValue(), '2026-09-30');
+  assert.equal(await page.locator('#selected-date').inputValue(), previousDate);
   await page.locator('#next-day').focus();
   await page.locator('#next-day').press('Enter');
-  assert.equal(await page.locator('#selected-date').inputValue(), '2026-10-01');
-  assert.ok((await page.locator('#freshness').innerText()).includes('02/10/2026'));
+  assert.equal(await page.locator('#selected-date').inputValue(), latestDate);
+  const pipelineStatus = await (await page.request.get(new URL('/data/status.json', url).href)).json();
+  if (pipelineStatus.scheduler_available) assert.ok((await page.locator('#freshness').innerText()).includes('10:17'));
   assert.equal(await page.locator('.lucide').count() > 8, true);
   const chartState = await page.evaluate(() => {
     const c = echarts.getInstanceByDom(document.getElementById('history-chart'));
@@ -31,14 +40,14 @@ try {
     for (let i = 3; i < data.length; i += 4) if (data[i]) nonblank++;
     return { series: c.getOption().series.map(s => ({ name: s.name, count: s.data.length })), nonblank };
   });
-  assert.equal(chartState.series[0].count, 4081);
+  assert.equal(chartState.series[0].count, history.rows.length);
   assert.ok(chartState.nonblank > 1000);
   await page.screenshot({ path: 'test-results/dashboard-1440.png', fullPage: true });
-  await page.locator('#next-day').click();
+  await page.locator('#selected-date').fill('2015-08-01');
+  await page.locator('#selected-date').dispatchEvent('change');
   assert.equal(await page.locator('#score-value').innerText(), '—');
   assert.equal(await page.locator('#price-value').innerText(), '—');
   assert.equal(await page.locator('#coverage-value').innerText(), '0 / 4');
-  assert.equal(await page.locator('#next-day').isDisabled(), true);
   await page.locator('#latest-day').click();
   await page.locator('[data-range="1y"]').click();
   const count = await page.evaluate(() => echarts.getInstanceByDom(document.getElementById('history-chart')).getOption().series[0].data.length);
@@ -46,8 +55,6 @@ try {
   await page.locator('[data-mode="custom"]').click();
   for (const id of ['E1', 'E5', 'E6']) await page.locator(`[data-metric="${id}"]`).uncheck();
   const custom = await page.evaluate(() => echarts.getInstanceByDom(document.getElementById('history-chart')).getOption().series.find(s => s.name === 'Tùy chỉnh').data);
-  const pointer = await (await page.request.get(new URL('/data/latest.json', url).href)).json();
-  const history = await (await page.request.get(new URL(`/data/releases/${pointer.release_id}/history.json`, url).href)).json();
   for (const [date, score] of custom) assert.equal(score, history.rows.find(r => r.date === date).components.E7);
   const downloadPromise = page.waitForEvent('download');
   await page.locator('#export').click();
@@ -59,7 +66,7 @@ try {
   await page.locator('[data-metric="E7"]').press('Space');
   assert.equal(await page.locator('#score-value').innerText(), '—');
   await page.locator('[data-mode="core"]').click();
-  assert.equal(await page.locator('#score-value').innerText(), '41');
+  assert.equal(await page.locator('#score-value').innerText(), latestScore);
   await page.locator('#selected-date').fill('2015-08-01');
   await page.locator('#selected-date').dispatchEvent('change');
   assert.equal(await page.locator('#score-value').innerText(), '—');
@@ -71,7 +78,7 @@ try {
   await page.screenshot({ path: 'test-results/research-1440.png', fullPage: true });
   await page.locator('[data-view="methodology"]').click();
   await page.locator('summary').last().click();
-  assert.ok((await page.locator('#provenance').innerText()).includes('aa78757f'));
+  assert.ok((await page.locator('#provenance').innerText()).includes(manifest.snapshot_sha256));
   await page.screenshot({ path: 'test-results/methodology-1440.png', fullPage: true });
   for (const width of [360, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
@@ -89,13 +96,46 @@ try {
   await page.route('**/data/latest.json', route => route.abort());
   await page.locator('#refresh').click();
   await page.locator('#error').waitFor({ state: 'visible' });
-  assert.equal(await page.locator('#score-value').innerText(), '41');
+  assert.equal(await page.locator('#score-value').innerText(), latestScore);
   assert.ok((await page.locator('#error-text').innerText()).includes('Đang giữ bản dữ liệu'));
   await page.unroute('**/data/latest.json');
   await page.locator('#retry').click();
   await page.locator('#error').waitFor({ state: 'hidden' });
+  await page.clock.setSystemTime(new Date('2026-10-05T08:00:00Z'));
+  async function mockDailyRelease(day, value, id) {
+    const fixture = structuredClone(history);
+    fixture.release_id = id;
+    fixture.rows.push({ ...fixture.rows.at(-1), date: day, price_usd: 5000, score: value, coverage: 4,
+      components: { E1: value, E5: value, E6: value, E7: value }, reasons: { E1: null, E5: null, E6: null, E7: null }, source_row_present: true, period_closed_at_retrieval: true });
+    const hash = body => createHash('sha256').update(body).digest('hex');
+    const body = JSON.stringify(fixture);
+    const researchResponse = await page.request.get(new URL(`/data/releases/${pointer.release_id}/research.json`, url).href);
+    const researchBody = await researchResponse.text();
+    const newManifest = { ...manifest, release_id: id, rows: fixture.rows.length, score_rows: fixture.rows.filter(r => r.score !== null).length,
+      last_valid_score_date: day, last_valid_score: value, last_observation_date: day, last_requested_date: day,
+      files: { 'history.json': hash(body), 'research.json': hash(researchBody) } };
+    const manifestBody = JSON.stringify(newManifest);
+    const newPointer = { ...pointer, release_id: id, manifest_url: `/data/releases/${id}/manifest.json`, manifest_sha256: hash(manifestBody) };
+    await page.unroute('**/data/latest.json');
+    await page.route('**/data/latest.json', route => route.fulfill({ json: newPointer }));
+    await page.route(`**/data/releases/${id}/manifest.json`, route => route.fulfill({ contentType: 'application/json', body: manifestBody }));
+    await page.route(`**/data/releases/${id}/history.json`, route => route.fulfill({ contentType: 'application/json', body }));
+    await page.route(`**/data/releases/${id}/research.json`, route => route.fulfill({ contentType: 'application/json', body: researchBody }));
+  }
+  const tomorrow = new Date(Date.parse(history.rows.at(-1).date) + 86400000).toISOString().slice(0, 10);
+  await mockDailyRelease(tomorrow, 50, 'core-00000000000000000001');
+  await page.clock.fastForward(15 * 60 * 1000);
+  await page.waitForFunction(day => document.getElementById('selected-date').value === day, tomorrow);
+  assert.equal(await page.locator('#score-value').innerText(), '50');
+  await page.locator('#selected-date').fill(latestDate);
+  await page.locator('#selected-date').dispatchEvent('change');
+  await mockDailyRelease(tomorrow, 60, 'core-00000000000000000002');
+  await page.clock.fastForward(15 * 60 * 1000);
+  await page.waitForFunction(() => document.getElementById('manifest-link').getAttribute('href').includes('00000000000000000002'));
+  assert.equal(await page.locator('#selected-date').inputValue(), latestDate);
+  assert.equal(await page.locator('#score-value').innerText(), latestScore);
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ url, score: 41, viewport_checks: [1440, 768, 390, 360],
+  console.log(JSON.stringify({ url, score: latestScore, date: latestDate, viewport_checks: [1440, 768, 390, 360],
     custom_series_verified: custom.length, csv: 'verified', keyboard_controls: 'verified', network_failure_preserves_data: true,
-    chart_nonblank_pixels: chartState.nonblank, page_errors: errors }));
+    chart_nonblank_pixels: chartState.nonblank, auto_refresh: 'latest advances; historical selection preserved', page_errors: errors }));
 } finally { await browser.close(); }

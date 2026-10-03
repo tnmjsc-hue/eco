@@ -33,7 +33,7 @@ jobs:
       - name: Frozen research artifacts
         run: node scripts/validate-research-artifacts.mjs
       - name: Browser data contract and release checksums
-        run: node --test tests/web.test.mjs
+        run: node --test tests/*.test.mjs
       - name: JavaScript syntax
         run: node --check public/app.js
       - name: Whitespace

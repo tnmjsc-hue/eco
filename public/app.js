@@ -4,7 +4,7 @@ const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const dateLabel = date => date.split('-').reverse().join('/');
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const state = { rows: [], manifest: null, research: null, range: 'all', mode: 'core', selected: METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
+const state = { rows: [], manifest: null, research: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'core', selected: METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
 let historyChart, researchChart;
 const baselineNames = { core: 'Core', normalized_E7_only: 'E7 độc lập', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá độc lập' };
 
@@ -26,8 +26,16 @@ async function load() {
   $('error').hidden = true;
   try {
     if (!window.echarts || !window.lucide) throw new Error('Thư viện giao diện chưa tải được. Vui lòng tải lại trang.');
+    let status = null;
+    try { status = JSON.parse(new TextDecoder().decode(await getBytes('/data/status.json', true))); } catch { /* Data remains usable when operational status is unavailable. */ }
     const pointer = JSON.parse(new TextDecoder().decode(await getBytes('/data/latest.json', true)));
     if (!/^core-[a-f0-9]{20}$/.test(pointer.release_id) || pointer.manifest_url !== `/data/releases/${pointer.release_id}/manifest.json`) throw new Error('Release pointer không hợp lệ.');
+    state.status = status?.project === 'ECO' && status.release_id === pointer.release_id ? status : null;
+    state.lastChecked = Date.now();
+    if (state.manifest?.release_id === pointer.release_id && state.pointerHash === pointer.manifest_sha256) {
+      renderOverview();
+      return;
+    }
     const manifest = await verify(await getBytes(pointer.manifest_url), pointer.manifest_sha256);
     if (manifest.release_id !== pointer.release_id || manifest.methodology_version !== 'core-v0.1.0' || manifest.series_type !== 'reconstructed') throw new Error('Manifest không đúng phiên bản.');
     const base = `/data/releases/${pointer.release_id}/`;
@@ -38,8 +46,9 @@ async function load() {
     if (research.protocol !== 'core-v0.1.0-protocol-1' || typeof research.success !== 'boolean') throw new Error('Research không đúng protocol.');
     state.rows = data.rows;
     state.manifest = manifest;
+    state.pointerHash = pointer.manifest_sha256;
     state.research = research;
-    if (!state.rows.some(r => r.date === state.date)) state.date = manifest.last_valid_score_date;
+    if (state.followLatest || !state.rows.some(r => r.date === state.date)) state.date = manifest.last_valid_score_date;
     $('selected-date').min = state.rows[0].date;
     $('selected-date').max = state.rows.at(-1).date;
     $('manifest-link').href = pointer.manifest_url;
@@ -71,9 +80,10 @@ function filteredRows() {
   const start = state.range === 'all' ? state.rows[0].date : dateMinus(state.rows.at(-1).date, state.range === '1y' ? 365 : 1095);
   return state.rows.filter(r => r.date >= start);
 }
-function selectDate(date) {
+function selectDate(date, followLatest = false) {
   if (!state.rows.some(r => r.date === date)) { $('selected-date').value = state.date; return; }
   state.date = date;
+  state.followLatest = followLatest;
   renderOverview();
   renderComponents();
 }
@@ -106,7 +116,15 @@ function renderOverview() {
   const age = Math.max(0, Math.round((Date.parse(today) - Date.parse(last)) / 86400000));
   const missing = state.manifest.missing_dates.length;
   const pending = state.manifest.pending_dates ?? [];
-  $('freshness').innerHTML = `<b class="status-dot"></b><span>Nguồn đến ${dateLabel(last)} · cách hiện tại ${age} ngày UTC${missing ? ` · ${missing} ngày đã đóng thiếu dữ liệu` : ''}${pending.length ? ` · ngày chờ ${pending.map(d => escape(dateLabel(d))).join(', ')} (chưa đóng lúc tải)` : ''}. Bản snapshot nghiên cứu, chưa tự cập nhật.</span>`;
+  const update = state.status?.daily_update;
+  const labels = { published: 'Đã phát hành ngày mới', revised: 'Đã phát hành revision', unchanged: 'Dữ liệu không đổi', source_pending: 'Đang chờ dữ liệu nguồn', failed: 'Cập nhật lỗi · giữ bản hợp lệ' };
+  const timeLabel = value => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false });
+  const schedule = update?.enabled ? `Tự cập nhật lúc 10:17 và kiểm tra lại 14:17 (giờ Việt Nam). ${escape(labels[update.outcome] ?? 'Chờ lần chạy đầu')}${update.last_attempt_at ? ` · lần kiểm tra ${escape(timeLabel(update.last_attempt_at))}` : ''}.` : 'Chưa xác minh trạng thái lịch cập nhật.';
+  const scoreLag = (Date.now() - Date.parse(state.manifest.last_valid_score_date + 'T00:00:00Z') - 86400000) / 3600000;
+  const jobLag = update?.last_attempt_at ? (Date.now() - Date.parse(update.last_attempt_at)) / 3600000 : 0;
+  const warning = scoreLag > 48 || jobLag > 26 ? ' Dữ liệu chậm; điểm gần nhất vẫn có ngày quan sát gốc.' : '';
+  const revision = state.manifest.revision?.changed_dates?.length ? ` Revision nguồn: ${state.manifest.revision.changed_dates.length} ngày lịch sử; release cũ được giữ nguyên.` : '';
+  $('freshness').innerHTML = `<b class="status-dot"></b><span>Nguồn đến ${dateLabel(last)} · cách hiện tại ${age} ngày UTC${missing ? ` · ${missing} ngày đã đóng thiếu dữ liệu` : ''}${pending.length ? ` · ngày chờ ${pending.map(d => escape(dateLabel(d))).join(', ')} (chưa đóng lúc tải)` : ''}. ${schedule}${warning}${revision}</span>`;
 }
 function renderComponents() {
   const row = state.rows.find(r => r.date === state.date);
@@ -161,7 +179,7 @@ function plotResearch() {
 function renderProvenance() {
   const m = state.manifest;
   $('provenance').replaceChildren();
-  for (const [label, value] of [ ['Release', m.release_id], ['Snapshot SHA-256', m.snapshot_sha256], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tải dữ liệu UTC', m.retrieved_at], ['Tính điểm UTC', m.computed_at], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.source_rows} ngày nguồn · ${m.score_rows} ngày có Core · bắt đầu ${m.first_score_date}`] ]) {
+  for (const [label, value] of [ ['Release', m.release_id], ['Snapshot SHA-256', m.snapshot_sha256], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tải dữ liệu UTC', m.retrieved_at], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.source_rows} ngày nguồn · ${m.score_rows} ngày có Core · bắt đầu ${m.first_score_date}`] ]) {
     const dt = document.createElement('dt'); dt.textContent = label;
     const dd = document.createElement('dd'); dd.textContent = value;
     $('provenance').append(dt, dd);
@@ -190,7 +208,7 @@ function start() {
   $('selected-date').addEventListener('change', event => selectDate(event.target.value));
   $('previous-day').addEventListener('click', () => selectDate(dateMinus(state.date, 1)));
   $('next-day').addEventListener('click', () => selectDate(dateMinus(state.date, -1)));
-  $('latest-day').addEventListener('click', () => selectDate(state.manifest.last_valid_score_date));
+  $('latest-day').addEventListener('click', () => selectDate(state.manifest.last_valid_score_date, true));
   $('log-price').addEventListener('change', renderChart);
   $('refresh').addEventListener('click', load);
   $('retry').addEventListener('click', load);
@@ -202,6 +220,8 @@ function start() {
   });
   new ResizeObserver(() => { historyChart?.resize(); researchChart?.resize(); }).observe(document.querySelector('main'));
   if (['#research', '#methodology'].includes(location.hash)) view(location.hash.slice(1));
+  setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
   load();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();

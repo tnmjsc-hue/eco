@@ -12,7 +12,7 @@ Token R2 `eco-eth-snapshot-pipeline` đã được tạo với quyền **Object 
 | R2 `eco-eth-private` | Snapshot raw, hash, manifest chạy batch, bản sao lưu release và tài liệu kiểm toán riêng tư | Snapshot D03 đã upload; 7/7 object đọc ngược và khớp SHA-256 |
 | D1 / KV | Chỉ mục truy vấn hoặc trạng thái cập nhật nhiều lần nếu sau này có nhu cầu thật | Chưa tạo; bản đầu không cần database server |
 
-Dashboard Core nghiên cứu đã có engine và score reconstructed, không phải sản phẩm vận hành realtime. `public/data/status.json` ghi scope experimental/noncommercial; `public/data/latest.json` trỏ manifest/history/research versioned. Raw snapshot vẫn ở R2 private với 7/7 hash đã xác minh. Cloudflare Pages không chạy batch Python định kỳ thay cho pipeline; scheduler chưa có.
+Dashboard Core nghiên cứu có engine và score reconstructed, không phải sản phẩm vận hành realtime. `public/data/status.json` ghi scope experimental/noncommercial và daily-update status; `public/data/latest.json` trỏ manifest/history/research versioned. Scheduled batch chạy GitHub Actions, không chạy trong Pages. Mỗi snapshot mới phải upload R2 private + readback toàn bộ trước public release; xem [DAILY_UPDATES](DAILY_UPDATES.md).
 
 ## Quy tắc dữ liệu
 
@@ -45,7 +45,7 @@ Token giới hạn bucket đã có; **không tạo thêm token trùng**. Nếu c
 
 Trên máy chạy pipeline, đọc hai file DPAPI bằng **cùng tài khoản Windows** và chuyển vào tiến trình dưới tên `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; thêm `R2_ACCOUNT_ID`, `R2_BUCKET` từ cấu hình. Endpoint S3: `https://<account-id>.r2.cloudflarestorage.com`. DPAPI gắn với máy/tài khoản Windows hiện tại, nên runner khác cần secret store riêng và cấp credential theo quy trình an toàn. Không ghi giá trị vào `.env.example`, log, URL, commit hoặc frontend. Nếu dùng GitHub Actions, thêm secret ở repo Settings → Secrets and variables → Actions, không đặt vào Pages build env vì Pages chỉ đọc release public. Việc chuyển credential sang runner chưa thực hiện.
 
-**Chưa thực hiện:** kiểm tra restore, lịch batch và pipeline tự động. Upload snapshot D03 đã hoàn tất; đây chưa phải public data release và website không truy cập prefix `raw/`.
+**Daily batch:** dùng lại bucket-limited S3 token trong GitHub Actions Secrets, không đưa Pages API token/Git credential cá nhân vào runner. Deploy hook main có secret riêng; bản DPAPI ở `%APPDATA%\ETH-CBBI\cloudflare-daily-hook.dpapi`. Snapshot 2026-10-03T02:00:41.628Z đã upload/readback 7/7, canonical `33264b50fc555e3591cdd61be0301ed84f62505f86a55bd1c3807a9e97d3f976`, 4081 observation đến 2026-10-02; MVRV ngày cuối còn null. Website chỉ đọc output public, không prefix raw. Restore độc lập và shadow 30 ngày chưa thực hiện; evidence hosted scheduler ghi HANDOFF.
 
 ## Kiểm tra và chi phí
 

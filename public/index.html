@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/styles.css?v=dashboard-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=dashboard-1"></script>
+  <script type="module" src="/app.js?v=daily-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -69,7 +69,7 @@
           <tr><td>E6 · Log Trend</td><td><code>ln(P) − a − b × ln(age)</code></td><td>OLS chỉ dữ liệu u &lt; t, ít nhất 730 giá; gốc 08/08/2015</td></tr>
           <tr><td>E7 · MVRV Z</td><td><code>(M − M/V) / std(M trước t)</code></td><td>Population std, toàn bộ quá khứ, ít nhất 365 vốn hóa</td></tr>
         </tbody></table></div>
-        <div class="method-grid"><section><h2>Nguồn và quyền sử dụng</h2><p><a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a>, ETH native mainnet, USD, daily UTC. P = PriceUSD, M = CapMrktCurUSD, V = CapMVRVCur. Raw được lưu riêng tư tại Cloudflare R2; website chỉ lấy JSON dẫn xuất tính sẵn từ Pages/CDN.</p><p>Dữ liệu và dẫn xuất công bố cho nghiên cứu phi thương mại theo <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a>. ECO đã chuẩn hóa và tổng hợp dữ liệu; Coin Metrics không bảo trợ ECO. Không bảo đảm tính chính xác hay phù hợp đầu tư.</p></section><section><h2>Ngày, lịch sử và phiên bản</h2><p>Ngày quan sát là ngày UTC của nguồn, kết thúc ở nửa đêm ngày kế tiếp. Chỉ dùng ngày đã đóng. Ngày tải snapshot và ngày tính score được ghi riêng trong manifest.</p><p>Toàn bộ biểu đồ hiện tại là reconstructed. Các release được giữ bất biến theo hash; correction phải tạo release mới. Chưa có scheduler tự cập nhật hay chuỗi as-published.</p></section></div>
+        <div class="method-grid"><section><h2>Nguồn và quyền sử dụng</h2><p><a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a>, ETH native mainnet, USD, daily UTC. P = PriceUSD, M = CapMrktCurUSD, V = CapMVRVCur. Raw được lưu riêng tư tại Cloudflare R2; website chỉ lấy JSON dẫn xuất tính sẵn từ Pages/CDN.</p><p>Dữ liệu và dẫn xuất công bố cho nghiên cứu phi thương mại theo <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a>. ECO đã chuẩn hóa và tổng hợp dữ liệu; Coin Metrics không bảo trợ ECO. Không bảo đảm tính chính xác hay phù hợp đầu tư.</p></section><section><h2>Ngày, lịch sử và phiên bản</h2><p>Ngày quan sát là ngày UTC của nguồn, kết thúc ở nửa đêm ngày kế tiếp. Chỉ dùng ngày đã đóng. Job chạy dự kiến 10:17 và kiểm tra lại 14:17 giờ Việt Nam; dữ liệu nguồn có thể đến chậm. Khi lỗi, giữ nguyên release hợp lệ và báo trạng thái.</p><p>Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.</p></section></div>
         <h2>Mục tiêu nghiên cứu 9 metric</h2>
         <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
           <tr><td>E1 / E5 / E6 / E7</td><td>4 thành phần Core</td><td><span class="status-pill ready">Đã tính</span></td></tr>
