@@ -137,7 +137,7 @@ Loại evidence: `docs`, `engine_tests`, `backtest`, `browser_qa`. Đọc lại 
 
 Engine causal thực thi frozen ADR-001; 19 unit tests Python, 3 tests web và kiểm 3.000 ngày prefix của snapshot thật đã đạt. Dataset/current vintage không đổi; Core gần nhất 41.379812239861 ngày 2026-10-01, lịch sử reconstructed. Kiểm UTC retrieval phát hiện as-of caller dùng 2026-10-03 trong khi retrieval UTC là 2026-10-02: ngày 02/10 chưa đóng, giữ pending null, không coi là gap sau đóng.
 
-Primary evaluation 2.101 ngày, 648 positives, 10.000 paired 90-day bootstrap replicates, seed 20261003; Core AP 0.55424872, mọi CI Δ so baseline qua 0. Chưa chứng minh incremental utility; không tune lại model. Chi tiết [core-research-report.md](core-research-report.md), quyết định [ADR-002](ADR-002-experimental-research-preview.md). Q02 correlation/ablation/regime và vintage realtime/shadow vẫn chưa hoàn tất.
+Primary evaluation 2.101 ngày, 648 positives, 10.000 paired 90-day bootstrap replicates, seed 20261003; Core AP 0.55424872, mọi CI Δ so baseline qua 0. Chưa chứng minh incremental utility; không tune lại model. Chi tiết [core-research-report.md](core-research-report.md), quyết định [ADR-002](ADR-002-experimental-research-preview.md). Q02 correlation/ablation/regime đã hoàn tất; vintage realtime/shadow vẫn chưa hoàn tất.
 
 E2-01 đã chốt contract diagnostic `nupl_diagnostic = 1 - 1/CapMVRVCur` với cùng provider/ngày/snapshot E7. Không thêm E2 vào composite; invalid hoặc thiếu MVRV trả null có reason. Evidence tóm tắt tại [evidence/e2-nupl-diagnostic-2026-10-03.json](evidence/e2-nupl-diagnostic-2026-10-03.json); đây không phải một public release mới.
 

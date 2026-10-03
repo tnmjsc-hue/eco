@@ -98,7 +98,7 @@
       "id": "research-notes",
       "kind": "research_notes",
       "path": "docs/RESEARCH.md",
-      "sha256": "66f965de0f5efa7540de7fe5f598d7223514437c199daf71c402609f6e2b30e3",
+      "sha256": "e647a1b6b04fd75b7cd6a278afde3d14f4a2c6ee050bd1eae9a4434e4096f809",
       "as_of_utc": "2026-10-03",
       "urls": [
         "https://docs.coinmetrics.io/api/v4/",
