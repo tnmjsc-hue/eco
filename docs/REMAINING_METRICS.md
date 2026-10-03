@@ -53,7 +53,7 @@ Không viết lại hàm raw như thể chưa có. Phần chưa hoàn thành là
 
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
-| E9-01 | TODO | D05 | Xác minh entitlement của `TxTfrValAdjUSD` hoặc nguồn thay thế cụ thể: ETH daily, định nghĩa adjusted transfer value, coverage và quyền nghiên cứu/public/derived/CSV. Lưu evidence 403 hiện có. Nếu cần trả phí, chuẩn bị metric/plan/coverage/licence/báo giá thực để người dùng quyết định; không tự mua. |
+| E9-01 | BLOCKED | D05 | Đã audit source gate: catalog có `TxTfrValAdjUSD` ETH/1d nhưng sample Community HTTP 403; adjusted-transfer filters, history, vintage và quyền derived/public chưa xác minh. Evidence [remaining-source-audit](evidence/remaining-source-audit-2026-10-03.json). Cần entitlement hoặc alternative cụ thể trước E9-02; không tự mua. |
 | E9-02 | BLOCKED | E9-01, X00 | Tải full history và audit cặp vốn hóa/transfer value cùng provider, currency và ngày UTC. Document filters cho internal transfers/contracts/bridge/MEV, revision và gaps; mẫu số phải dương. Nguồn mới là candidate dataset có provenance riêng. |
 | E9-03 | BLOCKED | E9-02, X01 | Implement giả thuyết đã khóa `ln(M/SMA90(adjusted_native_transfer_value_USD))` cùng normalizer causal; kiểm rolling calendar, missing/zero, đơn vị và prefix. Không đổi sang volume chưa điều chỉnh mà giữ cùng định nghĩa/version. |
 | E9-04 | BLOCKED | E9-03 | Báo cáo utility tăng thêm, correlation/ablation, độ ổn định và sai lệch transfer value. ADR nhận/giữ Experimental/loại; tên công khai là NVT proxy, không gọi là CVDD. |
@@ -62,7 +62,7 @@ Không viết lại hàm raw như thể chưa có. Phần chưa hoàn thành là
 
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
-| E3-01 | TODO | D05 | Xác minh endpoint/metadata ETH realized-cap age bands hoặc realized-cap HODL waves, plan/entitlement/history và licence. Cần bằng chứng asset ETH thực; tài liệu RHODL BTC không đáp ứng task. |
+| E3-01 | BLOCKED | D05 | Đã audit source gate: tài liệu có endpoint RHODL/realized-cap HODL waves nhưng RHODL ghi phạm vi BTC, endpoint cần API key; no-key probes 401, chưa có ETH entitlement/history/unit/licence. Evidence [remaining-source-audit](evidence/remaining-source-audit-2026-10-03.json). Cần endpoint ETH được cấp quyền trước E3-02; không thay bằng BTC. |
 | E3-02 | BLOCKED | E3-01, X00 | Audit snapshot lịch sử và đặc tả nhóm trẻ/già, cách định tuổi/realized value account-based, đơn vị, lag/warm-up, mẫu số và chiều tín hiệu. Giải thích ảnh hưởng staking, hợp đồng và self-transfers. Không suy ra age cohorts chỉ từ aggregate MVRV. |
 | E3-03 | BLOCKED | E3-02, X01 | Implement công thức ratio đã được khóa và normalizer; fixture cohorts tính tay, missing/zero, biến động cohort và prefix-invariance. Cohort schema/methodology provider đổi phải tạo candidate/version riêng. |
 | E3-04 | BLOCKED | E3-03 | Đánh giá tính độc lập với E7/E2, utility và regime stability; ADR nhận/giữ Experimental/loại. Nếu không có nguồn đủ kiểm chứng, đóng nghiên cứu bằng evidence và quyết định loại hoặc đề xuất thay thế rõ nghĩa. |
@@ -71,7 +71,7 @@ Không viết lại hàm raw như thể chưa có. Phần chưa hoàn thành là
 
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
-| E8-01 | TODO | D05 | Xác minh ETH account-based dormancy/spending endpoint, entitlement, daily history và quyền sử dụng; document tuổi ETH, volume và đối tượng bị loại. `SplyAct1yr` chỉ là candidate active-supply, không đồng nghĩa dormancy. |
+| E8-01 | BLOCKED | D05 | Đã audit source gate: Glassnode có `dormancy_account_based` nhưng no-key probe 401 và chưa có ETH entitlement/history; Coin Metrics `SplyAct1yr` sample 403, định nghĩa là active supply chứ không phải dormancy. Evidence [remaining-source-audit](evidence/remaining-source-audit-2026-10-03.json). Cần nguồn dormancy ETH được cấp quyền trước E8-02; không đổi tên active supply. |
 | E8-02 | BLOCKED | E8-01, X00 | Audit full-history snapshot và chốt công thức proxy, units, denominator, lag/warm-up, chiều tín hiệu và bias của staking/withdrawal/contracts/self-transfers. Nếu nguồn chỉ là active supply, mở định nghĩa/version thay thế riêng trước khi code. |
 | E8-03 | BLOCKED | E8-02, X01 | Implement feature/normalizer đã khóa; fixture tính tay, missing/zero, calendar windows, replay/prefix và kiểm thay đổi heuristic của provider. Không gắn nhãn Reserve Risk cho proxy khác nghĩa. |
 | E8-04 | BLOCKED | E8-03 | Correlation/ablation với E3/E7, regime analysis và utility ngoài mẫu theo protocol; ADR nhận/giữ Experimental/loại. Ghi cụ thể trường hợp dữ liệu/phương pháp không đủ, không điền số giả. |

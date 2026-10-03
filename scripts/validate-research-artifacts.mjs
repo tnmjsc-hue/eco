@@ -22,6 +22,7 @@ const e4Protocol = await readJson('configs/research/e4-fee-candidate-v0.1.0.json
 const e2Evidence = await readJson('docs/evidence/e2-nupl-diagnostic-2026-10-03.json');
 const e4Evidence = await readJson('docs/evidence/e4-fee-backfill-2026-10-03.json');
 const e4Evaluation = await readJson('docs/evidence/e4-candidate-evaluation-2026-10-03.json');
+const remainingSourceAudit = await readJson('docs/evidence/remaining-source-audit-2026-10-03.json');
 
 assert.equal(protocol.status, 'frozen_for_research_only');
 assert.equal(protocol.methodology_version, 'core-v0.1.0');
@@ -123,7 +124,7 @@ assert.ok(sourceContracts.unknown_policy.no_inference.includes('retrieved_at mus
 const evidenceIds = new Set(sourceContracts.evidence.map(({ id }) => id));
 assert.deepEqual(
   sourceContracts.evidence.map(({ id }) => id),
-  ['D05-summary', 'D03-core-audit', 'metric-feasibility-report', 'rights-policy', 'research-notes'],
+  ['D05-summary', 'D03-core-audit', 'metric-feasibility-report', 'rights-policy', 'research-notes', 'remaining-source-audit'],
 );
 for (const evidence of sourceContracts.evidence) {
   assert.match(evidence.sha256, /^[0-9a-f]{64}$/, `${evidence.id}: SHA-256 required`);
@@ -175,6 +176,9 @@ assert.equal(contractById.E3.coverage.sample_probe.data_rows, 'not_requested');
 assert.match(contractById.E3.decision, /do_not_implement/);
 assert.match(contractById.E8.decision, /do_not_relabel/);
 assert.match(contractById.E9.decision, /not_selected/);
+assert.equal(contractById.E3.status, 'blocked');
+assert.equal(contractById.E8.status, 'blocked');
+assert.equal(contractById.E9.status, 'blocked');
 assert.ok(contractById.E2.rights.derived.attribution_required);
 assert.equal(contractById.E3.rights.chart.action, 'do_not_publish');
 assert.equal(contractById.E8.rights.csv.action, 'do_not_export');
@@ -201,6 +205,19 @@ assert.equal(e4Evaluation.status, 'exploratory_reconstructed_only');
 assert.equal(e4Evaluation.statistics.fee_activity.average_precision, 0.24094623735337878);
 assert.equal(e4Evaluation.decision, 'retain_r_and_d_only_do_not_promote_to_core_or_public_metric');
 assert.equal(e4Evaluation.not_a_probability, true);
+assert.equal(remainingSourceAudit.audit_id, 'E3-01/E8-01/E9-01');
+assert.equal(remainingSourceAudit.authorization, 'no_api_key_no_paid_subscription');
+assert.equal(remainingSourceAudit.scope.no_btc_substitution, true);
+assert.deepEqual(
+  remainingSourceAudit.findings.map(({ task, status }) => [task, status]),
+  [['E3-01', 'blocked'], ['E8-01', 'blocked'], ['E9-01', 'blocked']],
+);
+assert.deepEqual(
+  remainingSourceAudit.glassnode.no_key_probes.map(({ http_status }) => http_status),
+  [401, 401, 401],
+);
+assert.equal(remainingSourceAudit.coinmetrics.sample_status.SplyAct1yr.http_status, 403);
+assert.equal(remainingSourceAudit.coinmetrics.sample_status.TxTfrValAdjUSD.http_status, 403);
 
 process.stdout.write('D04 protocol invariants: PASS\nD05 feasibility register E1-E9: PASS\n');
 process.stdout.write('X00 source contracts E2/E3/E4/E8/E9: PASS\n');

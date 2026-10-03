@@ -1,0 +1,89 @@
+{
+  "audit_id": "E3-01/E8-01/E9-01",
+  "audit_version": "remaining-source-gate-v0.1.0",
+  "as_of_utc": "2026-10-03",
+  "retrieved_at_utc": "2026-10-03T03:47:07.193Z",
+  "authorization": "no_api_key_no_paid_subscription",
+  "scope": {
+    "asset": "eth",
+    "frequency": "1d",
+    "no_btc_substitution": true,
+    "public_release": "blocked_until_metric_specific_rights_and_methodology"
+  },
+  "coinmetrics": {
+    "evidence_ref": "D05-summary",
+    "catalog_status": 200,
+    "sample_window": { "start": "2021-01-01", "end": "2021-01-03" },
+    "sample_status": {
+      "SplyAct1yr": { "http_status": 403, "row_count": 0, "response_sha256": "b549d2993288de4e8b43e5d6597519de622b836648155d1eac9f6020b87df4f1" },
+      "TxTfrValAdjUSD": { "http_status": 403, "row_count": 0, "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c" }
+    },
+    "active_supply_semantics": {
+      "source": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/supply/active-supply",
+      "http_status": 200,
+      "response_sha256": "52b4d948bce61b80046fc6e9721891f1d799c3a11d3009df633adf3361dd8698",
+      "finding": "SplyAct1Yr is trailing active supply of native units that transacted at least once; it is not a dormancy measure."
+    }
+  },
+  "glassnode": {
+    "documentation": [
+      {
+        "id": "indicators",
+        "url": "https://docs.glassnode.com/basic-api/endpoints/indicators",
+        "http_status": 200,
+        "response_sha256": "ed0d626c8b165ced2c4df975b1b300bb71079e12c734181d87a39ebf5cbdc8fb",
+        "facts": [
+          "The documentation lists dormancy_account_based and requires an API key for endpoint requests.",
+          "The RHODL Ratio endpoint documentation specifies BTC as its asset scope; this does not establish ETH coverage."
+        ]
+      },
+      {
+        "id": "supply",
+        "url": "https://docs.glassnode.com/basic-api/endpoints/supply",
+        "http_status": 200,
+        "response_sha256": "852ea2fb340d7c5c7e528333381519bd6ad0226c56f6f3ad1110a13be06baab9",
+        "facts": [
+          "The documentation lists Realized Cap HODL Waves and requires an API key plus an asset parameter.",
+          "Documentation alone does not establish an entitled ETH daily history, unit, vintage, or redistribution right."
+        ]
+      },
+      {
+        "id": "metadata",
+        "url": "https://docs.glassnode.com/basic-api/metadata",
+        "http_status": 200,
+        "response_sha256": "942688409c1931c0c545abd4acc692e7f9c2df7da0c048fd186c6a3e883a5800",
+        "facts": ["Metadata endpoint is documented, but no credentialed asset/metric entitlement query was performed."]
+      }
+    ],
+    "no_key_probes": [
+      { "endpoint": "https://api.glassnode.com/v1/metrics/indicators/dormancy_account_based", "asset": "ETH", "http_status": 401 },
+      { "endpoint": "https://api.glassnode.com/v1/metrics/supply/rcap_hodl_waves", "asset": "ETH", "http_status": 401 },
+      { "endpoint": "https://api.glassnode.com/v1/metrics/indicators/rhodl_ratio", "asset": "ETH", "http_status": 401 }
+    ]
+  },
+  "findings": [
+    {
+      "task": "E3-01",
+      "status": "blocked",
+      "finding": "No ETH age-band/RHODL series, daily coverage, units, revision policy, or metric-specific rights were verified.",
+      "decision": "Do not implement; require an entitled ETH endpoint and a source contract before E3-02."
+    },
+    {
+      "task": "E8-01",
+      "status": "blocked",
+      "finding": "Glassnode documents an account-based dormancy endpoint but the no-key request is unauthorized; Coin Metrics SplyAct1yr sample is 403 and its definition is active supply, not dormancy.",
+      "decision": "Do not relabel active supply; require entitled ETH dormancy/spending history and rights before E8-02."
+    },
+    {
+      "task": "E9-01",
+      "status": "blocked",
+      "finding": "Coin Metrics catalog lists TxTfrValAdjUSD for ETH, but the Community timeseries sample is 403; adjusted-transfer filters, history, vintage, and derived/public rights remain unverified.",
+      "decision": "Do not implement NVT proxy; require access or a specifically vetted alternative before E9-02."
+    }
+  ],
+  "interpretation": [
+    "HTTP 401/403 proves the attempted unauthenticated or Community request did not provide data; it does not prove that no paid or entitled source exists.",
+    "No account was created and no email was accessed because no source gate can be cleared without an explicit provider entitlement and licence decision.",
+    "No metric, score, probability, zero fill, or public release was created from these blocked candidates."
+  ]
+}

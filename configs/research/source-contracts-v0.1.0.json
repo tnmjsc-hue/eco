@@ -105,6 +105,24 @@
         "https://docs.glassnode.com/basic-api/endpoints/indicators",
         "https://docs.glassnode.com/basic-api/metadata"
       ]
+    },
+    {
+      "id": "remaining-source-audit",
+      "kind": "candidate_source_gate_audit",
+      "path": "docs/evidence/remaining-source-audit-2026-10-03.json",
+      "sha256": "45064f041edf66ea5fe656809ab3699c4d2fae835302e6f2edde7a952fb2c473",
+      "as_of_utc": "2026-10-03",
+      "retrieved_at_utc": "2026-10-03T03:47:07.193Z",
+      "authorization": "no_api_key_no_paid_subscription",
+      "urls": [
+        "https://api.glassnode.com/v1/metrics/indicators/dormancy_account_based",
+        "https://api.glassnode.com/v1/metrics/supply/rcap_hodl_waves",
+        "https://api.glassnode.com/v1/metrics/indicators/rhodl_ratio",
+        "https://docs.glassnode.com/basic-api/endpoints/indicators",
+        "https://docs.glassnode.com/basic-api/endpoints/supply",
+        "https://docs.glassnode.com/basic-api/metadata",
+        "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/supply/active-supply"
+      ]
     }
   ],
   "contracts": [
@@ -202,7 +220,7 @@
     {
       "id": "E3",
       "concept": "ETH realized-value age ratio / RHODL candidate",
-      "status": "unknown",
+      "status": "blocked",
       "role": "unverified_candidate",
       "provider": "glassnode_documentation_candidate",
       "source": {
@@ -257,7 +275,7 @@
         "derived": {"status": "unknown", "action": "do_not_publish"},
         "csv": {"status": "unknown", "action": "do_not_export"}
       },
-      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes", "remaining-source-audit"],
       "decision": "do_not_implement_until_eth_coverage_formula_units_history_and_rights_are_verified"
     },
     {
@@ -345,7 +363,7 @@
     {
       "id": "E8",
       "concept": "ETH dormancy / spending proxy; not Reserve Risk",
-      "status": "unknown",
+      "status": "blocked",
       "role": "unverified_candidate",
       "provider": "glassnode_and_coinmetrics_candidates",
       "source": {
@@ -411,7 +429,7 @@
         "derived": {"status": "unknown", "action": "do_not_publish"},
         "csv": {"status": "unknown", "action": "do_not_export"}
       },
-      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes", "remaining-source-audit"],
       "decision": "do_not_relabel_active_supply_as_dormancy_or_reserve_risk"
     },
     {
@@ -468,7 +486,7 @@
         "derived": {"status": "unknown", "action": "do_not_publish"},
         "csv": {"status": "unknown", "action": "do_not_export"}
       },
-      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes", "remaining-source-audit"],
       "decision": "not_selected_pending_entitlement_adjustment_semantics_eth_validation_and_rights"
     }
   ]
