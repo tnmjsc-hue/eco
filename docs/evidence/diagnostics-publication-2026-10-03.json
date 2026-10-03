@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0.0",
+  "audit": "diagnostics-publication-v1",
+  "asset": "eth",
+  "methodology_version": "diagnostics-v0.1.0",
+  "role": "raw_diagnostics_only",
+  "release_id": "diagnostic-c005275a913702669d2d",
+  "protocol_sha256": "fb7f5b80ca84ffc4babb8b5ffe823574500f13fed31fc03a3a25922da76afc4a",
+  "engine_sha256": "303bae7015547807a815656fa1d8fcc195ecbe87ede3787a7ab81bdbeea14c9c",
+  "manifest_sha256": "213bc94cbe3f478be31253c70b4a5e604630d44f8ffa55e109f40113232dc98f",
+  "files": {
+    "history.json": "c4a2f0f137dacb9043c72b087ed4e6de7de8ce4be77ea98b5eba6a22782e4c81",
+    "research.json": "243d87d225e03eb16685acdc5701dd049335da2339a9ab3f4c4338648098bc36"
+  },
+  "parents": {
+    "core": {
+      "release_id": "core-f677f7dd1f1749cc6dce",
+      "methodology_version": "core-v0.1.0",
+      "manifest_url": "/data/releases/core-f677f7dd1f1749cc6dce/manifest.json",
+      "manifest_sha256": "7a757ff17fb3bb7024ad72e7c0eb384f853a314c2bc0a958e866da853e35e0e6",
+      "history_sha256": "4b481a53b3ba5ed5277a8299a085934f9503f1476c81b10008a1c32d2762c0a1",
+      "last_observation_date": "2026-10-02"
+    },
+    "proxies": {
+      "release_id": "proxy-f9edb79c4231efbbb9fe",
+      "methodology_version": "network-proxies-v0.1.0",
+      "manifest_url": "/data/network-proxies/releases/proxy-f9edb79c4231efbbb9fe/manifest.json",
+      "manifest_sha256": "2dca7a91c433143a42bd80541495ac6627e987295e56fb3257ba32987c679a0b",
+      "history_sha256": "ea7641104771e1da9b1c0f61c01aef2bc957c128f95c34f2380eac2064e5e68f",
+      "last_observation_date": "2026-10-02"
+    }
+  },
+  "private_inputs_verified": {
+    "core": {
+      "canonical_sha256": "59bda78805616259b93c63cef5aec50a0f33db768fe8e8d7c272e44bab5ccdfb",
+      "source_manifest_sha256": "fec151032f64732ed1a337578657f4ef8e899880d71b73c8e2c2dc2e44c60a36",
+      "receipt_sha256": "336b5fd1b0b1034867e9d22fd0bfefac87b2080e166b4151586dd0017d13d433",
+      "objects_readback_verified": true,
+      "file_count": 7
+    },
+    "proxies": {
+      "canonical_sha256": "405c4eaf20e23123643ed08acf00d4ce6df2f0ce41f82c975ebf7d4730628637",
+      "source_manifest_sha256": "bc8ccb903bf57be31fcf9d3dcc2a7cad36010fad55dea77537dd60f62603cac6",
+      "receipt_sha256": "bae2e0f293b6f0666b39397323a66d0c1bc6109e2f7dc838e350fe10fa4becb4",
+      "objects_readback_verified": true,
+      "file_count": 8
+    }
+  },
+  "coverage": {
+    "nupl_diagnostic": {
+      "valid_rows": 4074,
+      "null_rows": 9,
+      "first_valid_date": "2015-08-08",
+      "last_valid_date": "2026-10-02",
+      "last_value": 0.11931373854117377,
+      "minimum": -2.3806670671404877,
+      "maximum": 0.8356956873228203,
+      "negative_rows": 1131,
+      "zero_rows": 0,
+      "flagged_rows": 0
+    },
+    "supply_change_30d": {
+      "valid_rows": 4053,
+      "null_rows": 30,
+      "first_valid_date": "2015-08-29",
+      "last_valid_date": "2026-10-02",
+      "last_value": 0.07090517490266901,
+      "minimum": -0.12567871039455003,
+      "maximum": 1.2119364592443782,
+      "negative_rows": 446,
+      "zero_rows": 0,
+      "flagged_rows": 0
+    },
+    "exchange_balance_change_30d": {
+      "valid_rows": 4053,
+      "null_rows": 30,
+      "first_valid_date": "2015-08-29",
+      "last_valid_date": "2026-10-02",
+      "last_value": -208715.0385640096,
+      "minimum": -4716588.934409685,
+      "maximum": 7146288.910430253,
+      "negative_rows": 2102,
+      "zero_rows": 0,
+      "flagged_rows": 4083
+    }
+  },
+  "code_commit": "5d8107fc0be81e3ac4f40b27a19e5a238619d141",
+  "ci": {
+    "run_id": 37127187382,
+    "conclusion": "success",
+    "python_tests": 88,
+    "node_tests": 26
+  },
+  "initial_pages": {
+    "deployment_id": "b37efb41-6a12-4750-8af4-65649cf5394e",
+    "environment": "production",
+    "conclusion": "success"
+  },
+  "hosted_core": {
+    "run_id": 37127278755,
+    "job_id": 111215047643,
+    "conclusion": "success",
+    "diagnostics_outcome": "unchanged",
+    "bot_commit": "deb6e5efc3a19ff80563819397636a3b553e82ee",
+    "deployment_id": "fac50bd8-36fe-436b-bbaf-f0333361c4b5"
+  },
+  "production": {
+    "origins": [
+      "https://eco.tnmp.cloud",
+      "https://eco-tnmp.pages.dev"
+    ],
+    "files_verified_per_origin": 32,
+    "chains_verified": [
+      "core",
+      "proxies",
+      "extended",
+      "diagnostics"
+    ],
+    "cache_headers_verified": true
+  },
+  "browser": {
+    "origin": "https://eco.tnmp.cloud",
+    "views": [
+      "dashboard",
+      "extended",
+      "diagnostics"
+    ],
+    "viewports": [
+      1440,
+      768,
+      390,
+      360
+    ],
+    "page_errors": 0,
+    "checks": [
+      "signed values and units",
+      "null warmup",
+      "nonblank chart",
+      "calendar CSV",
+      "custom date range",
+      "keyboard",
+      "network and checksum retention",
+      "immutable release rejection",
+      "automatic refresh",
+      "historical selection"
+    ]
+  },
+  "scope": {
+    "raw_files_published": 0,
+    "new_paid_api_plan": false,
+    "composite_changed": false,
+    "normalizer": null,
+    "predictive_utility_claim": false,
+    "full_system_restore_drill_completed": false,
+    "shadow_30days_completed": false,
+    "future_cron_of_this_version_observed": false
+  },
+  "hosted_network": {
+    "run_id": 37127520932,
+    "job_id": 111215765840,
+    "head_sha": "deb6e5efc3a19ff80563819397636a3b553e82ee",
+    "conclusion": "success",
+    "diagnostics_outcome": "unchanged",
+    "bot_commit": "a00cd2d7f34121afd51469945f42bcd9ebe84a87",
+    "deployment_id": "f195a79f-8582-46e3-b6de-8ac2be41cf1c"
+  }
+}

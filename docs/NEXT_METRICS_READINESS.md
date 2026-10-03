@@ -1,6 +1,6 @@
 # Chỉ số có thể triển khai tiếp từ dữ liệu đã lưu
 
-Ngày đánh giá ban đầu: 2026-10-03. Bảng và audit dưới đây ghi trạng thái ở thời điểm readiness. Cập nhật tiếp theo cùng ngày: người dùng đã yêu cầu và E2 → C1 → C2 đã hoàn thiện engine/raw publication/UI/CSV/daily, kiểm local đạt; trạng thái deploy thực tế tại [ETH_DIAGNOSTICS](ETH_DIAGNOSTICS.md) và [HANDOFF](HANDOFF.md). Không cần account hoặc API trả phí cho các đầu vào Community đã có; phạm vi nghiên cứu phi thương mại theo [ADR-002](ADR-002-experimental-research-preview.md) và [data-rights](data-rights.md).
+Ngày đánh giá ban đầu: 2026-10-03. Bảng và audit dưới đây ghi trạng thái ở thời điểm readiness. Cập nhật tiếp theo cùng ngày: người dùng đã yêu cầu và E2 → C1 → C2 đã hoàn thiện engine/raw publication/UI/CSV/daily, local và production/hai hosted daily đã đạt; bằng chứng deploy thực tế tại [ETH_DIAGNOSTICS](ETH_DIAGNOSTICS.md) và [HANDOFF](HANDOFF.md). Không cần account hoặc API trả phí cho các đầu vào Community đã có; phạm vi nghiên cứu phi thương mại theo [ADR-002](ADR-002-experimental-research-preview.md) và [data-rights](data-rights.md).
 
 ## Ưu tiên thực hiện
 
