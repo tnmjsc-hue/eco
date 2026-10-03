@@ -1,0 +1,34 @@
+{
+  "audit_id": "E2-01",
+  "audit_version": "e2-nupl-diagnostic-v0.1.0",
+  "as_of_utc": "2026-10-03",
+  "provider": "coinmetrics_community_api",
+  "asset": "eth",
+  "frequency": "1d",
+  "input_metric": "CapMVRVCur",
+  "formula": "1 - 1 / CapMVRVCur",
+  "output_name": "nupl_diagnostic",
+  "output_unit": "ratio",
+  "input_snapshot": {
+    "source_audit": "D03",
+    "first_valid_date": "2015-08-08",
+    "last_valid_date": "2026-10-01",
+    "null_count": 7,
+    "source_available_at": null,
+    "vintage": "unknown; reconstructed current snapshot"
+  },
+  "contract": {
+    "same_provider_day_snapshot_as": "E7",
+    "invalid_input": "null_with_reason",
+    "zero_or_negative_input": "null_with_reason",
+    "not_probability": true,
+    "not_an_independent_vote": true,
+    "not_added_to_core_aggregation": true
+  },
+  "rights": {
+    "scope": "noncommercial_research_preview_only",
+    "attribution_required": true,
+    "commercial_use": "not_granted"
+  },
+  "evidence_scope": "contract_and_engine_diagnostic_only; no new public metric release"
+}

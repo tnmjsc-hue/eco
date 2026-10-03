@@ -24,6 +24,24 @@ def positive(value):
     return number
 
 
+def nupl_diagnostic(mvrv):
+    """Derive the NUPL diagnostic from the same-day MVRV input.
+
+    This is an algebraic transform of MVRV, not an independent vote. Invalid
+    or non-positive MVRV is represented as null with a reason so callers never
+    turn a missing diagnostic into zero or a probability.
+    """
+    if mvrv is None:
+        return {"value": None, "reason": "missing_input"}
+    try:
+        value = float(mvrv)
+    except (TypeError, ValueError):
+        return {"value": None, "reason": "invalid_input"}
+    if not math.isfinite(value) or value <= 0:
+        return {"value": None, "reason": "invalid_input"}
+    return {"value": 1 - 1 / value, "reason": None}
+
+
 def quantile(values, q):
     """Linear interpolation on an already sorted population."""
     position = (len(values) - 1) * q
@@ -125,9 +143,11 @@ def compute(rows, end=None):
         features = {k: normalizers[k].compute(day, raw[k]) for k in COMPONENTS}
         scores = {k: features[k]["score"] for k in COMPONENTS}
         score = aggregate(scores)
+        nupl = nupl_diagnostic(v)
         output.append({"date": day.isoformat(), "price_usd": p, "score": score,
                        "coverage": sum(s is not None for s in scores.values()),
-                       "components": features, "nupl_diagnostic": 1 - 1 / v if v else None,
+                       "components": features, "nupl_diagnostic": nupl["value"],
+                       "nupl_reason": nupl["reason"],
                        "derived_realized_cap": realized, "e6_fit": fit,
                        "e7_sigma": sigma, "e7_past_count": cap_n,
                        "reason": None if score is not None else "incomplete_components",

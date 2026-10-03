@@ -1,0 +1,53 @@
+{
+  "audit_id": "E4-01",
+  "audit_version": "e4-fee-backfill-v0.1.0",
+  "as_of_utc": "2026-10-03",
+  "retrieved_at": "2026-10-03T03:12:17.840Z",
+  "provider": "coinmetrics_community_api",
+  "endpoint": "/v4/timeseries/asset-metrics",
+  "asset": "eth",
+  "frequency": "1d",
+  "metric": "FeeTotNtv",
+  "authorization": "none",
+  "storage_scope": "raw snapshot private and git-ignored",
+  "requested_range": {
+    "start": "2015-07-30",
+    "end": "2026-10-02"
+  },
+  "snapshot": {
+    "row_count": 4083,
+    "unique_date_count": 4083,
+    "first_observation_date": "2015-07-30",
+    "last_observation_date": "2026-10-02",
+    "missing_row_date_count": 0,
+    "duplicate_row_count": 0,
+    "invalid_timestamp_count": 0,
+    "wrong_asset_count": 0,
+    "null_count": 0,
+    "invalid_count": 0,
+    "zero_count": 8,
+    "negative_count": 0,
+    "min_positive_native_fee": 5.50745152606155,
+    "max_native_fee": 81747.4939622542,
+    "canonical_sha256": "c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c",
+    "manifest_sha256": "862aa7b185903259b6ab56f72d7ffd46570c6827e4cee0234ffb694ca6bb5362"
+  },
+  "quality_policy": {
+    "zero_values_allowed": true,
+    "zero_value_reason": "The source returned eight zero native-fee observations at the beginning of the ETH range; they are retained for audit and must be guarded before any logarithmic feature.",
+    "negative_values_allowed": false
+  },
+  "vintage": {
+    "source_available_at": null,
+    "historical_revision_status": "unknown",
+    "retrieved_at_is_not_source_available_at": true
+  },
+  "source_definition": {
+    "url": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/fees-and-revenue/fees",
+    "summary": "Coin Metrics defines FeeTotNtv as total fees in native units; for Ethereum it includes execution and blob fees and is composed of base, priority and blob fees. Burned fees remain accounted for.",
+    "research_status": "candidate_r_and_d_only",
+    "not_called": ["Puell Multiple"],
+    "not_added_to_core": true
+  },
+  "raw_snapshot_directory": "data/raw/coinmetrics/coinmetrics-fee-backfill-2026-10-03-2026-10-03T031217840Z"
+}

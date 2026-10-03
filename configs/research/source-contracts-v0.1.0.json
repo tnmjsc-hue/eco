@@ -1,0 +1,475 @@
+{
+  "schema_version": "1.0.0",
+  "contract_version": "source-contracts-v0.1.0",
+  "task_id": "X00",
+  "as_of_utc": "2026-10-03",
+  "timezone": "UTC",
+  "asset_scope": "eth",
+  "frequency_scope": "1d",
+  "status_vocabulary": [
+    "observed",
+    "catalog_only",
+    "sample_only",
+    "unknown",
+    "blocked",
+    "not_applicable"
+  ],
+  "timestamp_policy": {
+    "observation_timezone": "UTC",
+    "provider_daily_timestamp": "00:00:00Z when observed in D03/D05",
+    "source_available_at": "unknown unless provider evidence supplies it",
+    "retrieved_at_is_source_available_at": false,
+    "availability_lag": "unknown",
+    "vintage_and_revision": "unknown unless a versioned provider record is observed",
+    "open_day_policy": "exclude_unclosed_observation_days"
+  },
+  "unknown_policy": {
+    "representation": "Use status=unknown and a reason; null is not a zero or an inferred value.",
+    "no_inference": [
+      "retrieved_at must not be copied into source_available_at",
+      "catalog range must not be treated as timeseries entitlement",
+      "HTTP 403 must not be rewritten as an empty series",
+      "documentation term hits must not be treated as ETH coverage or plan entitlement"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "D05-summary",
+      "kind": "live_probe_summary",
+      "path": "docs/evidence/d05-live-probe-2026-10-03.json",
+      "sha256": "5bd818e5caf9078dff728a7f60f676555a17e0d8f058b79df5c02a0f8a337a5a",
+      "private_manifest": {
+        "path": "private:data/raw/d05/d05-feasibility-2026-10-03-2026-10-02T190637699Z/manifest.json",
+        "sha256": "0726a90418b656b316be1c028780819ca7bdcfa27d06125c98fb9554108ca38b",
+        "storage": "private_git_ignored",
+        "committed": false
+      },
+      "as_of_utc": "2026-10-03",
+      "retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+      "authorization": "no_api_key",
+      "urls": [
+        "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics",
+        "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+        "https://docs.glassnode.com/basic-api/endpoints/indicators",
+        "https://docs.glassnode.com/basic-api/endpoints/supply",
+        "https://docs.glassnode.com/basic-api/metadata"
+      ]
+    },
+    {
+      "id": "D03-core-audit",
+      "kind": "full_history_summary",
+      "path": "docs/data-audit.md",
+      "sha256": "7bd54c64fc73d57323cec03727f2cde4d8d83a31f4d2e452efd36978f1080d12",
+      "as_of_utc": "2026-10-03",
+      "urls": [
+        "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+        "https://docs.coinmetrics.io/api/v4/"
+      ]
+    },
+    {
+      "id": "metric-feasibility-report",
+      "kind": "research_report",
+      "path": "docs/metric-feasibility.md",
+      "sha256": "413f4bcf461f38d8c24aaf4fe67f64bfecbfe509a18f6fe238d9d642e8d9160f",
+      "as_of_utc": "2026-10-03",
+      "urls": [
+        "https://docs.coinmetrics.io/api/v4/",
+        "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/fees-and-revenue/fees",
+        "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/supply/active-supply",
+        "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/transactions/transfer-value",
+        "https://docs.glassnode.com/basic-api/endpoints/indicators",
+        "https://docs.glassnode.com/basic-api/endpoints/supply",
+        "https://docs.glassnode.com/basic-api/metadata"
+      ]
+    },
+    {
+      "id": "rights-policy",
+      "kind": "rights_policy",
+      "path": "docs/data-rights.md",
+      "sha256": "eb2d3d8a1ce08e9cb55234fd69e5586421a38cfa62522f322aef7872dd8b03ec",
+      "as_of_utc": "2026-10-03",
+      "urls": [
+        "https://docs.coinmetrics.io/packages/coin-metrics-community-data",
+        "https://creativecommons.org/licenses/by-nc/4.0/",
+        "https://creativecommons.org/licenses/by-nc/4.0/legalcode.en"
+      ]
+    },
+    {
+      "id": "research-notes",
+      "kind": "research_notes",
+      "path": "docs/RESEARCH.md",
+      "sha256": "66f965de0f5efa7540de7fe5f598d7223514437c199daf71c402609f6e2b30e3",
+      "as_of_utc": "2026-10-03",
+      "urls": [
+        "https://docs.coinmetrics.io/api/v4/",
+        "https://docs.glassnode.com/basic-api/endpoints/indicators",
+        "https://docs.glassnode.com/basic-api/metadata"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "id": "E2",
+      "concept": "ETH NUPL derived from MVRV",
+      "status": "observed",
+      "role": "diagnostic_only",
+      "provider": "coinmetrics_community_api",
+      "source": {
+        "endpoint": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+        "catalog_endpoint": "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics",
+        "asset": "eth",
+        "frequency": "1d",
+        "timezone": "UTC",
+        "observation_field": "time",
+        "metric": "CapMVRVCur",
+        "unit": {
+          "value": "ratio",
+          "status": "observed_semantics",
+          "description": "Dimensionless market-cap to realized-cap ratio"
+        },
+        "request_contract": {
+          "assets": "eth",
+          "metrics": ["CapMVRVCur"],
+          "frequency": "1d",
+          "closed_day_only": true,
+          "api_key": "not_used_in_D03_D05"
+        }
+      },
+      "components": [
+        {
+          "metric": "CapMVRVCur",
+          "role": "provider_input",
+          "asset": "eth",
+          "frequency": "1d",
+          "unit": "ratio",
+          "required": true,
+          "same_provider_day_snapshot_as": ["E7"]
+        }
+      ],
+      "derived": {
+        "formula": "1 - 1 / CapMVRVCur",
+        "output_name": "nupl_diagnostic",
+        "output_unit": "ratio",
+        "range_status": "unbounded_in_principle; do not clip or map to probability",
+        "dependency": "Algebraically dependent on MVRV/E7; not an independent confirmation",
+        "invalid_input": "null_with_reason",
+        "zero_or_negative_input": "null_with_reason"
+      },
+      "coverage": {
+        "status": "observed",
+        "asset": "eth",
+        "frequency": "1d",
+        "observed_window": {
+          "first_valid_date": "2015-08-08",
+          "last_valid_date": "2026-10-01",
+          "basis": "D03 full-history CapMVRVCur input audit"
+        },
+        "sample_probe": {
+          "window": {"start": "2021-01-01", "end": "2021-01-03"},
+          "http_status": 200,
+          "row_count": 3,
+          "non_null_value_count": 3,
+          "response_sha256": "cb3133bbd5fccd4c845df9a55e35589f3087f216627824198da8285c29939034"
+        },
+        "full_history_audit": true,
+        "gaps": {
+          "status": "partially_known",
+          "known": [
+            "D03 has seven null CapMVRVCur values at the head before first valid date",
+            "D03 request includes a missing/unclosed requested end date after 2026-10-01"
+          ],
+          "unknown": ["future provider gaps", "historical availability gaps outside the audited snapshot"]
+        }
+      },
+      "timing": {
+        "source_available_at": {"status": "unknown", "reason": "D03/D05 did not expose provider availability timestamps"},
+        "observed_retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+        "lag": {"status": "unknown", "unit": "days", "reason": "A latest observed date does not establish a provider SLA"},
+        "vintage": {"status": "unknown", "policy": "reconstructed from current snapshot; historical availability is not known"},
+        "revision": {"status": "unknown", "provider_revision_field_observed": false, "policy": "preserve new input hash as a new revision"}
+      },
+      "rights": {
+        "policy_ref": "rights-policy",
+        "license": {"status": "confirmed_for_noncommercial_preview", "name": "CC BY-NC 4.0", "attribution_required": true, "commercial_use": "not_granted"},
+        "cache": {"status": "private_raw_allowed_for_research", "public_raw": "blocked_by_project_policy", "manifest_and_hash": "required"},
+        "chart": {"status": "allowed_noncommercial_preview", "attribution_required": true, "raw_provider_series": "not_published"},
+        "derived": {"status": "allowed_noncommercial_preview", "attribution_required": true, "dependency_disclosure_required": true},
+        "csv": {"status": "allowed_noncommercial_preview", "attribution_required": true, "raw_provider_rows": "not_exported"}
+      },
+      "evidence_refs": ["D05-summary", "D03-core-audit", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "decision": "diagnostic_only_not_an_independent_vote"
+    },
+    {
+      "id": "E3",
+      "concept": "ETH realized-value age ratio / RHODL candidate",
+      "status": "unknown",
+      "role": "unverified_candidate",
+      "provider": "glassnode_documentation_candidate",
+      "source": {
+        "endpoint": {"status": "unknown", "value": null, "reason": "Documentation identifies endpoint families but no entitled ETH data endpoint was probed"},
+        "documentation_endpoints": [
+          "https://docs.glassnode.com/basic-api/endpoints/indicators",
+          "https://docs.glassnode.com/basic-api/endpoints/supply",
+          "https://docs.glassnode.com/basic-api/metadata"
+        ],
+        "asset": {"status": "unknown", "value": null, "reason": "RHODL documentation evidence describes BTC; ETH entitlement was not verified"},
+        "frequency": {"status": "unknown", "value": null},
+        "timezone": "UTC if a daily endpoint is later entitled; unverified",
+        "observation_field": {"status": "unknown", "value": null},
+        "metrics": [
+          {"name": "rhav", "unit": {"status": "unknown", "value": null}, "status": "documentation_candidate_only"},
+          {"name": "realized_cap_hodl_waves", "unit": {"status": "unknown", "value": null}, "status": "documentation_candidate_only"}
+        ],
+        "request_contract": {"assets": "unknown", "frequency": "unknown", "api_key": "required_by_candidate_provider; not available"}
+      },
+      "components": [
+        {"metric": "rhav", "role": "candidate_age_ratio", "asset": "unknown", "frequency": "unknown", "unit": "unknown", "required": true},
+        {"metric": "realized_cap_hodl_waves", "role": "candidate_age_bands", "asset": "unknown", "frequency": "unknown", "unit": "unknown", "required": true}
+      ],
+      "derived": {
+        "formula": {"status": "unknown", "value": null, "reason": "No ETH age-band cohort definition or units have been verified"},
+        "output_name": "realized_value_age_ratio_candidate",
+        "output_unit": {"status": "unknown", "value": null},
+        "invalid_input": "null_with_reason",
+        "placeholder_allowed": false
+      },
+      "coverage": {
+        "status": "unknown",
+        "asset": {"status": "unknown", "value": null},
+        "frequency": {"status": "unknown", "value": null},
+        "observed_window": {"status": "unknown", "first_valid_date": null, "last_valid_date": null},
+        "sample_probe": {"status": "documentation_only", "http_status": 200, "data_rows": "not_requested"},
+        "full_history_audit": false,
+        "gaps": {"status": "unknown", "known": ["no entitled ETH age-band series"], "unknown": ["all historical gaps and warm-up" ]}
+      },
+      "timing": {
+        "source_available_at": {"status": "unknown"},
+        "observed_retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+        "lag": {"status": "unknown", "unit": "days"},
+        "vintage": {"status": "unknown", "policy": "history and revision policy unverified"},
+        "revision": {"status": "unknown", "provider_revision_field_observed": false}
+      },
+      "rights": {
+        "policy_ref": "rights-policy",
+        "license": {"status": "unknown", "name": null, "commercial_use": "unknown", "reason": "Documentation fetch is not entitlement or licence evidence"},
+        "cache": {"status": "blocked_until_entitlement_verified", "private_raw": "unknown", "public_raw": "blocked"},
+        "chart": {"status": "unknown", "action": "do_not_publish"},
+        "derived": {"status": "unknown", "action": "do_not_publish"},
+        "csv": {"status": "unknown", "action": "do_not_export"}
+      },
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "decision": "do_not_implement_until_eth_coverage_formula_units_history_and_rights_are_verified"
+    },
+    {
+      "id": "E4",
+      "concept": "ETH Fee Activity Multiple candidate; not Puell Multiple",
+      "status": "sample_only",
+      "role": "research_candidate",
+      "provider": "coinmetrics_community_api",
+      "source": {
+        "endpoint": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+        "catalog_endpoint": "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics",
+        "asset": "eth",
+        "frequency": "1d",
+        "timezone": "UTC",
+        "observation_field": "time",
+        "request_contract": {
+          "assets": "eth",
+          "frequency": "1d",
+          "closed_day_only": true,
+          "api_key": "not_used_in_D05",
+          "sample_window": {"start": "2021-01-01", "end": "2021-01-03"}
+        },
+        "metrics": [
+          {"name": "FeeTotNtv", "role": "primary_candidate", "unit": {"value": "ETH", "period": "daily_total", "status": "metric_semantics_observed"}},
+          {"name": "FeeTotUSD", "role": "comparison_candidate", "unit": {"value": "USD", "period": "daily_total", "status": "catalog_name_only"}},
+          {"name": "FeeBlobTotNtv", "role": "component_candidate", "unit": {"value": "ETH", "period": "daily_total", "status": "catalog_name_only"}},
+          {"name": "FeePrioTotNtv", "role": "component_candidate", "unit": {"value": "ETH", "period": "daily_total", "status": "catalog_name_only"}}
+        ]
+      },
+      "components": [
+        {"metric": "FeeTotNtv", "role": "primary_candidate", "asset": "eth", "frequency": "1d", "unit": "ETH per daily period", "required": true},
+        {"metric": "FeeTotUSD", "role": "comparison_candidate", "asset": "eth", "frequency": "1d", "unit": "USD per daily period", "required": false},
+        {"metric": "FeeBlobTotNtv", "role": "component_candidate", "asset": "eth", "frequency": "1d", "unit": "ETH per daily period", "required": false},
+        {"metric": "FeePrioTotNtv", "role": "component_candidate", "asset": "eth", "frequency": "1d", "unit": "ETH per daily period", "required": false}
+      ],
+      "derived": {
+        "formula": "ln(SMA30(FeeTotNtv) / SMA365(FeeTotNtv))",
+        "formula_status": "hypothesis_unvalidated",
+        "output_name": "fee_activity_multiple_candidate",
+        "output_unit": "dimensionless_log_ratio",
+        "guard": "null when either rolling denominator or numerator is nonpositive",
+        "semantics": "Do not call this Puell Multiple; fee meaning may change across Merge, EIP-1559, blob fees and L2 activity",
+        "placeholder_allowed": false
+      },
+      "coverage": {
+        "status": "sample_only",
+        "asset": "eth",
+        "frequency": "1d",
+        "catalog_windows": {
+          "FeeTotNtv": {"first_date": "2015-07-30", "last_date": "2026-10-01"},
+          "FeeTotUSD": {"first_date": "2015-08-08", "last_date": "2026-10-01"},
+          "FeePrioTotNtv": {"first_date": "2021-08-05", "last_date": "2026-10-01"},
+          "FeeBlobTotNtv": {"first_date": "2024-03-13", "last_date": "2026-10-01"}
+        },
+        "sample_probe": {
+          "window": {"start": "2021-01-01", "end": "2021-01-03"},
+          "results": {
+            "FeeTotNtv": {"http_status": 200, "row_count": 3, "non_null_value_count": 3, "response_sha256": "cb3133bbd5fccd4c845df9a55e35589f3087f216627824198da8285c29939034"},
+            "FeeTotUSD": {"http_status": 403, "row_count": 0, "response_sha256": "2eea98918bc228792ab58c11554c12273ad4c51fb128181fd33a57e3dc4e36ca"},
+            "FeeBlobTotNtv": {"http_status": 403, "row_count": 0, "response_sha256": "b5b1904eac10a841060495a03adeed637a336b776a5dc4757c3275e4e217a228"},
+            "FeePrioTotNtv": {"http_status": 403, "row_count": 0, "response_sha256": "1e4266c7eae4f84c3fae3783df84d051e1a7426c2ac2d08d255eb0679f2d8c48"}
+          }
+        },
+        "full_history_audit": false,
+        "gaps": {"status": "unknown", "known": ["non-primary fee fields are entitlement-blocked in sample", "catalog does not prove timeseries access"], "unknown": ["FeeTotNtv full-history gaps, duplicates, invalid values and revisions"]}
+      },
+      "timing": {
+        "source_available_at": {"status": "unknown", "reason": "D05 exposes retrieval time but no provider availability time"},
+        "observed_retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+        "lag": {"status": "unknown", "unit": "days"},
+        "vintage": {"status": "unknown", "policy": "catalog min/max is not a vintage guarantee"},
+        "revision": {"status": "unknown", "provider_revision_field_observed": false}
+      },
+      "rights": {
+        "policy_ref": "rights-policy",
+        "license": {"status": "community_scope_documented_but_metric_specific_rights_unconfirmed", "name": "CC BY-NC 4.0 (project preview scope)", "attribution_required": true, "commercial_use": "not_granted"},
+        "cache": {"status": "private_only_pending_full_audit_and_rights", "public_raw": "blocked", "manifest_and_hash": "required"},
+        "chart": {"status": "blocked_pending_metric_rights_and_full_audit", "attribution_required": true},
+        "derived": {"status": "blocked_pending_metric_rights_and_methodology", "attribution_required": true},
+        "csv": {"status": "blocked_pending_metric_rights_and_methodology", "attribution_required": true}
+      },
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "decision": "r_and_d_only_audit_full_history_and_test_semantics_across_network_regimes"
+    },
+    {
+      "id": "E8",
+      "concept": "ETH dormancy / spending proxy; not Reserve Risk",
+      "status": "unknown",
+      "role": "unverified_candidate",
+      "provider": "glassnode_and_coinmetrics_candidates",
+      "source": {
+        "candidates": [
+          {
+            "provider": "glassnode",
+            "endpoint": {"status": "unknown", "value": null, "documentation_url": "https://docs.glassnode.com/basic-api/endpoints/indicators"},
+            "metric": "dormancy_account_based",
+            "asset": {"status": "unknown", "value": null},
+            "frequency": {"status": "unknown", "value": null},
+            "unit": {"status": "unknown", "value": null},
+            "entitlement": "unknown"
+          },
+          {
+            "provider": "coinmetrics_community_api",
+            "endpoint": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+            "catalog_endpoint": "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics",
+            "metric": "SplyAct1yr",
+            "asset": "eth",
+            "frequency": "1d",
+            "unit": {"value": "ETH", "status": "catalog_metric_name_only", "description": "Active supply candidate; not a dormancy measure"},
+            "entitlement": "blocked_in_D05_sample"
+          }
+        ],
+        "timezone": "UTC if a daily endpoint is later entitled; unverified",
+        "observation_field": {"status": "unknown", "value": null},
+        "request_contract": {"assets": "eth", "frequency": "1d", "api_key": "not available for candidate entitlement"}
+      },
+      "components": [
+        {"metric": "dormancy_account_based", "role": "primary_candidate", "asset": "unknown", "frequency": "unknown", "unit": "unknown", "required": true},
+        {"metric": "SplyAct1yr", "role": "active_supply_candidate_only", "asset": "eth", "frequency": "1d", "unit": "ETH per provider definition", "required": false}
+      ],
+      "derived": {
+        "formula": {"status": "unknown", "value": null, "reason": "No entitled ETH dormancy/spending series or denominator has been verified"},
+        "output_name": "dormancy_spending_proxy_candidate",
+        "output_unit": {"status": "unknown", "value": null},
+        "semantic_guard": "SplyAct1yr must not be relabeled as dormancy or Reserve Risk",
+        "invalid_input": "null_with_reason",
+        "placeholder_allowed": false
+      },
+      "coverage": {
+        "status": "catalog_only",
+        "asset": "eth",
+        "frequency": "1d",
+        "observed_window": {"first_catalog_date": "2015-07-30", "last_catalog_date": "2026-10-01", "metric": "SplyAct1yr", "basis": "catalog only"},
+        "glassnode_documentation": {"http_status": 200, "term_hit": "dormancy_account_based", "data_rows": "not_requested"},
+        "sample_probe": {"metric": "SplyAct1yr", "window": {"start": "2021-01-01", "end": "2021-01-03"}, "http_status": 403, "row_count": 0, "response_sha256": "b549d2993288de4e8b43e5d6597519de622b836648155d1eac9f6020b87df4f1"},
+        "full_history_audit": false,
+        "gaps": {"status": "unknown", "known": ["Community timeseries access blocked for SplyAct1yr", "Glassnode ETH coverage/history unverified"], "unknown": ["all dormancy history, gaps, revisions and warm-up"]}
+      },
+      "timing": {
+        "source_available_at": {"status": "unknown"},
+        "observed_retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+        "lag": {"status": "unknown", "unit": "days"},
+        "vintage": {"status": "unknown", "policy": "history and revision policy unverified"},
+        "revision": {"status": "unknown", "provider_revision_field_observed": false}
+      },
+      "rights": {
+        "policy_ref": "rights-policy",
+        "license": {"status": "unknown", "name": null, "commercial_use": "unknown", "reason": "Neither candidate entitlement nor metric-specific licence was verified"},
+        "cache": {"status": "blocked_until_entitlement_verified", "private_raw": "unknown", "public_raw": "blocked"},
+        "chart": {"status": "unknown", "action": "do_not_publish"},
+        "derived": {"status": "unknown", "action": "do_not_publish"},
+        "csv": {"status": "unknown", "action": "do_not_export"}
+      },
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "decision": "do_not_relabel_active_supply_as_dormancy_or_reserve_risk"
+    },
+    {
+      "id": "E9",
+      "concept": "ETH NVT proxy",
+      "status": "blocked",
+      "role": "unverified_candidate",
+      "provider": "coinmetrics_community_api",
+      "source": {
+        "endpoint": "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+        "catalog_endpoint": "https://community-api.coinmetrics.io/v4/catalog-all-v2/asset-metrics",
+        "asset": "eth",
+        "frequency": "1d",
+        "timezone": "UTC",
+        "observation_field": "time",
+        "metric": "TxTfrValAdjUSD",
+        "unit": {"value": "USD", "period": "daily_total", "status": "catalog_metric_name_only"},
+        "request_contract": {"assets": "eth", "metrics": ["TxTfrValAdjUSD"], "frequency": "1d", "closed_day_only": true, "api_key": "not_used_in_D05"}
+      },
+      "components": [
+        {"metric": "TxTfrValAdjUSD", "role": "adjusted_transfer_value_candidate", "asset": "eth", "frequency": "1d", "unit": "USD per daily period", "required": true},
+        {"metric": "CapMrktCurUSD", "role": "market_cap_denominator_candidate", "asset": "eth", "frequency": "1d", "unit": "USD", "required": true, "source_contract_ref": "E7"}
+      ],
+      "derived": {
+        "formula": "ln(CapMrktCurUSD / SMA90(TxTfrValAdjUSD))",
+        "formula_status": "hypothesis_unvalidated",
+        "output_name": "nvt_proxy_candidate",
+        "output_unit": "dimensionless_log_ratio",
+        "guard": "null when transfer value is missing, nonpositive or not entitled",
+        "semantic_requirements": ["adjusted transfer-value definition", "internal transfer and contract filters", "bridge and MEV treatment", "same currency and UTC day"],
+        "placeholder_allowed": false
+      },
+      "coverage": {
+        "status": "catalog_only",
+        "asset": "eth",
+        "frequency": "1d",
+        "catalog_window": {"first_date": "2015-08-08", "last_date": "2026-10-01", "basis": "catalog only"},
+        "sample_probe": {"window": {"start": "2021-01-01", "end": "2021-01-03"}, "http_status": 403, "row_count": 0, "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c"},
+        "full_history_audit": false,
+        "gaps": {"status": "unknown", "known": ["Community timeseries entitlement blocked in D05 sample"], "unknown": ["all transfer-value history, gaps, revisions and filters"]}
+      },
+      "timing": {
+        "source_available_at": {"status": "unknown"},
+        "observed_retrieved_at_utc": "2026-10-02T19:06:37.699Z",
+        "lag": {"status": "unknown", "unit": "days"},
+        "vintage": {"status": "unknown", "policy": "catalog range is not a vintage guarantee"},
+        "revision": {"status": "unknown", "provider_revision_field_observed": false}
+      },
+      "rights": {
+        "policy_ref": "rights-policy",
+        "license": {"status": "unknown", "name": null, "commercial_use": "unknown", "reason": "HTTP 403 does not identify entitlement or redistribution rights"},
+        "cache": {"status": "blocked_until_entitlement_verified", "private_raw": "unknown", "public_raw": "blocked"},
+        "chart": {"status": "unknown", "action": "do_not_publish"},
+        "derived": {"status": "unknown", "action": "do_not_publish"},
+        "csv": {"status": "unknown", "action": "do_not_export"}
+      },
+      "evidence_refs": ["D05-summary", "metric-feasibility-report", "rights-policy", "research-notes"],
+      "decision": "not_selected_pending_entitlement_adjustment_semantics_eth_validation_and_rights"
+    }
+  ]
+}

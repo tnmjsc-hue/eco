@@ -1,0 +1,39 @@
+{
+  "audit_id": "E4-04",
+  "audit_version": "e4-fee-candidate-evaluation-v0.1.0",
+  "methodology_version": "e4-fee-candidate-v0.1.0",
+  "source_core_snapshot_sha256": "aa78757fcaee33ef23ecf3ebd92791a685df2617f2b3874f5f5183d16babdd03",
+  "source_fee_snapshot_sha256": "c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c",
+  "status": "exploratory_reconstructed_only",
+  "window": {"start": "2020-01-01", "end": "2025-10-01", "n": 2101, "positive_labels": 648, "prevalence": 0.3084245597334603},
+  "statistics": {
+    "fee_activity": {"average_precision": 0.24094623735337878, "roc_auc": 0.3921170970236123, "predictions_at_90": 109},
+    "core": {"average_precision": 0.55424872014655, "roc_auc": 0.8283032975623019, "predictions_at_90": 41},
+    "normalized_E7_only": {"average_precision": 0.5537732904113747, "roc_auc": 0.8382359188736799, "predictions_at_90": 63},
+    "normalized_price_group_only": {"average_precision": 0.5454301010478168, "roc_auc": 0.7982887682360038, "predictions_at_90": 18}
+  },
+  "spearman_vs_fee_activity": {
+    "core": {"rho": 0.22756292182477905, "n": 2101},
+    "normalized_E7_only": {"rho": 0.21728453722983568, "n": 2101},
+    "normalized_price_group_only": {"rho": 0.20998249356286158, "n": 2101}
+  },
+  "bootstrap_delta_fee_minus_baseline": {
+    "method": "paired_moving_block",
+    "block_calendar_days": 90,
+    "replicates": 10000,
+    "seed": 20261003,
+    "core": {"lower_95": -0.6248770586849487, "upper_95": -0.12971044055948558},
+    "normalized_E7_only": {"lower_95": -0.6345264717033336, "upper_95": -0.12367221328484039},
+    "normalized_price_group_only": {"lower_95": -0.5994127783781485, "upper_95": -0.11219736390545332}
+  },
+  "regime_notes": {
+    "pre_london": {"n": 582, "positive_labels": 75, "fee_ap": 0.08241379177597165, "core_ap": 0.23303196483114738},
+    "london_to_merge": {"n": 406, "positive_labels": 288, "fee_ap": 0.9640440946052256, "core_ap": 1.0},
+    "post_merge_pre_dencun": {"n": 545, "positive_labels": 3, "fee_ap": 0.04642857142857143, "core_ap": 0.6095238095238096},
+    "post_dencun": {"n": 568, "positive_labels": 282, "fee_ap": 0.567303879552109, "core_ap": 0.9136652230871084}
+  },
+  "decision": "retain_r_and_d_only_do_not_promote_to_core_or_public_metric",
+  "reason": "Fee candidate underperforms frozen Core and baselines on the reconstructed primary window; regime differences and current-vintage limitations prevent a causal conclusion.",
+  "not_a_probability": true,
+  "not_an_investment_recommendation": true
+}

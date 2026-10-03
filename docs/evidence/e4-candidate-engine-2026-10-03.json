@@ -1,0 +1,24 @@
+{
+  "audit_id": "E4-03",
+  "audit_version": "e4-fee-candidate-engine-v0.1.0",
+  "computed_at_utc": "2026-10-03T03:17:00Z",
+  "methodology_version": "e4-fee-candidate-v0.1.0",
+  "source_snapshot_sha256": "c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c",
+  "input": {"asset": "eth", "frequency": "1d", "metric": "FeeTotNtv", "rows": 4083},
+  "output": {
+    "raw_valid_rows": 3719,
+    "scored_rows": 3354,
+    "first_raw_date": "2016-07-28",
+    "first_score_date": "2017-07-28",
+    "last_score_date": "2026-10-02",
+    "score_min": 0.0,
+    "score_max": 100.0
+  },
+  "guards": {
+    "calendar_windows": true,
+    "zero_raw_substitution": false,
+    "future_data_prefix_invariance": "unit_tested",
+    "missing_calendar_day_is_not_zero": "unit_tested"
+  },
+  "scope": "private_reconstructed_candidate; not published and not added to Core aggregation"
+}

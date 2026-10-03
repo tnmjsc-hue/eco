@@ -3,8 +3,9 @@ import math
 import unittest
 import numpy as np
 
-from eco.core import COMPONENTS, ORIGIN, Normalizer, aggregate, compute, positive, quantile
-from eco.research import ap, auc, labels
+from eco.core import COMPONENTS, ORIGIN, Normalizer, aggregate, compute, nupl_diagnostic, positive, quantile
+from eco.research import (ablation_analysis, ap, auc, component_correlations,
+                          labels, regime_analysis, spearman)
 
 
 def fixture(n=1200):
@@ -53,6 +54,14 @@ class CoreTest(unittest.TestCase):
         self.assertIsNone(self.result[364]["components"]["E7"]["raw"])
         self.assertAlmostEqual(self.result[365]["nupl_diagnostic"], 1 - 1 / current["CapMVRVCur"])
         self.assertEqual(set(self.result[-1]["components"]), set(COMPONENTS))
+
+    def test_nupl_diagnostic_contract(self):
+        self.assertEqual(nupl_diagnostic(None), {"value": None, "reason": "missing_input"})
+        self.assertEqual(nupl_diagnostic(0), {"value": None, "reason": "invalid_input"})
+        self.assertEqual(nupl_diagnostic(-1), {"value": None, "reason": "invalid_input"})
+        self.assertEqual(nupl_diagnostic("bad"), {"value": None, "reason": "invalid_input"})
+        self.assertAlmostEqual(nupl_diagnostic(2)["value"], 0.5)
+        self.assertIsNone(self.result[364]["nupl_reason"])
 
     def test_prefix_invariance_and_repeatability(self):
         self.assertEqual(compute(self.source[:1150]), self.result[:1150])
@@ -130,6 +139,38 @@ class ResearchTest(unittest.TestCase):
         self.assertEqual(len(result), 3)
         rows[1]["price_usd"] = None
         self.assertEqual(len(labels(rows, horizon=2)), 1)
+
+    def test_spearman_is_tie_aware_and_component_matrix_keeps_core_only(self):
+        self.assertAlmostEqual(spearman([1, 2, 2, 4], [10, 20, 30, 40]), 0.9486832980505138)
+        rows = []
+        for i in range(4):
+            value = float(i * 20)
+            rows.append({"date": (ORIGIN + timedelta(days=i)).isoformat(), "score": value,
+                         "components": {k: {"score": value + j} for j, k in enumerate(("E1", "E5", "E6", "E7"))},
+                         "nupl_diagnostic": value})
+        result = component_correlations(rows)
+        self.assertEqual(result["components"], ["E1", "E5", "E6", "E7"])
+        self.assertNotIn("E2", result["matrix"])
+        self.assertEqual(result["matrix"]["E1"]["E7"]["n"], 4)
+        self.assertAlmostEqual(result["matrix"]["E1"]["E1"]["rho"], 1.)
+
+    def test_ablation_retains_frozen_weights_and_regime_boundaries(self):
+        components = {"E1": 20., "E5": 40., "E6": 60., "E7": 80.}
+        rows = []
+        labels_by_date = {}
+        for i, day in enumerate(("2020-01-01", "2021-08-05", "2022-09-15", "2024-03-13")):
+            rows.append({"date": day, "score": 56.66666666666667 + i,
+                         "components": {k: {"score": value + i} for k, value in components.items()}})
+            labels_by_date[day] = int(i % 2 == 0)
+        ablation = ablation_analysis(rows, np.array([labels_by_date[r["date"]] for r in rows]))
+        self.assertEqual(ablation["method"], "frozen_component_weights_renormalized_after_selection")
+        self.assertEqual(ablation["models"]["without_E7"]["components"], ["E1", "E5", "E6"])
+        self.assertEqual(ablation["models"]["valuation_group_only"]["components"], ["E7"])
+        regimes = regime_analysis(rows, labels_by_date)
+        self.assertEqual(regimes["regimes"]["pre_london"]["n"], 1)
+        self.assertEqual(regimes["regimes"]["london_to_merge"]["n"], 1)
+        self.assertEqual(regimes["regimes"]["post_merge_pre_dencun"]["n"], 1)
+        self.assertEqual(regimes["regimes"]["post_dencun"]["n"], 1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,60 @@
+{
+  "research_protocol_version": "e4-fee-v0.1.0-protocol-1",
+  "methodology_version": "e4-fee-candidate-v0.1.0",
+  "status": "candidate_research_only",
+  "locked_at_utc": "2026-10-03",
+  "asset": "eth",
+  "provider": "coinmetrics_community_api",
+  "frequency": "1d",
+  "input": {
+    "metric": "FeeTotNtv",
+    "unit": "ETH per daily period",
+    "source_snapshot_sha256": "c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c",
+    "source_manifest_sha256": "862aa7b185903259b6ab56f72d7ffd46570c6827e4cee0234ffb694ca6bb5362",
+    "source_available_at": "unknown",
+    "vintage": "reconstructed_current_snapshot"
+  },
+  "raw_feature": {
+    "id": "E4",
+    "formula": "ln(SMA30(FeeTotNtv) / SMA365(FeeTotNtv))",
+    "window_semantics": "calendar_UTC_days_inclusive_of_t",
+    "requires_complete_calendar_windows": true,
+    "numerator_window_days": 30,
+    "denominator_window_days": 365,
+    "guard": "null_when_either_window_mean_is_missing_or_nonpositive",
+    "zero_input_policy": "retain_raw_zero; never substitute; logarithmic feature remains null until guarded windows are positive",
+    "orientation": "higher_raw_means_higher_recent_fee_activity_relative_to_one_year_baseline",
+    "not_called": ["Puell Multiple", "Reserve Risk", "cycle_top_probability"]
+  },
+  "normalizer": {
+    "lookback_calendar_days": 1460,
+    "window_excludes_current_day": true,
+    "min_raw_observations": 365,
+    "lower_quantile": 0.05,
+    "upper_quantile": 0.95,
+    "quantile_method": "linear",
+    "clip_min": 0,
+    "clip_max": 100,
+    "degenerate_epsilon": 1e-12,
+    "score_meaning": "relative historical activity score, not probability"
+  },
+  "regime_boundaries": [
+    {"id": "pre_london", "start": null, "end": "2021-08-04", "event_after": "London/EIP-1559 on 2021-08-05"},
+    {"id": "london_to_merge", "start": "2021-08-05", "end": "2022-09-14", "event_after": "The Merge on 2022-09-15"},
+    {"id": "post_merge_pre_dencun", "start": "2022-09-15", "end": "2024-03-12", "event_after": "Dencun on 2024-03-13"},
+    {"id": "post_dencun", "start": "2024-03-13", "end": null, "event_after": null}
+  ],
+  "evaluation": {
+    "status": "exploratory_until_new_holdout_or_prospective_vintage",
+    "compare_with": ["core", "normalized_E7_only", "normalized_price_group_only"],
+    "required": ["coverage", "missing_rate", "warmup", "spearman_correlation", "leave_one_out_ablation", "regime_tables", "moving_block_uncertainty"],
+    "primary_core_holdout_reuse": "descriptive_only; do_not_claim_incremental_utility",
+    "success_rule": "not_locked_for_candidate_until_new_holdout_or_prospective_data",
+    "no_parameter_search_after_holdout": true
+  },
+  "rights": {
+    "raw_storage": "private_git_ignored",
+    "public_candidate_release": "blocked_until_metric_specific_rights_and_methodology_decision",
+    "commercial_use": "not_granted"
+  }
+}

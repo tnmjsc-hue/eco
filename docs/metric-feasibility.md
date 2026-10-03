@@ -36,3 +36,17 @@ D05 hoàn tất ở mức feasibility và đã có live evidence revision: giữ
 ## Live probe revision 2026-10-03
 
 Script tái lập: `node scripts/audit-d05-feasibility.mjs 2026-10-03`. Lần chạy có 1 catalog HTTP 200 với 7 metric ETH/1d; 7 timeseries sample gồm `FeeTotNtv` HTTP 200 với 3/3 giá trị và `CapRealUSD`, `FeeTotUSD`, `FeeBlobTotNtv`, `FeePrioTotNtv`, `SplyAct1yr`, `TxTfrValAdjUSD` HTTP 403. Ba trang Glassnode liên quan trả HTTP 200 và có từ khóa endpoint mong đợi; đây chỉ là kiểm tra tài liệu, không phải kiểm tra quyền tài khoản. Hash, thời điểm và request metadata được giữ trong manifest local bị ignore dưới `data/raw/d05/`; bản tóm tắt không chứa raw nằm tại [evidence JSON](evidence/d05-live-probe-2026-10-03.json).
+
+## Full-history audit E4-01 — 2026-10-03
+
+`FeeTotNtv` đã được backfill riêng bằng Coin Metrics Community API, không API key, ETH/1d từ 2015-07-30 đến 2026-10-02. Snapshot có 4.083 ngày unique qua 5 trang, không missing date, duplicate, timestamp sai, sai asset, null hoặc giá trị âm. Có 8 giá trị bằng 0 ở những ngày đầu; giữ nguyên trong raw và manifest, chỉ cấm đưa trực tiếp vào logarithm. Canonical SHA-256 `c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c`; manifest SHA-256 `862aa7b185903259b6ab56f72d7ffd46570c6827e4cee0234ffb694ca6bb5362`. Summary không chứa raw tại [e4-fee-backfill-2026-10-03.json](evidence/e4-fee-backfill-2026-10-03.json).
+
+Kết quả nâng E4 lên mức `full_history_audited` cho dữ liệu truy cập được, nhưng không nâng quyết định phương pháp: `FeeTotNtv` vẫn là ứng viên R&D, chưa có công thức được chấp nhận, chưa xác minh vintage/revision lịch sử và chưa mở quyền public riêng cho candidate. Tài liệu Coin Metrics mô tả tổng phí Ethereum gồm execution và blob fees, base/priority/blob fees và vẫn tính phí bị burn; vì vậy E4 phải giữ tên Fee Activity proxy, không gọi Puell.
+
+## Contract E2-01 — NUPL dẫn xuất
+
+E2 dùng duy nhất phép biến đổi `1 - 1/CapMVRVCur` trên cùng ngày/provider/snapshot với E7. Diagnostic có thể âm và giữ ở dạng ratio; dữ liệu thiếu, không hữu hạn, bằng 0 hoặc âm trả `null` kèm reason. Đây là quan hệ đại số với MVRV, không phải series NUPL độc lập và không thêm trọng số vào Core. Contract/evidence nằm tại [e2-nupl-diagnostic-2026-10-03.json](evidence/e2-nupl-diagnostic-2026-10-03.json); helper và test engine kiểm tra invalid/null handling, không tạo điểm xác suất.
+
+## E4-02/E4-03 — Candidate engine
+
+Protocol `e4-fee-candidate-v0.1.0` đã khóa công thức `ln(SMA30(FeeTotNtv) / SMA365(FeeTotNtv))`, calendar windows và causal q05/q95 normalizer riêng; engine nằm tại `eco/extended.py`, không được gọi từ Core publisher. Chạy trên snapshot E4-01 cho 4.083 rows, 3.719 raw feature rows và 3.354 normalized score rows; raw đầu tiên 2016-07-28, score đầu tiên 2017-07-28. Fixture zero/null, calendar gap và future shock đều pass. Summary tại [e4-candidate-engine-2026-10-03.json](evidence/e4-candidate-engine-2026-10-03.json); output vẫn private reconstructed.

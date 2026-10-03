@@ -50,3 +50,26 @@ test('pagination keeps ETH query; closed UTC dates, duplicates and bad metrics r
     await assert.rejects(backfill('2026-10-01', '2026-10-03', { ...options, now: () => new Date(`2026-10-03T03:18:0${index}Z`), request: async () => ({ payload: { data }, body: JSON.stringify({ data }), headers: {}, status: 200 }) }), /contract/);
   }
 });
+
+test('candidate metric backfill keeps a separate one-field contract', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'eco-fee-adapter-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const options = {
+    outputRoot: root,
+    metrics: ['FeeTotNtv'],
+    runPrefix: 'coinmetrics-fee-backfill',
+    allowZeroMetrics: ['FeeTotNtv'],
+    sleep: async () => {},
+    now: () => new Date('2026-10-03T03:17:00Z'),
+    request: async () => ({
+      payload: { data: [{ asset: 'eth', time: '2026-10-01T00:00:00Z', FeeTotNtv: '0' }] },
+      body: JSON.stringify({ data: [{ asset: 'eth', time: '2026-10-01T00:00:00Z', FeeTotNtv: '0' }] }),
+      requestedAt: '2026-10-03T03:17:00Z', completedAt: '2026-10-03T03:17:01Z', headers: {}, status: 200,
+    }),
+  };
+  const dir = await backfill('2026-10-01', '2026-10-03', options);
+  const manifest = JSON.parse(await readFile(join(dir, 'manifest.json')));
+  assert.deepEqual(manifest.metrics, ['FeeTotNtv']);
+  assert.equal(manifest.snapshot.row_count, 1);
+  assert.equal(manifest.quality.fields.FeeTotNtv.first_valid_date, '2026-10-01');
+});

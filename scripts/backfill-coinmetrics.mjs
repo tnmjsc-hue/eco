@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const apiOrigin = 'https://community-api.coinmetrics.io';
 const endpoint = '/v4/timeseries/asset-metrics';
-const metrics = ['PriceUSD', 'CapMrktCurUSD', 'SplyCur', 'CapMVRVCur'];
+const coreMetrics = ['PriceUSD', 'CapMrktCurUSD', 'SplyCur', 'CapMVRVCur'];
 const headersToKeep = ['date', 'etag', 'last-modified', 'cache-control', 'retry-after', 'x-ratelimit-limit', 'x-ratelimit-remaining', 'x-ratelimit-reset'];
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const hash = (value) => createHash('sha256').update(value).digest('hex');
@@ -95,7 +95,7 @@ export async function requestPage(url, { fetcher = fetch, sleep = pause } = {}) 
   throw new Error('Coin Metrics request failed after retries.');
 }
 
-export function qualityReport(rows, start, end) {
+export function qualityReport(rows, start, end, metrics = coreMetrics) {
   const byDate = new Map();
   let invalidTimestamps = 0;
   let wrongAssets = 0;
@@ -161,7 +161,14 @@ export function qualityReport(rows, start, end) {
 
 export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date()), {
   outputRoot = join(root, 'data', 'raw', 'coinmetrics'), request = requestPage, sleep = pause, now = () => new Date(),
+  metrics = coreMetrics, runPrefix = 'coinmetrics-backfill', allowZeroMetrics = [],
 } = {}) {
+  if (!Array.isArray(metrics) || !metrics.length || metrics.some(metric => typeof metric !== 'string' || !/^[A-Za-z][A-Za-z0-9]*$/.test(metric))) {
+    throw new Error('metrics must be a non-empty list of safe Coin Metrics field names.');
+  }
+  if (!Array.isArray(allowZeroMetrics) || allowZeroMetrics.some(metric => !metrics.includes(metric))) {
+    throw new Error('allowZeroMetrics must contain only requested metrics.');
+  }
   const startDate = parseDate(startArg);
   const asOfDate = parseDate(asOf);
   if (startDate >= asOfDate) throw new Error('start-utc-date must be earlier than as-of-utc-date.');
@@ -171,7 +178,7 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
   const end = isoDate(endDate);
   const retrievedAt = now().toISOString();
   if (asOf > retrievedAt.slice(0, 10)) throw new Error('as-of-utc-date cannot be in the future.');
-  const runId = `coinmetrics-backfill-${asOf}-${retrievedAt.replaceAll(':', '').replaceAll('.', '')}`;
+  const runId = `${runPrefix}-${asOf}-${retrievedAt.replaceAll(':', '').replaceAll('.', '')}`;
   const runDirectory = join(outputRoot, runId);
   await mkdir(outputRoot, { recursive: true });
   await mkdir(runDirectory);
@@ -200,6 +207,10 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
     retrieved_at: retrievedAt,
     authorization: 'none',
     storage_scope: 'private, git-ignored data/raw',
+    quality_policy: {
+      zero_values_allowed_for: allowZeroMetrics,
+      negative_values_allowed_for: [],
+    },
     time_mapping: {
       source_timestamp_field: 'time',
       observation_date: 'UTC date component of source time label',
@@ -246,10 +257,11 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
 
   const startText = start;
   const endText = end;
-  const quality = qualityReport(rows, startText, endText);
+  const quality = qualityReport(rows, startText, endText, metrics);
   if (!rows.length || quality.duplicate_row_count || quality.out_of_order_row_count || quality.invalid_timestamp_count
     || quality.wrong_asset_count || rows.some(row => row.time.slice(0, 10) < start || row.time.slice(0, 10) > end)
-    || Object.values(quality.fields).some(field => field.missing_field_count || field.invalid_count || field.zero_count || field.negative_count)) {
+    || Object.entries(quality.fields).some(([metric, field]) => field.missing_field_count || field.invalid_count
+      || (!allowZeroMetrics.includes(metric) && field.zero_count) || field.negative_count)) {
     throw new Error('Coin Metrics schema/quality contract failed; incomplete raw pages remain private.');
   }
   const canonicalRecords = rows.map((row) => ({

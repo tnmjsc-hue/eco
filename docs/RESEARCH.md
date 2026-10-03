@@ -125,6 +125,12 @@ Chạy `node scripts/audit-d05-feasibility.mjs 2026-10-03` không dùng API key.
 
 Ba trang tài liệu Glassnode Indicators, Supply và Metadata trả HTTP 200; có các thuật ngữ RHODL, `dormancy_account_based`, realized-cap/HODL và ETH/asset. Đây chỉ là bằng chứng tài liệu; không có API key/entitlement để xác minh asset coverage, lịch sử, đơn vị hoặc quyền derived/public/commercial. E3/E8/E9 vẫn chưa được chọn; E4 `FeeTotNtv` vẫn R&D-only. Raw bodies và manifest đầy đủ nằm local trong `data/raw/d05/` và không commit.
 
+### 3.9 Full-history audit E4 — 2026-10-03
+
+Đã chạy `node scripts/backfill-fee-coinmetrics.mjs 2015-07-30 2026-10-03` cho `FeeTotNtv` ETH/1d. Adapter tải 5 trang/4.083 dòng từ 2015-07-30 đến 2026-10-02, không ngày thiếu, duplicate, timestamp sai, sai asset, null hoặc âm; 8 giá trị zero đầu lịch sử được giữ lại và khai báo trong quality policy. Canonical SHA-256 `c0cd16263f6ebf33ef2c431a057fc827612bdd67b0312927f308e31b8fbe4f8c`, manifest SHA-256 `862aa7b185903259b6ab56f72d7ffd46570c6827e4cee0234ffb694ca6bb5362`. Raw pages/canonical/manifest private và bị Git ignore; summary ở [evidence/e4-fee-backfill-2026-10-03.json](evidence/e4-fee-backfill-2026-10-03.json).
+
+Đây là bằng chứng coverage và quality hiện tại, không phải bằng chứng source availability/vintage hoặc quyền public riêng cho candidate. `FeeTotNtv` vẫn R&D-only. Theo tài liệu Fee Metrics của Coin Metrics, Ethereum `FeeTotNtv` bao gồm execution và blob fees, được tạo bởi base/priority/blob fees và vẫn tính phần bị burn; E4-02 phải khóa semantics qua Merge/EIP-1559/Dencun trước khi viết feature.
+
 ## 8. Engine, kiểm định và quyền preview — 2026-10-03
 
 Loại evidence: `docs`, `engine_tests`, `backtest`, `browser_qa`. Đọc lại [Community Data chính thức](https://docs.coinmetrics.io/packages/coin-metrics-community-data): trang trực tiếp dẫn [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) và [legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en). Link Labs cũ redirect về trang Talos, không dùng trang redirect để suy diễn điều khoản Community. Người dùng xác nhận “Phi thương mại, công bố nghiên cứu”; áp dụng scope licence và attribution theo ADR-002, không cấp quyền commercial/nguồn khác. Ghi nhận rights-unconfirmed cũ vẫn mô tả thời điểm trước xác nhận.
@@ -132,5 +138,9 @@ Loại evidence: `docs`, `engine_tests`, `backtest`, `browser_qa`. Đọc lại 
 Engine causal thực thi frozen ADR-001; 19 unit tests Python, 3 tests web và kiểm 3.000 ngày prefix của snapshot thật đã đạt. Dataset/current vintage không đổi; Core gần nhất 41.379812239861 ngày 2026-10-01, lịch sử reconstructed. Kiểm UTC retrieval phát hiện as-of caller dùng 2026-10-03 trong khi retrieval UTC là 2026-10-02: ngày 02/10 chưa đóng, giữ pending null, không coi là gap sau đóng.
 
 Primary evaluation 2.101 ngày, 648 positives, 10.000 paired 90-day bootstrap replicates, seed 20261003; Core AP 0.55424872, mọi CI Δ so baseline qua 0. Chưa chứng minh incremental utility; không tune lại model. Chi tiết [core-research-report.md](core-research-report.md), quyết định [ADR-002](ADR-002-experimental-research-preview.md). Q02 correlation/ablation/regime và vintage realtime/shadow vẫn chưa hoàn tất.
+
+E2-01 đã chốt contract diagnostic `nupl_diagnostic = 1 - 1/CapMVRVCur` với cùng provider/ngày/snapshot E7. Không thêm E2 vào composite; invalid hoặc thiếu MVRV trả null có reason. Evidence tóm tắt tại [evidence/e2-nupl-diagnostic-2026-10-03.json](evidence/e2-nupl-diagnostic-2026-10-03.json); đây không phải một public release mới.
+
+E4-04 exploratory evaluation trên cửa sổ Core 2020-01-01..2025-10-01 cho Fee Activity AP `0.240946`, thấp hơn Core `0.554249`, E7 `0.553773` và nhóm giá `0.545430`; CI moving-block 90 ngày của Fee Activity trừ từng baseline đều nằm dưới 0. Regime trước/sau London, Merge và Dencun khác nhau mạnh, nên chỉ giữ E4 ở R&D-only và không thêm vào Core. Bằng chứng đầy đủ tại [evidence/e4-candidate-evaluation-2026-10-03.json](evidence/e4-candidate-evaluation-2026-10-03.json); không diễn giải là xác suất hay quan hệ nhân quả.
 
 Dashboard thật thay trang intro: Playwright Chrome kiểm 360/390/768/1440, custom E7 366 ngày khớp engine, CSV/null/refresh failure preservation và canvas nonblank đạt; không có page errors. Không mua API, không dùng BTC hoặc metric giả.
