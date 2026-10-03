@@ -101,6 +101,7 @@ try {
   await page.unroute('**/data/latest.json');
   await page.locator('#retry').click();
   await page.locator('#error').waitFor({ state: 'hidden' });
+  await page.waitForFunction(() => !document.getElementById('refresh').disabled);
   await page.clock.setSystemTime(new Date('2026-10-05T08:00:00Z'));
   async function mockDailyRelease(day, value, id) {
     const fixture = structuredClone(history);
@@ -121,12 +122,15 @@ try {
     await page.route(`**/data/releases/${id}/manifest.json`, route => route.fulfill({ contentType: 'application/json', body: manifestBody }));
     await page.route(`**/data/releases/${id}/history.json`, route => route.fulfill({ contentType: 'application/json', body }));
     await page.route(`**/data/releases/${id}/research.json`, route => route.fulfill({ contentType: 'application/json', body: researchBody }));
+    await page.unroute('**/data/status.json');
+    await page.route('**/data/status.json', route => route.fulfill({ json: { ...pipelineStatus, release_id: id } }));
   }
   const tomorrow = new Date(Date.parse(history.rows.at(-1).date) + 86400000).toISOString().slice(0, 10);
   await mockDailyRelease(tomorrow, 50, 'core-00000000000000000001');
   await page.clock.fastForward(15 * 60 * 1000);
   await page.waitForFunction(day => document.getElementById('selected-date').value === day, tomorrow);
   assert.equal(await page.locator('#score-value').innerText(), '50');
+  await page.waitForFunction(() => !document.getElementById('refresh').disabled);
   await page.locator('#selected-date').fill(latestDate);
   await page.locator('#selected-date').dispatchEvent('change');
   await mockDailyRelease(tomorrow, 60, 'core-00000000000000000002');

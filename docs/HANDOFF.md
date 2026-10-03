@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái: **CORE_ENGINE_TESTED / EXPERIMENTAL_DASHBOARD_VERIFIED / DAILY_BATCH_READY_FOR_HOSTED_VERIFICATION**. Điểm tại phiên bàn giao 41.379812239861 ngày 2026-10-01; ngày 2026-10-02 còn thiếu MVRV. Không phải sản phẩm vận hành realtime hoàn chỉnh.
+**Cập nhật: 2026-10-03.** Trạng thái: **CORE_ENGINE_TESTED / EXPERIMENTAL_DASHBOARD_VERIFIED / DAILY_SCHEDULE_ENABLED_AND_HOSTED_RUN_VERIFIED**. Điểm tại phiên bàn giao 41.379812239861 ngày 2026-10-01; ngày 2026-10-02 còn thiếu MVRV. Không phải sản phẩm vận hành realtime hoàn chỉnh.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -8,7 +8,7 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
 
-**Có engine Python, lockfile web, 28 test Python + 5 test Node, primary backtest khóa trước và dashboard ETH với score thật.** Lịch sử là reconstructed; Core không đạt success rule so với tất cả baseline. Daily batch đã implement, thử fetch/R2 thật và local browser auto-refresh; hosted workflow/deploy cần xác minh ở nhật ký cuối phiên. Snapshot/release bất biến, revision/first-publication store riêng. Scope phi thương mại theo [ADR-002](ADR-002-experimental-research-preview.md). Network incremental, prospective history/shadow 30 ngày và restore drill chưa hoàn tất. Không mua API trả phí, không có agent khác.
+**Có engine Python, lockfile web, 28 test Python + 5 test Node, primary backtest khóa trước và dashboard ETH với score thật.** Lịch sử là reconstructed; Core không đạt success rule so với tất cả baseline. Daily workflow active và hosted manual run đã success, R2 readback + bot main commit + Pages deploy + domain hashes/browser đều xác minh. Chưa quan sát lượt cron tương lai tại thời điểm bàn giao. Snapshot/release bất biến, revision/first-publication store riêng. Scope phi thương mại theo [ADR-002](ADR-002-experimental-research-preview.md). Network incremental, prospective history/shadow 30 ngày và restore drill chưa hoàn tất. Không mua API trả phí, không có agent khác.
 
 ## 2. Bắt đầu từ đâu
 
@@ -102,7 +102,7 @@ Trạng thái hợp lệ: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `REJECTED`. 
 | ID | Trạng thái | Dependency | Công việc / đầu ra | Nghiệm thu |
 |---|---|---|---|---|
 | O01 | IN_PROGRESS | S04,A01 | Atomic release publisher, checksums, release pointer | Local publisher/immutable allowlist/hash/pointer tests đạt; fault/rollback drill và incremental còn thiếu |
-| O02 | IN_PROGRESS | O01,M06 | CI và scheduled batch theo hosting thực | Daily workflow + repo Secrets + main deploy hook đã cấu hình; chờ hosted run/build/domain checksum verification |
+| O02 | DONE | O01,M06 | CI và scheduled batch theo hosting thực | Workflow active; hosted manual run 37089242199 success, R2 readback/tests/bot commit/deploy/domain hash PASS; fault/shadow còn O03/O04 |
 | O03 | TODO | O02,U04 | Runbook, backup và fault drills | Thử provider outage, missing day, bad payload, rollback và restore |
 | O04 | TODO | O03 | Chạy shadow >=30 ngày, lưu as_published | Báo cáo đủ scheduled/actual runs, lag, incidents; không tự coi 30 ngày là chứng minh mô hình |
 | O05 | TODO | O04,Q03,D02 | Chuẩn bị release: tên/domain/mục đích sử dụng/rights | Checklist rõ; bản build review được; xử lý phần cần quyết định ở bước phát hành |
@@ -355,3 +355,14 @@ Task tiếp theo:
 - Dashboard polling 15 phút + visibility refresh, latest tự tiến khi có release, historical selection giữ nguyên, lag/error/source-pending rõ, checksum và giữ dữ liệu khi lỗi. Browser test dùng response fixtures chỉ trong QA để kiểm timer/new release, không đưa fixture vào dữ liệu public.
 - Local PASS: 28 unittest Python; 5 Node tests; frozen research validator; syntax app/deploy script; diff whitespace. Browser local 1440/768/390/360, chart 43668 nonblank pixels, custom 366 ngày, CSV/keyboard/network retry + auto timer/latest/historical giữ đúng, 0 page errors. Snapshot replay idempotent đã giữ pointer; đợi hosted run để xác minh cross-runtime/credential/deploy thực.
 - Network hiện refresh toàn range để bắt revision ngày cũ. S04 chưa DONE về incremental network; O03 restore/fault drill toàn chuỗi và O04 >=30 ngày còn chưa làm. Hosted workflow và production verification sẽ ghi thêm khi thực sự hoàn tất.
+
+### Nhật ký 2026-10-03 — bật lịch và xác minh hosted daily run
+
+- Code commit `5c6f00ce144e168cf72d46a6a6836f41ae888b03` đã kiểm 27 staged files/diff/secret scan/public allowlist/byte hashes; không có raw/computed/DPAPI/token. Publisher SHA trong manifest khớp byte source trong Git index. Push main thành công; [CI 37089237435](https://github.com/tnmjsc-hue/eco/actions/runs/37089237435) completed/success.
+- Workflow **Daily ETH index update** API state `active`, schedule 03:17/07:17 UTC (=10:17/14:17 Việt Nam). Dispatch manual từ main chạy [37089242199](https://github.com/tnmjsc-hue/eco/actions/runs/37089242199), **completed/success**. Chưa tự nhận đã quan sát lượt cron dự kiến tiếp theo.
+- Runner Ubuntu tải 5 pages/4081 ETH rows, canonical SHA `9008e8ae9106540a5f162ed7162782533579ec32d08c9d836570c8aed3f8c1cd`. Log xác nhận `backup_verified`, 7 objects; compute, 28 Python tests, 5 Node tests, frozen research validation, diff checks đều success. Source MVRV ngày 2026-10-02 vẫn null. Public pointer giữ `core-9a0d250ffc41a1ddffaa`, release_action `unchanged`, outcome `source_pending`; không tạo release/revision giả vì retrieval hash khác hoặc roundoff Linux.
+- Bot tự tạo/push commit `2dbff14f3dc34bc51143f8fb60517cf6b98f1309`, chỉ sửa `public/data/status.json`, last attempt 2026-10-03T02:16:57.655902+00:00 và run URL. Local đã `git pull --ff-only` nhận đúng commit. Dữ liệu/score không bị ghi đè.
+- Pages API xác minh production/success đúng bot SHA: deployment `83b9fc27-dbd9-4ed9-91f9-6589a1af4561` từ deploy_hook và `13511154-4f34-48ea-8bb6-278ee2a5463e` từ GitHub push. Git integration hiện nhận cả bot push; hook vẫn là bảo đảm triển khai độc lập, có thể tạo hai builds cùng SHA, chưa tối ưu phần này.
+- Hosted job log `production_verified=true` lúc 2026-10-03T02:17:53.9370685Z: status/pointer/manifest/history/research byte SHA trên `eco.tnmp.cloud` khớp output. Code deployment trước đó `49825c6c-201d-44d2-9e02-990fa26a9ccb`, production/success SHA 5c6f00c.
+- Production Playwright trực tiếp `https://eco.tnmp.cloud/?v=2dbff14` PASS: 1440/768/390/360, 43668 chart nonblank pixels, custom 366 ngày/CSV/keyboard, network preservation/retry, fake-clock auto refresh latest + giữ historical selection, 0 page errors. Sửa riêng timing QA để đợi refresh hoàn tất trước advancing timer; không sửa product/engine/data vì lỗi test lúc network production chậm. Fixtures chỉ ở browser intercept, không publish.
+- O02 DONE cho CI+scheduled implementation+activation+hosted verification. O01/M06/S04 còn các phần fault/replay/network optimization; O03 restore drill, O04 prospective/shadow >=30 ngày và Q02 mở rộng chưa DONE. Giữ nhãn Experimental và kết quả research không đạt; không mở commercial/full operational release.
