@@ -2,8 +2,9 @@
   "audit_id": "E3-01/E8-01/E9-01",
   "audit_version": "remaining-source-gate-v0.1.0",
   "as_of_utc": "2026-10-03",
-  "retrieved_at_utc": "2026-10-03T03:47:07.193Z",
+  "retrieved_at_utc": "2026-10-03T03:55:45.096Z",
   "authorization": "no_api_key_no_paid_subscription",
+  "private_run": "data/raw/remaining-source-gates/remaining-source-gates-2026-10-03-2026-10-03T035545096Z/manifest.json",
   "scope": {
     "asset": "eth",
     "frequency": "1d",
@@ -11,54 +12,100 @@
     "public_release": "blocked_until_metric_specific_rights_and_methodology"
   },
   "coinmetrics": {
-    "evidence_ref": "D05-summary",
-    "catalog_status": 200,
-    "sample_window": { "start": "2021-01-01", "end": "2021-01-03" },
+    "catalog": {
+      "http_status": 200,
+      "response_sha256": "6831403acfb4ffbd30eb875ae4b06102dafb5a1dafa22acbdedf4d49e26c6336",
+      "one_day_entries": [
+        {
+          "asset": "eth",
+          "metric": "SplyAct1yr",
+          "frequency": "1d",
+          "min_time": "2015-07-30T00:00:00.000000000Z",
+          "max_time": "2026-10-02T00:00:00.000000000Z"
+        },
+        {
+          "asset": "eth",
+          "metric": "TxTfrValAdjUSD",
+          "frequency": "1d",
+          "min_time": "2015-08-08T00:00:00.000000000Z",
+          "max_time": "2026-10-02T00:00:00.000000000Z"
+        }
+      ]
+    },
+    "sample_window": {
+      "start": "2021-01-01",
+      "end": "2021-01-03"
+    },
     "sample_status": {
-      "SplyAct1yr": { "http_status": 403, "row_count": 0, "response_sha256": "b549d2993288de4e8b43e5d6597519de622b836648155d1eac9f6020b87df4f1" },
-      "TxTfrValAdjUSD": { "http_status": 403, "row_count": 0, "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c" }
+      "SplyAct1yr": {
+        "http_status": 403,
+        "row_count": 0,
+        "response_sha256": "b549d2993288de4e8b43e5d6597519de622b836648155d1eac9f6020b87df4f1"
+      },
+      "TxTfrValAdjUSD": {
+        "http_status": 403,
+        "row_count": 0,
+        "response_sha256": "714ecc34859cb13dd6bc855a12dc4ef00c83280814204b3d61fef91fcf1f6f9c"
+      }
     },
     "active_supply_semantics": {
       "source": "https://gitbook-docs.coinmetrics.io/network-data/network-data-overview/supply/active-supply",
       "http_status": 200,
-      "response_sha256": "52b4d948bce61b80046fc6e9721891f1d799c3a11d3009df633adf3361dd8698",
+      "response_sha256": "9cc14be2ab6db676810814384633697574a154fce554792a14b2ccf2563ca615",
       "finding": "SplyAct1Yr is trailing active supply of native units that transacted at least once; it is not a dormancy measure."
     }
   },
   "glassnode": {
     "documentation": [
       {
-        "id": "indicators",
+        "id": "glassnode_indicators",
         "url": "https://docs.glassnode.com/basic-api/endpoints/indicators",
         "http_status": 200,
-        "response_sha256": "ed0d626c8b165ced2c4df975b1b300bb71079e12c734181d87a39ebf5cbdc8fb",
+        "response_sha256": "7e67739b5f6a2b051b93a7ba2811c8a6ba8532a1841718086ab7497a16d8025e",
         "facts": [
           "The documentation lists dormancy_account_based and requires an API key for endpoint requests.",
           "The RHODL Ratio endpoint documentation specifies BTC as its asset scope; this does not establish ETH coverage."
         ]
       },
       {
-        "id": "supply",
+        "id": "glassnode_supply",
         "url": "https://docs.glassnode.com/basic-api/endpoints/supply",
         "http_status": 200,
-        "response_sha256": "852ea2fb340d7c5c7e528333381519bd6ad0226c56f6f3ad1110a13be06baab9",
+        "response_sha256": "9cb1ba2a245afe1cf2b15673bcf1b54852d1a4cbd69fbbac03c9b49040678cce",
         "facts": [
           "The documentation lists Realized Cap HODL Waves and requires an API key plus an asset parameter.",
           "Documentation alone does not establish an entitled ETH daily history, unit, vintage, or redistribution right."
         ]
       },
       {
-        "id": "metadata",
+        "id": "glassnode_metadata",
         "url": "https://docs.glassnode.com/basic-api/metadata",
         "http_status": 200,
-        "response_sha256": "942688409c1931c0c545abd4acc692e7f9c2df7da0c048fd186c6a3e883a5800",
-        "facts": ["Metadata endpoint is documented, but no credentialed asset/metric entitlement query was performed."]
+        "response_sha256": "7d9803c8360ec2c357652bb515ed9da0ee72a5088b322a7b4d3aa180c56396e2",
+        "facts": [
+          "Metadata endpoint is documented, but no credentialed asset/metric entitlement query was performed."
+        ]
       }
     ],
     "no_key_probes": [
-      { "endpoint": "https://api.glassnode.com/v1/metrics/indicators/dormancy_account_based", "asset": "ETH", "http_status": 401 },
-      { "endpoint": "https://api.glassnode.com/v1/metrics/supply/rcap_hodl_waves", "asset": "ETH", "http_status": 401 },
-      { "endpoint": "https://api.glassnode.com/v1/metrics/indicators/rhodl_ratio", "asset": "ETH", "http_status": 401 }
+      {
+        "endpoint": "https://api.glassnode.com/v1/metrics/indicators/dormancy_account_based",
+        "asset": "ETH",
+        "http_status": 401,
+        "response_sha256": "789c88e4388dc97e581a4119d7cd191fc0acf9b21eb57310897528a7bb819d69"
+      },
+      {
+        "endpoint": "https://api.glassnode.com/v1/metrics/supply/rcap_hodl_waves",
+        "asset": "ETH",
+        "http_status": 401,
+        "response_sha256": "090ffaa3da8bff48408711720d8dd6cf7c279307c4f4235e1f555d4ab69cde37"
+      },
+      {
+        "endpoint": "https://api.glassnode.com/v1/metrics/indicators/rhodl_ratio",
+        "asset": "ETH",
+        "http_status": 401,
+        "response_sha256": "31a59a638d47af4cc212de1df08c55af7d2892e7e6f88c0f8accae0a3dbf961c"
+      }
     ]
   },
   "findings": [

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node scripts/build-web.mjs",
     "test": "node --test tests/web.test.mjs",
-    "validate": "node scripts/validate-research-artifacts.mjs"
+    "validate": "node scripts/validate-research-artifacts.mjs",
+    "audit:remaining-sources": "node scripts/audit-remaining-source-gates.mjs"
   },
   "dependencies": {
     "echarts": "6.1.0",

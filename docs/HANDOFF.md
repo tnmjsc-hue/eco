@@ -413,3 +413,10 @@ Task tiếp theo:
 - Cập nhật source-contract E3/E8/E9 sang `blocked`, evidence refs và validator; cập nhật backlog E3-01/E8-01/E9-01 sang `BLOCKED`. Không dùng BTC thay ETH, không đổi tên active supply, không tạo metric/score/placeholder/public release.
 - Kiểm tra thực tế: `node scripts/validate-research-artifacts.mjs` PASS D04/D05/X00/E2/E4 + source audit; JSON parse và `git diff --check` PASS. Bước tiếp theo chỉ mở khi có entitlement/licence cụ thể: E3-02/E8-02/E9-02 vẫn BLOCKED; S04/M06/O01/O03/O04 vẫn độc lập.
 - Commit `38249d112107b0c91ac340448252da1e17983d89` đã push `main`. Sau deploy, hai host production HTTP 200; status live ghi `E3/E8/E9=blocked_source_entitlement`, validation `passed`, release Core bất biến. Browser QA `https://eco.tnmp.cloud/?v=38249d1` PASS ở 1440/768/390/360, score/date, custom 366 ngày, CSV/keyboard/network/auto-refresh, 43.668 nonblank pixels và 0 page errors.
+
+### Nhật ký 2026-10-03 — probe tái lập E9-01/E3-01/E8-01
+
+- Thêm `scripts/audit-remaining-source-gates.mjs` và lệnh `pnpm audit:remaining-sources`. Probe dùng Node fetch không API key, bắt catalog/coverage Coin Metrics, sample `SplyAct1yr`/`TxTfrValAdjUSD`, Glassnode documentation, và no-key API access probes cho dormancy/RHODL/realized-cap HODL waves. Raw response nằm dưới `data/raw/remaining-source-gates/` bị Git ignore; evidence chỉ lưu status, headers chọn lọc, bytes và SHA-256.
+- Chạy live lúc `2026-10-03T03:55:45Z`: Coin Metrics catalog HTTP 200, hai metric ETH/1d có catalog range đến 2026-10-02; cả hai sample timeseries HTTP 403; Glassnode docs 4/4 HTTP 200; ba no-key API probes HTTP 401. Không log API key hoặc secret.
+- Evidence `docs/evidence/remaining-source-audit-2026-10-03.json` được cập nhật theo run và source-contract hash đồng bộ. Thêm `tests/source-audit.test.mjs`; test probe giả lập coverage/access/no-key và kiểm không có secret trong URL.
+- Kiểm tra: probe live PASS, `node --test tests/*.test.mjs` **7/7 PASS**, validator D04/D05/X00/E2/E4/source-gate PASS, JSON parse và `git diff --check` PASS. E3/E8/E9 vẫn `BLOCKED`; không tạo score hay public release.

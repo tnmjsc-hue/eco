@@ -110,7 +110,7 @@
       "id": "remaining-source-audit",
       "kind": "candidate_source_gate_audit",
       "path": "docs/evidence/remaining-source-audit-2026-10-03.json",
-      "sha256": "45064f041edf66ea5fe656809ab3699c4d2fae835302e6f2edde7a952fb2c473",
+      "sha256": "0715613e140bb2328c70d6057546f44e9d299d079e8957bc35705ce1b7339bef",
       "as_of_utc": "2026-10-03",
       "retrieved_at_utc": "2026-10-03T03:47:07.193Z",
       "authorization": "no_api_key_no_paid_subscription",
