@@ -30,7 +30,7 @@ Ba feature mới dùng q05/q95 tuyến tính trên tối đa 1.460 ngày lịch 
 | E7 riêng | 0,554274 | −0,031643 | [−0,107040; 0,021122] |
 | Nhóm giá | 0,545849 | −0,023218 | [−0,111727; 0,034344] |
 
-Core 10 thấp hơn Core 4 trong CI này. Không retune để ép cải thiện; giữ nhãn Experimental, hai baseline và kết quả thực tế trên Dashboard/Kiểm định. JSON có correlation, 10 ablation, regime và coverage. Không gọi score là xác suất hoặc 10 thành phần là bản đủ chín metric gốc.
+Core 10 thấp hơn Core 4 trong CI này. Không retune để ép cải thiện; giữ nhãn Experimental và kết quả thực tế trong Kiểm định. Dashboard chỉ hiện Core 10 (hoặc một đường tùy chỉnh khi người dùng chọn); bỏ chế độ/đường điểm Core 4 và ECO 7, bỏ hai cột composite cũ khỏi CSV chính. Baseline nằm trong chi tiết kiểm định thu gọn; lịch sử cha và bốn cổng lineage giữ nguyên. JSON có correlation, 10 ablation, regime và coverage. Không gọi score là xác suất hoặc 10 thành phần là bản đủ chín metric gốc.
 
 ## Vận hành và kiểm thử
 

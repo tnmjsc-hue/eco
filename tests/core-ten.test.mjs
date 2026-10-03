@@ -66,6 +66,7 @@ test('CSV includes all ten scores, signed units and lineage; empty/missing custo
   assert.equal(coreScore(row,[]),null);assert.equal(coreScore(row,['E2','E2']),null);
   assert.equal(coreScore(row,['E2']),row.components.E2);assert.equal(coreScore(history.rows[0]),null);
   const csv=exportCoreCSV([row],['E2','supply_scarcity'],'custom',manifest);
-  for(const term of [CORE_VERSION,'CC BY-NC 4.0','core_ten_score','extended_score','core_four_score','E2_input_value','supply_scarcity_input_unit','exchange_balance_pressure_oriented_raw',String(row.new_features.exchange_balance_pressure.input_value),manifest.parents.diagnostics.release_id]) assert.ok(csv.includes(term),term);
+  for(const term of [CORE_VERSION,'CC BY-NC 4.0','core_ten_score','E2_input_value','supply_scarcity_input_unit','exchange_balance_pressure_oriented_raw',String(row.new_features.exchange_balance_pressure.input_value),manifest.parents.diagnostics.release_id]) assert.ok(csv.includes(term),term);
+  for(const term of ['extended_score','core_four_score']) assert.ok(!csv.split('\r\n')[0].includes(term),term);
   assert.equal(csv.split('\r\n').length,2);
 });

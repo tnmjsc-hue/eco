@@ -1,15 +1,14 @@
-import { METRICS, REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
+import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
 import { initProxies, resizeProxies } from './proxies.js?v=proxies-1';
 import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=diagnostics-1';
-import { EXTENDED_METRICS } from './extended-model.js?v=extended-1';
-import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-1';
+import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const dateLabel = date => date.split('-').reverse().join('/');
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const state = { rows: [], manifest: null, coreManifest: null, extendedManifest: null, research: null, extendedResearch: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'ten', selected: CORE_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
-let historyChart, researchChart;
+const state = { rows: [], manifest: null, research: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'ten', selected: CORE_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
+let historyChart;
 const baselineNames = { core: 'Core 4', extended: 'ECO 7', normalized_E7_only: 'E7 riêng', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá riêng' };
 
 async function getBytes(url, fresh = false) {
@@ -44,23 +43,14 @@ async function load() {
     const manifest = await verify(await getBytes(pointer.manifest_url), pointer.manifest_sha256);
     if (manifest.release_id !== pointer.release_id) throw new Error('Manifest không đúng release.');
     const base = `/data/core-v2/releases/${pointer.release_id}/`;
-    const [data, extendedResearch] = await Promise.all(['history.json', 'research.json'].map(async name => verify(await getBytes(base + name), manifest.files[name])));
-    validateCore(data, manifest, extendedResearch);
+    const [data, research] = await Promise.all(['history.json', 'research.json'].map(async name => verify(await getBytes(base + name), manifest.files[name])));
+    validateCore(data, manifest, research);
     const parents = Object.fromEntries(await Promise.all(Object.entries(manifest.parents).map(async ([kind,ref])=>[kind,await verify(await getBytes(ref.manifest_url),ref.manifest_sha256)])));
     validateCoreParents(manifest, parents);
-    const coreParent = manifest.parents.core;
-    const coreManifest = parents.core;
-    if (coreManifest.release_id !== coreParent.release_id || coreManifest.methodology_version !== 'core-v0.1.0'
-        || coreManifest.files['history.json'] !== coreParent.history_sha256) throw new Error('Core cha không khớp.');
-    const research = await verify(await getBytes(`/data/releases/${coreParent.release_id}/research.json`), coreManifest.files['research.json']);
-    if (research.protocol !== 'core-v0.1.0-protocol-1' || typeof research.success !== 'boolean') throw new Error('Research không đúng protocol.');
     state.rows = data.rows;
     state.manifest = manifest;
-    state.coreManifest = coreManifest;
-    state.extendedManifest = parents.extended;
     state.pointerHash = pointer.manifest_sha256;
     state.research = research;
-    state.extendedResearch = extendedResearch;
     state.status = status?.release_id === pointer.release_id ? status : null;
     if (state.followLatest || !state.rows.some(r => r.date === state.date)) state.date = manifest.last_valid_score_date;
     $('selected-date').min = state.rows[0].date;
@@ -78,7 +68,7 @@ async function load() {
     renderResearch();
     renderProvenance();
     icons();
-    requestAnimationFrame(() => { historyChart.resize(); researchChart?.resize(); resizeProxies(); resizeDiagnostics(); });
+    requestAnimationFrame(() => { historyChart.resize(); resizeProxies(); resizeDiagnostics(); });
   } catch (error) {
     $('loading').hidden = true;
     $('error').hidden = false;
@@ -106,16 +96,14 @@ function renderOverview() {
   const index = state.rows.findIndex(r => r.date === state.date);
   const row = state.rows[index];
   if (!row) return;
-  const score = state.mode === 'core' ? row.core_score : state.mode === 'extended' ? row.extended_score : state.mode === 'ten' ? row.score : coreScore(row, state.selected);
-  $('score-label').textContent = state.mode === 'core' ? 'ECO Core · 4' : state.mode === 'extended' ? 'ECO 7 · Experimental' : state.mode === 'ten' ? 'ECO Core · 10 Experimental' : 'Điểm tùy chỉnh · Experimental';
-  $('score-version').textContent = state.mode === 'core' ? 'core-v0.1.0' : state.mode === 'extended' ? 'extended-v0.1.0' : CORE_VERSION;
+  const score = state.mode === 'custom' ? coreScore(row, state.selected) : row.score;
+  $('score-label').textContent = state.mode === 'custom' ? 'Điểm tùy chỉnh · Experimental' : 'ECO Core · 10 Experimental';
+  $('score-version').textContent = CORE_VERSION;
   $('score-value').textContent = displayScore(score);
   $('score-value').title = score === null ? 'Không có điểm hợp lệ' : fmt(score, 4);
   $('score-value').style.color = scoreColor(score);
   $('heat-marker').hidden = score === null;
   $('heat-marker').style.left = `calc(${score ?? 0}% - 1px)`;
-  $('custom-comparison').hidden = false;
-  $('custom-comparison').textContent = `Cùng ngày · Core 10: ${displayScore(row.score)} · ECO 7: ${displayScore(row.extended_score)} · Core 4: ${displayScore(row.core_score)}`;
   $('price-value').textContent = row.price_usd === null ? '—' : `$${fmt(row.price_usd)}`;
   const previousPrice = state.rows[index - 1]?.price_usd;
   const change = row.price_usd !== null && previousPrice ? (row.price_usd / previousPrice - 1) * 100 : null;
@@ -144,7 +132,7 @@ function renderOverview() {
   const revision = state.manifest.revision?.changed_dates?.length ? ` Revision nguồn: ${state.manifest.revision.changed_dates.length} ngày lịch sử; release cũ được giữ nguyên.` : '';
   $('freshness').innerHTML = `<b class="status-dot"></b><span>Nguồn đến ${dateLabel(last)} · cách hiện tại ${age} ngày UTC${missing ? ` · ${missing} ngày đã đóng thiếu dữ liệu` : ''}${pending.length ? ` · ngày chờ ${pending.map(d => escape(dateLabel(d))).join(', ')} (chưa đóng lúc tải)` : ''}. ${schedule}${warning}${revision}</span>`;
 }
-function activeMetrics() { return state.mode === 'core' ? METRICS : state.mode === 'extended' ? EXTENDED_METRICS : CORE_METRICS; }
+function activeMetrics() { return CORE_METRICS; }
 function renderComponents() {
   const row = state.rows.find(r => r.date === state.date);
   const active = state.mode === 'custom' ? state.selected : activeMetrics().map(m=>m.id);
@@ -171,11 +159,12 @@ function renderChart() {
   const mobile = window.innerWidth <= 600;
   const custom = state.mode === 'custom';
   $('range-label').textContent = `${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString('vi-VN')} ngày`;
+  $('core-legend').hidden = custom;
   $('custom-legend').hidden = !custom;
-  const series = [{ name: 'Core 10', type: 'line', data: rows.map(r => [r.date, r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: state.mode === 'ten'?1.9:1.2, color: '#087f72' }, itemStyle: { color: '#087f72' }, z: 3 },
-    { name:'ECO 7',type:'line',data:rows.map(r=>[r.date,r.extended_score]),showSymbol:false,connectNulls:false,lineStyle:{width:state.mode==='extended'?1.9:1.1,color:'#a87b48',type:'dotted'},itemStyle:{color:'#a87b48'},z:2 },
-    { name: 'Core 4', type: 'line', data: rows.map(r=>[r.date,r.core_score]),showSymbol:false,connectNulls:false,lineStyle:{width:state.mode==='core'?1.9:1.2,color:'#7b62a3',type:'dashed'},itemStyle:{color:'#7b62a3'},z:2 }];
-  if (custom) series.push({ name: 'Tùy chỉnh', type: 'line', data: rows.map(r => [r.date, coreScore(r, state.selected)]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.5, color: '#bb790b', type: 'dashed' }, itemStyle: { color: '#bb790b' }, z: 4 });
+  $('chart-title').textContent = `${custom ? 'Tùy chỉnh' : 'Core 10'} & giá ETH`;
+  $('history-chart').setAttribute('aria-label', `Biểu đồ lịch sử điểm ${custom ? 'tùy chỉnh' : 'Core 10'} và giá ETH`);
+  const color = custom ? '#bb790b' : '#087f72';
+  const series = [{ name: custom ? 'Tùy chỉnh' : 'Core 10', type: 'line', data: rows.map(r => [r.date, custom ? coreScore(r, state.selected) : r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.9, color, type: custom ? 'dashed' : 'solid' }, itemStyle: { color }, z: 3 }];
   series.push({ name: 'Giá ETH', type: 'line', yAxisIndex: 1, data: rows.map(r => [r.date, r.price_usd]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.2, color: '#455554', opacity: .7 }, itemStyle: { color: '#455554' }, z: 1 });
   historyChart.setOption({ animation: false, aria: { enabled: true }, grid: { left: mobile ? 34 : 42, right: mobile ? 50 : 66, top: 28, bottom: 48 }, textStyle: { fontFamily: 'Segoe UI, Arial, sans-serif' }, tooltip: { trigger: 'axis', confine: true, backgroundColor: '#fff', borderColor: '#dfe6e5', textStyle: { color: '#232b2b' }, formatter: params => {
     const date = params[0]?.value?.[0];
@@ -185,21 +174,13 @@ function renderChart() {
 }
 function renderResearch() {
   const r = state.research;
-  $('research-conclusion').textContent = r.success ? 'Protocol đạt tiêu chí incremental ranking utility trên lịch sử reconstructed. Chưa chứng minh hiệu quả realtime.' : 'Chưa chứng minh Core cải thiện so với mọi baseline theo tiêu chí đã khóa. Giữ nguyên công thức; không tối ưu lại để ép kết quả đạt.';
+  $('research-conclusion').textContent = `Chưa chứng minh Core 10 cải thiện dự báo.${r.comparisons.core.upper_95 < 0 ? ' AP thăm dò thấp hơn Core 4 trong khoảng tin cậy này;' : ''} Holdout đã dùng lại. Giữ nguyên công thức và nhãn Experimental.`;
   $('research-summary').innerHTML = [
     ['Khoảng đánh giá', `${escape(dateLabel(r.start))}<br>${escape(dateLabel(r.end))}`], ['Ngày được chấm', fmt(r.n, 0)],
-    ['Prevalence nhãn dương', `${fmt(r.prevalence * 100, 1)}%`], ['Core Average Precision', fmt(r.statistics.core.average_precision, 3)],
+    ['Prevalence nhãn dương', `${fmt(r.prevalence * 100, 1)}%`], ['Core 10 Average Precision', fmt(r.statistics.core_ten.average_precision, 3)],
   ].map(([label, value]) => `<div><div class="label">${label}</div><strong>${value}</strong></div>`).join('');
-  $('comparison-rows').innerHTML = Object.entries(r.comparisons).map(([key, c]) => `<tr><td>${baselineNames[key]}</td><td>${c.ap_delta > 0 ? '+' : ''}${fmt(c.ap_delta, 4)}</td><td>[${fmt(c.lower_95, 4)}; ${fmt(c.upper_95, 4)}]</td><td>${c.positive_years}/${c.eligible_years}</td><td><span class="status-pill ${c.pass ? 'ready' : 'missing'}">${c.pass ? 'Đạt' : 'Chưa đạt'}</span></td></tr>`).join('');
-  $('secondary-results').innerHTML = `<p>Core ROC-AUC: <strong>${fmt(r.statistics.core.roc_auc, 3)}</strong> · Precision ≥90: <strong>${fmt(r.statistics.core.precision_at_90, 3)}</strong> · Recall ≥90: <strong>${fmt(r.statistics.core.recall_at_90, 3)}</strong> · ${r.statistics.core.predictions_at_90} ngày có điểm ≥90.</p><p>Primary label là future drawdown, không phải nhãn đỉnh chu kỳ. Sensitivity và kết quả từng năm có trong research JSON cùng release.</p>`;
-  if (state.view === 'research') plotResearch();
-}
-function plotResearch() {
-  if (!researchChart) researchChart = window.echarts.init($('research-chart'));
-  const stats = state.research.statistics;
-  const mobile = window.innerWidth <= 600;
-  researchChart.setOption({ animation: false, grid: { left: mobile ? 104 : 190, right: 40, top: 14, bottom: 32 }, xAxis: { type: 'value', min: 0, max: 1, axisLabel: { fontSize: 10, color: '#687575' }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, yAxis: { type: 'category', inverse: true, data: Object.keys(stats).map(k => mobile ? ({ core: 'Core', normalized_E7_only: 'E7 độc lập', equal_weight_four_components: 'Đồng trọng số', normalized_price_group_only: 'Nhóm giá' })[k] : baselineNames[k]), axisLabel: { fontSize: 11, color: '#455554' }, axisLine: { show: false }, axisTick: { show: false } }, series: [{ type: 'bar', barWidth: 21, data: Object.values(stats).map((s, i) => ({ value: s.average_precision, itemStyle: { color: ['#087f72', '#8b9895', '#c98668', '#b6a564'][i] } })), label: { show: true, position: 'right', fontSize: 11, color: '#455554', formatter: p => fmt(p.value, 3) } }], markLine: { data: [{ xAxis: state.research.prevalence }] } });
-  researchChart.resize();
+  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='core_ten'?'Core 10':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='core_ten'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='core_ten'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
+  $('extended-research-link').href = `/data/core-v2/releases/${state.manifest.release_id}/research.json`;
 }
 function renderProvenance() {
   const m = state.manifest;
@@ -209,18 +190,13 @@ function renderProvenance() {
     const dd = document.createElement('dd'); dd.textContent = value;
     $('provenance').append(dt, dd);
   }
-  const r = state.extendedResearch;
-  $('core-ten-performance').textContent = `AP thăm dò: Core 10 ${fmt(r.statistics.core_ten.average_precision,3)} / Core 4 ${fmt(r.statistics.core.average_precision,3)}. Xem Kiểm định.`;
-  $('extended-evaluation').textContent = `${r.n.toLocaleString('vi-VN')} ngày đánh giá ${dateLabel(r.start)}–${dateLabel(r.end)}, ${r.positive_labels} nhãn dương. AP Core 10 ${fmt(r.statistics.core_ten.average_precision,4)}, Core 4 ${fmt(r.statistics.core.average_precision,4)}; Δ AP ${fmt(r.comparisons.core.ap_delta,4)}. Holdout đã dùng lại; kết quả thăm dò, ${r.comparisons.core.upper_95<0?'thấp hơn Core 4 trong khoảng tin cậy này':'chưa chứng minh cải thiện dự báo'}.`;
-  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='core_ten'?'Core 10':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='core_ten'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='core_ten'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
-  $('extended-research-link').href = `/data/core-v2/releases/${m.release_id}/research.json`;
 }
 function view(name) {
   state.view = name;
   document.querySelectorAll('.view').forEach(node => { node.hidden = node.id !== `view-${name}`; });
   document.querySelectorAll('[data-view]').forEach(node => { node.classList.toggle('active', node.dataset.view === name); if (node.dataset.view === name) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current'); });
   history.replaceState(null, '', name === 'dashboard' ? location.pathname : `#${name}`);
-  if (state.rows.length) requestAnimationFrame(() => { if (name === 'research') plotResearch(); if (name === 'dashboard') historyChart.resize(); if (name === 'extended') resizeProxies(); if (name === 'diagnostics') resizeDiagnostics(); });
+  if (state.rows.length) requestAnimationFrame(() => { if (name === 'dashboard') historyChart.resize(); if (name === 'extended') resizeProxies(); if (name === 'diagnostics') resizeDiagnostics(); });
 }
 function start() {
   icons();
@@ -240,7 +216,7 @@ function start() {
   $('selected-date').addEventListener('change', event => selectDate(event.target.value));
   $('previous-day').addEventListener('click', () => selectDate(dateMinus(state.date, 1)));
   $('next-day').addEventListener('click', () => selectDate(dateMinus(state.date, -1)));
-  $('latest-day').addEventListener('click', () => { if (state.rows.length) selectDate(state.mode==='core'?state.coreManifest.last_valid_score_date:state.mode==='extended'?state.extendedManifest.last_valid_score_date:state.manifest.last_valid_score_date, true); });
+  $('latest-day').addEventListener('click', () => { if (state.rows.length) selectDate(state.manifest.last_valid_score_date, true); });
   $('log-price').addEventListener('change', renderChart);
   $('refresh').addEventListener('click', load);
   $('retry').addEventListener('click', load);
@@ -251,7 +227,7 @@ function start() {
     const link = document.createElement('a'); link.href = url; link.download = `eco-${state.manifest.release_id}-${state.mode}-${state.range}.csv`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  new ResizeObserver(() => { historyChart?.resize(); researchChart?.resize(); }).observe(document.querySelector('main'));
+  new ResizeObserver(() => { historyChart?.resize(); }).observe(document.querySelector('main'));
   if (['#research', '#methodology', '#extended', '#diagnostics'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });

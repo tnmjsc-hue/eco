@@ -19,7 +19,6 @@ try {
   const history = await (await page.request.get(new URL(`/data/core-v2/releases/${pointer.release_id}/history.json`, url).href)).json();
   const coreManifest = await (await page.request.get(new URL(manifest.parents.core.manifest_url,url).href)).json();
   const coreHistory = await (await page.request.get(new URL(`/data/releases/${coreManifest.release_id}/history.json`,url).href)).json();
-  const coreScore = String(Math.floor(coreManifest.last_valid_score+.5));
   const latestScore = String(Math.floor(manifest.last_valid_score + .5));
   const latestDate = manifest.last_valid_score_date;
   const previousDate = new Date(Date.parse(latestDate) - 86400000).toISOString().slice(0, 10);
@@ -30,10 +29,8 @@ try {
   assert.ok((await page.locator('#component-rows').innerText()).includes('Tạm thời · flash'));
   assert.ok((await page.locator('#score-label').innerText()).includes('Core · 10'));
   for (const r of history.rows) assert.equal(r.core_score,coreHistory.rows.find(c=>c.date===r.date).score);
-  await page.locator('[data-mode="core"]').click();
-  assert.equal(await page.locator('#score-value').innerText(),coreScore);
-  assert.equal(await page.locator('#coverage-value').innerText(),'4 / 4');
-  await page.locator('[data-mode="ten"]').click();
+  assert.equal(await page.locator('[data-mode="core"], [data-mode="extended"], #custom-comparison').count(),0);
+  assert.ok(!/Core 4|ECO 7/.test(await page.locator('#view-dashboard').innerText()));
   await page.locator('#previous-day').focus();
   await page.locator('#previous-day').press('Enter');
   assert.equal(await page.locator('#selected-date').inputValue(), previousDate);
@@ -51,6 +48,7 @@ try {
     for (let i = 3; i < data.length; i += 4) if (data[i]) nonblank++;
     return { series: c.getOption().series.map(s => ({ name: s.name, count: s.data.length })), nonblank };
   });
+  assert.deepEqual(chartState.series.map(s=>s.name),['Core 10','Giá ETH']);
   assert.equal(chartState.series[0].count, history.rows.length);
   assert.ok(chartState.nonblank > 1000);
   await page.screenshot({ path: 'test-results/dashboard-1440.png', fullPage: true });
@@ -73,13 +71,15 @@ try {
   const text = await readFile(await download.path(), 'utf8');
   assert.ok(text.includes('CC BY-NC 4.0'));
   assert.ok(text.includes('custom_score'));
+  for(const term of ['extended_score','core_four_score']) assert.ok(!text.split('\r\n')[0].includes(term));
+  assert.deepEqual(await page.evaluate(() => echarts.getInstanceByDom(document.getElementById('history-chart')).getOption().series.map(s=>s.name)),['Tùy chỉnh','Giá ETH']);
   for(const id of ['exchange_share','address_activity','value_per_transfer','E2','supply_scarcity','exchange_balance_pressure']) assert.ok(text.includes(id));
   assert.equal(text.split('\r\n').length,367);
   await page.locator('[data-metric="E7"]').focus();
   await page.locator('[data-metric="E7"]').press('Space');
   assert.equal(await page.locator('#score-value').innerText(), '—');
-  await page.locator('[data-mode="core"]').click();
-  assert.equal(await page.locator('#score-value').innerText(), coreScore);
+  await page.locator('[data-mode="ten"]').click();
+  assert.equal(await page.locator('#score-value').innerText(), latestScore);
   await page.locator('#selected-date').fill('2015-08-01');
   await page.locator('#selected-date').dispatchEvent('change');
   assert.equal(await page.locator('#score-value').innerText(), '—');
@@ -88,7 +88,10 @@ try {
   await page.locator('[data-range="all"]').click();
   await page.locator('[data-view="research"]').click();
   assert.ok((await page.locator('#research-conclusion').innerText()).includes('Chưa chứng minh'));
-  assert.equal(await page.locator('#comparison-rows tr').count(), 3);
+  assert.equal(await page.locator('#research-chart, #comparison-rows, #secondary-results').count(),0);
+  assert.equal(await page.locator('#baseline-details').getAttribute('open'),null);
+  assert.ok((await page.locator('#research-summary').innerText()).includes('Core 10 Average Precision'));
+  await page.locator('#baseline-details summary').click();
   assert.equal(await page.locator('#extended-results tr').count(),5);
   await page.screenshot({ path: 'test-results/research-1440.png', fullPage: true });
   await page.locator('[data-view="methodology"]').click();

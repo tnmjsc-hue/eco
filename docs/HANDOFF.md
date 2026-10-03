@@ -1,6 +1,6 @@
 # Bàn giao triển khai ETH Cycle Index
 
-**Cập nhật: 2026-10-03.** Trạng thái: **CORE_TEN_EXPERIMENTAL_PRODUCTION_VERIFIED / ECO_SEVEN_AND_RAW_DIAGNOSTICS_PRODUCTION_VERIFIED / HOSTED_CORE_TEN_JOIN_VERIFIED**. Dashboard mặc định Core 10 `core-v0.2.0`, 37.71262149722105 (UI 38/100), đủ 10/10 ngày 2026-10-02. Core 4 giữ 40.009962172523664, ECO 7 giữ 31.979753577249287 cùng ngày; tất cả điểm đã công bố giữ nguyên. Giữ version/weights/normalizer riêng; bốn release cha được pin. AP Core 10 thăm dò thấp hơn Core 4, không tuyên bố cải thiện dự báo. Chưa hoàn tất sản phẩm realtime/shadow 30 ngày.
+**Cập nhật: 2026-10-03.** Trạng thái: **CORE_TEN_EXPERIMENTAL_PRODUCTION_VERIFIED / ECO_SEVEN_AND_RAW_DIAGNOSTICS_PRODUCTION_VERIFIED / HOSTED_CORE_TEN_JOIN_VERIFIED**. Dashboard mặc định Core 10 `core-v0.2.0`, 37.71262149722105 (UI 38/100), đủ 10/10 ngày 2026-10-02. Dashboard chỉ hiện Core 10; Core 4/ECO 7 giữ trong lịch sử bất biến và baseline kiểm định thu gọn, không còn chế độ/đường điểm cũ. Giữ version/weights/normalizer riêng; bốn release cha được pin. AP Core 10 thăm dò thấp hơn Core 4, không tuyên bố cải thiện dự báo. Chưa hoàn tất sản phẩm realtime/shadow 30 ngày.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
@@ -13,6 +13,8 @@ Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên c�
 **Ba metric mới theo yêu cầu:** P3 `exchange_share`, P8 `address_activity`, P9 `value_per_transfer` đã hoàn thành source/backfill/R2, engine, đánh giá dữ liệu ETH thật và UI/CSV nghiên cứu, đồng thời tích hợp vào ECO 7 trên dashboard chính. Proxy có version riêng `network-proxies-v0.1.0`; Core vẫn bốn thành phần bất biến. Xem [NETWORK_PROXIES](NETWORK_PROXIES.md), [ADR-005](ADR-005-network-research-proxies.md) và [EXTENDED_DASHBOARD](EXTENDED_DASHBOARD.md). E3/E8/E9 original contracts vẫn giữ bằng chứng entitlement cũ; đây là quyết định thay thế vai trò, không tái tạo metric gốc. Production và hosted manual run mới đã xác minh thành công, xem nhật ký cuối tài liệu.
 
 ## 2. Bắt đầu từ đâu
+
+**CORE10-UI-02 — `IN_PROGRESS` (2026-10-03):** Theo yêu cầu bỏ tín hiệu trùng sau Core 10: gỡ chế độ/đường điểm Core 4 và ECO 7, so sánh điểm trong hero, hai cột composite cũ khỏi CSV chính và khối kiểm định Core 4 riêng. Giữ mười thành phần/trọng số/version, bốn parent gate, JSON lịch sử bất biến và kết quả baseline trong chi tiết kiểm định thu gọn. Local PASS: `python -m unittest discover -s tests -v` 102 test (125,452 giây), `node --test tests/*.test.mjs` 30 test, frozen validator và ba browser QA qua 1440/768/390/360. Đã xem ảnh desktop/mobile: hai series Core 10/ETH; tùy chỉnh thay đường tổng hợp. CSV giữ 10 component, signed input/reason/flags/licence và bốn parent ID; bỏ `extended_score`/`core_four_score` là thay đổi schema xuất tải xuống, không đổi methodology hoặc release. Lỗi mạng/checksum giữ dữ liệu tốt, ngày lịch sử được giữ qua refresh. Các file sửa: `public/app.js`, `public/index.html`, `public/core-model.js`, hai QA dashboard/proxy, test CSV và README/CORE_TEN/HANDOFF. Chờ CI/Pages/production trước DONE.
 
 **CORE10-01 — `DONE`, production + hosted verified (2026-10-03):** protocol `core-v0.2.0` khóa trước code/đánh giá; ngân sách giá 37,5%, định giá 37,5%, mạng 25%, E2 chia nhóm MVRV, C1/C2 có chiều giả thuyết rõ. Release `core10-34bb9fdc3f68092404ec`: 4.081 ngày lịch, 2.979 ngày score; 02/10/2026 đủ 10/10, 37.71262149722105 (UI 38). Tất cả điểm Core 4/ECO 7 giữ nguyên. 102 Python + 30 Node, frozen validator và ba UI bốn viewport PASS. AP thăm dò 0,522631 thấp hơn Core 4 0,554702, CI Δ âm; không retune hoặc tuyên bố cải thiện. Code `43629af`, CI `37133876410` success; Pages `11efd1be-42bb-4268-ac9f-55027111bb7b` production success exact SHA. Hai hostname HTTP200/hash 38 file/năm chain/cache và UI production đã đạt. Hosted Core `37134104578`, network `37134106123` success cả tích hợp + deploy verifier, Core 10 `unchanged`; bot `421a799`/`9d400ed` mỗi commit chỉ bốn status. [ADR-008](ADR-008-core-ten-experimental.md), [runbook](CORE_TEN.md), [evidence](evidence/core-ten-publication-2026-10-03.json).
 
@@ -47,7 +49,7 @@ Nếu dữ liệu bị chặn, giữ evidence lỗi và làm task độc lập n
 | Tech | Python batch + static ES modules/ECharts/Lucide; JSON tĩnh có manifest, ADR-002 |
 | Dữ liệu trả phí | Chưa chọn và chưa mua; không chặn Core nếu Community đủ |
 | Giao diện | Tiếng Việt trước, cấu trúc tương tự CBBI, tên/nhận diện riêng |
-| Phạm vi hiện tại | Core 10 reconstructed Experimental; Core 4/ECO 7 đối chiếu bất biến; gate vận hành đầy đủ còn riêng |
+| Phạm vi hiện tại | Core 10 reconstructed Experimental; Core 4/ECO 7 lưu kiểm định/tái lập; gate vận hành đầy đủ còn riêng |
 
 ## 4. Backlog thực thi
 
