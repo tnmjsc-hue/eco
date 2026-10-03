@@ -1,0 +1,86 @@
+{
+  "task": "I18N-01",
+  "verified_at": "2026-10-04 Asia/Saigon",
+  "commit": "5e818f9635670be9001eaed513f4759d2c10a9f1",
+  "default_language": "en",
+  "locales": [
+    "en",
+    "vi",
+    "ko",
+    "ru",
+    "hi",
+    "tr",
+    "pt-BR",
+    "en-NG"
+  ],
+  "translation": {
+    "source_string_count": 392,
+    "non_vietnamese_packs_complete": true,
+    "runtime_external_translation_calls": false,
+    "browser_preference_persists": true,
+    "date_and_number_locales": {
+      "en": "en-US",
+      "vi": "vi-VN",
+      "ko": "ko-KR",
+      "ru": "ru-RU",
+      "hi": "hi-IN",
+      "tr": "tr-TR",
+      "pt-BR": "pt-BR",
+      "en-NG": "en-NG"
+    }
+  },
+  "browser": {
+    "views": [
+      "dashboard",
+      "extended",
+      "diagnostics",
+      "research",
+      "methodology"
+    ],
+    "local_viewports_px": [
+      1440,
+      768,
+      390,
+      360
+    ],
+    "local_locale_view_combinations": 160,
+    "local_page_errors": 0,
+    "local_horizontal_overflow_cases": 0,
+    "production_host": "https://eco.tnmp.cloud",
+    "production_viewport_px": 390,
+    "production_locale_view_combinations": 40,
+    "production_page_errors": 0,
+    "production_language_persisted_after_reload": "pt-BR"
+  },
+  "production": {
+    "hosts": [
+      "https://eco.tnmp.cloud",
+      "https://eco-tnmp.pages.dev"
+    ],
+    "http_status": 200,
+    "git_blob_hashes_match_commit": true,
+    "static_and_data_files_verified_per_host": 40,
+    "release_chains_verified_per_host": 5,
+    "github_actions_run_id": "37140643315",
+    "github_actions_conclusion": "success"
+  },
+  "unchanged_core": {
+    "methodology_version": "core-v0.2.0",
+    "latest_score": 37.71262149722105,
+    "display_score": 38,
+    "component_count": 10
+  },
+  "checks": {
+    "pnpm_build": "PASS",
+    "python_unittest_count": 102,
+    "python_unittest_result": "PASS",
+    "node_test_count": 30,
+    "node_test_result": "PASS",
+    "frozen_research_validator": "PASS",
+    "javascript_syntax": "PASS",
+    "translation_pack_schema": "PASS",
+    "git_diff_check": "PASS",
+    "staged_secret_pattern_scan": "no matches"
+  },
+  "translation_review_limit": "Machine-assisted initial translations; key metric terminology manually reviewed; no native-editor review recorded."
+}
