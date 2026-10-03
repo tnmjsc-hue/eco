@@ -9,6 +9,8 @@ const expectedProxyPointer = await readFile('public/data/network-proxies/latest.
 const expectedProxyStatus = await readFile('public/data/network-proxies/status.json');
 const expectedExtendedPointer = await readFile('public/data/extended/latest.json');
 const expectedExtendedStatus = await readFile('public/data/extended/status.json');
+const expectedDiagnosticPointer = await readFile('public/data/diagnostics/latest.json');
+const expectedDiagnosticStatus = await readFile('public/data/diagnostics/status.json');
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
 if (!hook || new URL(hook).hostname !== 'api.cloudflare.com') throw new Error('Missing or unexpected Cloudflare deployment hook.');
 try {
@@ -60,8 +62,21 @@ for (let attempt = 0; attempt < 40; attempt++) {
       if (!['history.json','research.json'].includes(file)) throw new Error('Unexpected Extended artifact');
       if (hash(await bytes(`/data/extended/releases/${extended.release_id}/${file}`)) !== sha) throw new Error('Extended checksum mismatch');
     }
+    if (hash(await bytes('/data/diagnostics/latest.json')) !== hash(expectedDiagnosticPointer)
+        || hash(await bytes('/data/diagnostics/status.json')) !== hash(expectedDiagnosticStatus)) continue;
+    const diagnostic=JSON.parse(expectedDiagnosticPointer);
+    if (!/^diagnostic-[a-f0-9]{20}$/.test(diagnostic.release_id)
+        || diagnostic.manifest_url!==`/data/diagnostics/releases/${diagnostic.release_id}/manifest.json`) throw new Error('Invalid diagnostic pointer');
+    const diagnosticBytes=await bytes(diagnostic.manifest_url);
+    if (hash(diagnosticBytes)!==diagnostic.manifest_sha256) continue;
+    const diagnosticManifest=JSON.parse(diagnosticBytes);
+    if (diagnosticManifest.role!=='raw_diagnostics_only' || diagnosticManifest.composite_score!==null
+        || diagnosticManifest.core_promotion!==false || Object.keys(diagnosticManifest.files).sort().join(',')!=='history.json,research.json') throw new Error('Invalid diagnostic role');
+    for (const [file,sha] of Object.entries(diagnosticManifest.files)) {
+      if (hash(await bytes(`/data/diagnostics/releases/${diagnostic.release_id}/${file}`))!==sha) throw new Error('Diagnostic checksum mismatch');
+    }
     verified = true;
-    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id, extended_release_id:extended.release_id }));
+    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id, extended_release_id:extended.release_id, diagnostic_release_id:diagnostic.release_id }));
     break;
   } catch { /* Keep waiting for the complete new deployment, never accept a mixed release. */ }
 }

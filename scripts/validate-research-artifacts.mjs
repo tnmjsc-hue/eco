@@ -272,3 +272,15 @@ assert.equal(arkhamEvidence.credential_used,false);
 assert.equal(arkhamEvidence.browser_verification.group_by_entity_verified,true);
 for (const p of arkhamEvidence.probes) { assert.equal(p.auth,'none'); assert.equal(p.coverage,null); assert.equal(p.full_history_verified,false); }
 process.stdout.write('Frozen ECO 7 protocol and Arkham source evidence (no rights/backfill claim): PASS\n');
+const diagnosticProtocol=await readJson('configs/research/diagnostics-v0.1.0.json');
+assert.equal(createHash('sha256').update(JSON.stringify(diagnosticProtocol)+'\n').digest('hex'),
+  'fb7f5b80ca84ffc4babb8b5ffe823574500f13fed31fc03a3a25922da76afc4a');
+assert.equal(diagnosticProtocol.role,'raw_diagnostics_only');
+assert.equal(diagnosticProtocol.normalizer,null);assert.equal(diagnosticProtocol.composite_score,null);
+assert.equal(diagnosticProtocol.core_promotion,false);assert.equal(diagnosticProtocol.research.predictive_utility_claim,false);
+assert.deepEqual(Object.keys(diagnosticProtocol.metrics),['nupl_diagnostic','supply_change_30d','exchange_balance_change_30d']);
+assert.equal(diagnosticProtocol.metrics.nupl_diagnostic.input_parent,'core');
+assert.equal(diagnosticProtocol.metrics.supply_change_30d.window_days,31);
+assert.equal(diagnosticProtocol.metrics.exchange_balance_change_30d.unit,'ETH');
+for (const m of Object.values(diagnosticProtocol.metrics)) assert.equal(m.independent_vote,false);
+process.stdout.write('Frozen raw NUPL, supply and exchange diagnostics protocol: PASS\n');

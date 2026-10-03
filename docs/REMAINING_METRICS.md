@@ -1,8 +1,8 @@
 # Task cho các chỉ số ETH còn lại
 
-**Lập ngày 2026-10-03, cập nhật sau chuỗi triển khai cùng ngày.** Phạm vi: bóc tách Q04 thành backlog E2/E3/E4/E8/E9. Chuỗi Q02 → X00 → E2-01 → E4-04 đã hoàn tất; E2 chỉ là diagnostic và E4 chỉ giữ ở R&D-only, chưa trở thành Core/public.
+**Lập ngày 2026-10-03, cập nhật sau chuỗi triển khai cùng ngày.** Phạm vi: bóc tách Q04 thành backlog E2/E3/E4/E8/E9. Chuỗi Q02 → X00 → E2-01 → E4-04 đã hoàn tất. E2 đã có raw diagnostic public cùng C1 nguồn cung/C2 số dư sàn theo ADR-007, đang xác minh deploy; E4 giữ R&D-only. Core vẫn bốn thành phần.
 
-Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py), contract diagnostic và evidence; publisher vẫn chỉ xuất bốn component Core. E4 đã có full-history audit, protocol, engine riêng và đánh giá exploratory, nhưng bị giữ R&D-only. E9 đã có code/protocol/fixtures riêng; nguồn vẫn chặn backfill và kiểm định ETH thật. E3/E8 chưa có source/entitlement/history/rights đủ để tính. Bằng chứng D05 tại [metric-feasibility.md](metric-feasibility.md); tiến độ E9 tại [E9_RUNBOOK.md](E9_RUNBOOK.md).
+Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 dùng helper `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py), đúng snapshot Core cha; publisher/UI/CSV/daily riêng tại `/data/diagnostics/` đã đạt kiểm local ([runbook](ETH_DIAGNOSTICS.md)). Publisher Core vẫn chỉ xuất bốn component. E4 đã có full-history audit, protocol, engine riêng và đánh giá exploratory, nhưng bị giữ R&D-only. E9 đã có code/protocol/fixtures riêng; nguồn vẫn chặn backfill và kiểm định ETH thật. E3/E8 chưa có source/entitlement/history/rights đủ để tính. Bằng chứng D05 tại [metric-feasibility.md](metric-feasibility.md); tiến độ E9 tại [E9_RUNBOOK.md](E9_RUNBOOK.md).
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
@@ -18,7 +18,7 @@ Hướng giải quyết chi tiết source gate E9-01/E3-01/E8-01, điều kiện
 
 | Ưu tiên | ID | Chỉ số | Hiện trạng | Việc bắt đầu được |
 |---|---|---|---|---|
-| 1 | E2 | ETH NUPL dẫn xuất | Contract diagnostic đã khóa: `1 - 1/MVRV`; phụ thuộc cùng nguồn định giá với E7 | Nếu cần normalized diagnostic/UI, mở protocol riêng; không thêm phiếu Core |
+| 1 | E2 | ETH NUPL dẫn xuất | Protocol raw diagnostic, exact-parent replay, JSON/UI/CSV/daily đã đạt local | Xác minh commit/deploy/hosted daily; không thêm phiếu Core |
 | 2 | E4 | ETH Fee Activity Multiple | Full-history `FeeTotNtv` audit, protocol và engine đã xong; exploratory kém Core | Giữ R&D-only; chỉ mở revision/prospective nếu có câu hỏi nghiên cứu mới |
 | 3 | E9 | ETH NVT proxy | `TxTfrValAdjUSD` có catalog ETH nhưng sample Community trả 403 | Xác minh đường dữ liệu được phép truy cập và licence |
 | 4 | E3 | ETH realized-value age ratio | Chưa xác minh endpoint/lịch sử age bands ETH; RHODL tham chiếu hiện chỉ có bằng chứng BTC | Audit metadata, age bands và phương pháp tài khoản ETH |
@@ -43,10 +43,10 @@ X01/X02 áp dụng **theo từng ứng viên**; E2 có thể được công bố
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
 | E2-01 | DONE | D05, M03 | Kiểm kê raw diagnostic đã có và chốt contract: `1 - 1/CapMVRVCur`, cùng provider/ngày/snapshot với E7; raw có thể âm; missing/invalid trả null có reason. Ghi rõ derived NUPL và quan hệ với MVRV, không trình bày như series NUPL độc lập từ provider. |
-| E2-02 | BLOCKED | E2-01, X01 | Nếu cần điểm 0–100, triển khai normalizer diagnostic theo protocol riêng; kiểm prefix/future shock, warm-up/null và tương quan với E7. Ghi quyết định giữ raw hay có thêm điểm chuẩn hóa; không thêm trọng số chính thức vì có thêm card. |
-| E2-03 | BLOCKED | E2-02, X02 áp dụng cho diagnostic | Xuất JSON/CSV và card/series diagnostic: raw và normalized phân biệt rõ, nguồn/ngày/version/null nhất quán. Kiểm UI và engine khớp; custom mode và composite chính thức không tự nhận thêm E2. |
+| E2-02 | DONE · giữ raw | E2-01, X01 cho diagnostic | ADR-007 khóa raw ratio/%, không thêm normalizer hoặc điểm 0–100. Prefix/future shock, null, signed values đã kiểm; phụ thuộc MVRV được công bố. Protocol `diagnostics-v0.1.0` riêng. |
+| E2-03 | IN_PROGRESS · deploy | E2-02, X02 cho diagnostic | JSON/CSV/card/chart/daily/revision đã đạt local trên dữ liệu thật 4.074 ngày hợp lệ. Xác minh CI/Pages/domain/hosted workflow trước DONE. Custom/composite không nhận thêm E2. |
 
-Không viết lại hàm raw như thể chưa có. Phần chưa hoàn thành là contract đầy đủ, chuẩn hóa nếu được chọn và tích hợp public đúng vai trò.
+Không viết lại hàm raw đã có. E2/C1/C2 giữ raw diagnostic theo [ADR-007](ADR-007-raw-eth-diagnostics.md); kết quả/gates/lineage tại [ETH_DIAGNOSTICS](ETH_DIAGNOSTICS.md). C1/C2 có engine/gates/UI/CSV/daily riêng, 4.053 ngày hợp lệ mỗi chỉ số. X01/X02 đã đạt local cho phạm vi này; Q04 tổng thể và E3/E8/E9 gốc vẫn chưa DONE.
 
 ## 4. E4 — ETH Fee Activity Multiple
 

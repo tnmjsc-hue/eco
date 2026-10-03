@@ -12,6 +12,8 @@ Dashboard dùng native ES modules, ECharts và Lucide trên Pages static `public
 
 Arkham được thêm làm đường đối chiếu holders/flow trên dashboard; đã kiểm API docs, giới hạn coverage và probe 403. [Kế hoạch nguồn](docs/ARKHAM_SOURCE.md) và [hồ sơ xin trial](docs/ARKHAM_TRIAL_REQUEST.md) đã thực hiện: account miễn phí đã xác minh email, yêu cầu trial nghiên cứu không thẻ/không tự gia hạn đã gửi support và có thư xác nhận nhận. Chưa có key/quyền dữ liệu, còn chờ Arkham duyệt; chưa đưa Arkham vào điểm tính.
 
+Ba chỉ số chẩn đoán riêng đã có engine/publication/UI/CSV/daily: E2 NUPL dẫn xuất (4.074 ngày), C1 thay đổi nguồn cung 30 ngày và C2 thay đổi số dư sàn 30 ngày (mỗi chỉ số 4.053 ngày đến 2026-10-02). [ADR-007](docs/ADR-007-raw-eth-diagnostics.md), [runbook và bằng chứng](docs/ETH_DIAGNOSTICS.md). Tab `#diagnostics` giữ ratio/%/ETH và cờ `flash`, không đổi điểm hoặc trọng số ECO 7. Trạng thái deploy thực tế ở HANDOFF.
+
 ## Lệnh thực tế
 
 Setup với Python 3.12, Node 24 và pnpm 11.19.0:

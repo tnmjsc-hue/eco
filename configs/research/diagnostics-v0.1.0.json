@@ -1,0 +1,24 @@
+{
+  "methodology_version": "diagnostics-v0.1.0",
+  "protocol": "diagnostics-v0.1.0-protocol-1",
+  "asset": "eth",
+  "frequency": "1d",
+  "role": "raw_diagnostics_only",
+  "normalizer": null,
+  "composite_score": null,
+  "core_promotion": false,
+  "calendar": "UTC; closed observations only; complete 31-day windows including t and t-30",
+  "source": "Coin Metrics Community Data",
+  "rights_scope": "noncommercial_research_preview",
+  "source_evidence_sha256": "5d35aa2fa85e6a8ef7d6e538d8f7fc8ac456f366b3efedac54cd01b07200e72d",
+  "parents": {"core": "core-v0.1.0", "proxies": "network-proxies-v0.1.0"},
+  "metrics": {
+    "nupl_diagnostic": {"slot": "E2", "name_vi": "NUPL dẫn xuất", "formula": "1 - 1 / CapMVRVCur(t)", "unit": "ratio", "display_scale": 100, "window_days": 1, "input_parent": "core", "independent_vote": false},
+    "supply_change_30d": {"slot": "C1", "name_vi": "Thay đổi nguồn cung · 30 ngày", "formula": "100 * (SplyCur(t) / SplyCur(t-30) - 1)", "unit": "percent", "display_scale": 1, "window_days": 31, "input_parent": "proxies", "independent_vote": false},
+    "exchange_balance_change_30d": {"slot": "C2", "name_vi": "Thay đổi số dư sàn · 30 ngày", "formula": "SplyExNtv(t) - SplyExNtv(t-30)", "unit": "ETH", "display_scale": 1, "window_days": 31, "input_parent": "proxies", "independent_vote": false}
+  },
+  "missing_policy": "null with reason; no forward-fill, epsilon, clipping or replacement values",
+  "vintage": "reconstructed; source_available_at unknown; retrieved_at is not historical availability",
+  "research": {"forecast_evaluation": "not_applicable_raw_context_only", "descriptive_coverage": true, "regime_dates": ["2021-08-05", "2022-09-15", "2024-03-13"], "predictive_utility_claim": false},
+  "limitations": ["NUPL is an algebraic transform of MVRV, not a count of profitable holders", "supply change does not separate gross issuance and burn", "exchange balance changes do not establish gross deposits or withdrawals", "exchange labels are incomplete and revised; preserve flash flags", "native ETH only; not ERC-20 or L2 activity", "historical availability unknown; no probability or predictive claim"]
+}

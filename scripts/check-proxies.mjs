@@ -19,7 +19,7 @@ try {
   const pointer=await(await page.request.get(new URL('/data/network-proxies/latest.json',url).href)).json();
   const manifest=await(await page.request.get(new URL(pointer.manifest_url,url).href)).json();
   const history=await(await page.request.get(new URL(`/data/network-proxies/releases/${pointer.release_id}/history.json`,url).href)).json();
-  assert.equal(await page.locator('.proxy-card').count(),3);
+  assert.equal(await page.locator('#view-extended .proxy-card').count(),3);
   assert.equal(await page.locator('#proxy-date').inputValue(),manifest.last_observation_date);
   assert.equal(await page.locator('#proxy-results tr').count(),3);
   for (const [i,id] of ['exchange_share','address_activity','value_per_transfer'].entries()) {

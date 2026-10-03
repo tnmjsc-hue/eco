@@ -38,6 +38,16 @@ jobs:
         if: always() && steps.batch.outcome == 'success'
         continue-on-error: true
         run: python -m eco.seven
+      - name: Publish pinned NUPL, supply and exchange diagnostics
+        id: diagnostics
+        if: always() && steps.batch.outcome == 'success'
+        continue-on-error: true
+        env:
+          R2_ACCOUNT_ID: '3ebcb7a2f66c7ae9b5804ff91e6ec702'
+          R2_BUCKET: eco-eth-private
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: python -m eco.diagnostic_pipeline daily
       - name: Validate before publication
         if: steps.batch.outcome == 'success'
         id: verify
@@ -52,10 +62,14 @@ jobs:
         env:
           BATCH_OUTCOME: ${{ steps.batch.outcome }}
           EXTENDED_OUTCOME: ${{ steps.extended.outcome }}
+          DIAGNOSTICS_OUTCOME: ${{ steps.diagnostics.outcome }}
         run: |
           git config user.name 'eco-daily[bot]'
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
           git add -- public/data/status.json
+          if [ "$DIAGNOSTICS_OUTCOME" != 'skipped' ] && [ -f public/data/diagnostics/status.json ]; then
+            git add -- public/data/diagnostics/status.json
+          fi
           if [ "$EXTENDED_OUTCOME" != 'skipped' ] && [ -f public/data/extended/status.json ]; then
             git add -- public/data/extended/status.json
           fi
@@ -66,6 +80,9 @@ jobs:
             done
             if [ "$EXTENDED_OUTCOME" = 'success' ]; then
               git add -- public/data/extended/latest.json public/data/extended/releases
+            fi
+            if [ "$DIAGNOSTICS_OUTCOME" = 'success' ]; then
+              git add -- public/data/diagnostics/latest.json public/data/diagnostics/releases public/data/diagnostics/revisions public/data/diagnostics/publications
             fi
           fi
           if git diff --cached --quiet; then
@@ -82,5 +99,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-daily-deploy.mjs
       - name: Fail visibly if source or backup failed
-        if: always() && (steps.batch.outcome == 'failure' || steps.extended.outcome == 'failure')
+        if: always() && (steps.batch.outcome == 'failure' || steps.extended.outcome == 'failure' || steps.diagnostics.outcome == 'failure')
         run: exit 1

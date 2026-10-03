@@ -7,10 +7,10 @@
   <meta name="description" content="Dashboard nghiên cứu Ethereum với 7 chỉ số, đối chiếu Core 4, giá ETH, nguồn dữ liệu và kiểm định có thể kiểm chứng.">
   <title>ECO | Dashboard Ethereum 7 chỉ số</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=extended-1">
+  <link rel="stylesheet" href="/styles.css?v=diagnostics-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=extended-1"></script>
+  <script type="module" src="/app.js?v=diagnostics-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -19,6 +19,7 @@
     <nav aria-label="Điều hướng chính">
       <button class="nav-tab active" data-view="dashboard" aria-current="page"><i data-lucide="chart-no-axes-combined"></i><span>Dashboard</span></button>
       <button class="nav-tab" data-view="extended"><i data-lucide="network"></i><span>Mở rộng</span></button>
+      <button class="nav-tab" data-view="diagnostics"><i data-lucide="activity"></i><span>Chẩn đoán</span></button>
       <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
       <button class="nav-tab" data-view="methodology"><i data-lucide="notebook-text"></i><span>Phương pháp</span></button>
     </nav>
@@ -67,6 +68,27 @@
           <p class="small muted">Phép ghép thử: 75% Core + 25% một proxy. Chênh lệch dùng cùng ngày và bootstrap ghép cặp 90 ngày, 10.000 lần. Công bố nghiên cứu không đồng nghĩa đã chứng minh khả năng dự báo hoặc tính độc lập.</p>
           <p class="small muted">Nguồn: Coin Metrics Community · CC BY-NC 4.0 · SMA, tỷ số, log và chuẩn hóa do dự án thực hiện. Dữ liệu không được bảo đảm; native ETH L1 không bao quát toàn bộ hệ sinh thái.</p>
           <div class="proxy-links"><a id="proxy-manifest" target="_blank" rel="noreferrer">Manifest & coverage</a><a id="proxy-research-json" target="_blank" rel="noreferrer">Báo cáo JSON</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-005-network-research-proxies.md" target="_blank" rel="noreferrer">Phương pháp & quyết định thay thế</a></div>
+        </div>
+      </section>
+      <section id="view-diagnostics" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">ETH · NUPL / NGUỒN CUNG / SỐ DƯ SÀN</p><h1>Ba chỉ số chẩn đoán</h1></div><button id="diag-refresh" class="icon-button" aria-label="Cập nhật chỉ số chẩn đoán" title="Cập nhật chỉ số chẩn đoán"><i data-lucide="refresh-cw"></i></button></div>
+        <div class="notice research-notice">Giá trị dẫn xuất theo đơn vị gốc, có thể âm. E2 phụ thuộc đại số với MVRV. Ba chỉ số này cung cấp ngữ cảnh riêng, chưa tham gia điểm ECO 7 và chưa có tuyên bố dự báo.</div>
+        <div id="diag-loading" class="loading" role="status">Đang xác minh chỉ số chẩn đoán…</div>
+        <div id="diag-error" class="notice error" role="alert" hidden><span id="diag-error-text"></span><button id="diag-retry" class="text-button">Thử lại</button></div>
+        <div id="diag-content" hidden>
+          <p id="diag-freshness" class="small muted"></p>
+          <div class="proxy-toolbar diag-toolbar"><label for="diag-date" class="small">Ngày quan sát · UTC <input id="diag-date" type="date"></label><button id="diag-prev" class="text-button" aria-label="Ngày chẩn đoán trước">← Trước</button><button id="diag-next" class="text-button" aria-label="Ngày chẩn đoán sau">Sau →</button><button id="diag-latest" class="text-button">Ngày nguồn gần nhất</button><button id="diag-export" class="text-button">Tải CSV khoảng đang xem</button></div>
+          <div id="diag-cards" class="proxy-cards"></div>
+          <div class="section-toolbar"><div><h2>Lịch sử theo đơn vị gốc</h2><p class="small muted">Reconstructed · E2 hiển thị ratio × 100% · mỗi đồ thị dùng một đơn vị</p></div><label class="small" for="diag-metric">Chỉ số <select id="diag-metric"><option value="nupl_diagnostic">E2 · NUPL</option><option value="supply_change_30d">C1 · Nguồn cung 30 ngày</option><option value="exchange_balance_change_30d">C2 · Số dư sàn 30 ngày</option></select></label></div>
+          <div class="diag-range-controls"><div class="segmented" role="group" aria-label="Khoảng lịch sử chẩn đoán"><button data-diag-range="1y" aria-pressed="false">1 năm</button><button data-diag-range="3y" aria-pressed="false">3 năm</button><button class="active" data-diag-range="all" aria-pressed="true">Tất cả</button></div><label class="small" for="diag-start">Từ <input id="diag-start" type="date"></label><label class="small" for="diag-end">Đến <input id="diag-end" type="date"></label><button id="diag-apply" class="text-button">Áp dụng</button></div>
+          <p id="diag-range-error" class="small negative" role="alert" hidden></p><p id="diag-range-label" class="small muted"></p>
+          <div id="diag-chart" class="history-chart" role="img" aria-label="Lịch sử chỉ số chẩn đoán Ethereum"></div>
+          <h2>Coverage & giới hạn</h2>
+          <div class="table-wrap"><table><thead><tr><th>Chỉ số</th><th>Ngày hợp lệ</th><th>Ngày thiếu</th><th>Từ ngày</th><th>Ngày âm</th><th>Ngày có cờ nguồn</th></tr></thead><tbody id="diag-coverage"></tbody></table></div>
+          <p class="small muted">C1/C2 cần đủ 31 ngày lịch từ t−30 đến t. Ngày thiếu được giữ trống, không điền giá trị hoặc làm mượt qua khoảng thiếu. Số dư sàn dùng nhãn địa chỉ được nhận diện; cờ flash có thể sửa hồi cứu. Không suy ra tổng nạp/rút từ thay đổi ròng.</p>
+          <p id="diag-lineage" class="small muted"></p>
+          <p class="small muted">Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a> · NUPL và thay đổi 30 ngày do ECO dẫn xuất cho nghiên cứu phi thương mại. Native ETH L1, không bao quát toàn bộ hệ sinh thái. Dữ liệu không được bảo đảm.</p>
+          <div class="proxy-links"><a id="diag-manifest" target="_blank" rel="noreferrer">Manifest & snapshot</a><a id="diag-report" target="_blank" rel="noreferrer">Báo cáo coverage JSON</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-007-raw-eth-diagnostics.md" target="_blank" rel="noreferrer">Công thức & quyết định phương pháp</a></div>
         </div>
       </section>
       <section id="view-research" class="view" hidden>

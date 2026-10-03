@@ -49,6 +49,8 @@ Trên máy chạy pipeline, đọc hai file DPAPI bằng **cùng tài khoản Wi
 
 ## Kiểm tra và chi phí
 
+**Readback E2/C1/C2, 2026-10-03:** script `restore-private-snapshot-r2.mjs` dùng token bucket hiện có, chỉ GET các object snapshot cha đã upload. Core `2026-10-03T091053030Z` 7/7, canonical `59bda78805616259b93c63cef5aec50a0f33db768fe8e8d7c272e44bab5ccdfb`; network `2026-10-03T084645399Z` 8/8, canonical `405c4eaf20e23123643ed08acf00d4ce6df2f0ce41f82c975ebf7d4730628637`. Local file khác hash/extra files/symlink bị từ chối, không ghi đè hoặc xóa. Receipt/private replay inputs bị Git ignore; manifest public chỉ hash/readback metadata. Frontend chỉ đọc derived diagnostics Pages. Chạy daily thật lần hai `unchanged`; readback hai snapshot không thay nghiệm thu restore/fault drill O03 toàn hệ thống.
+
 - Dashboard: **R2 Object Storage → eco-eth-private → Objects/Settings**: xác nhận bucket, `Public Access: Disabled`, lớp Standard và usage.
 - Public status: `https://eco.tnmp.cloud/data/status.json` trả JSON trạng thái sau khi commit Pages tương ứng deploy thành công. Nó không đọc R2.
 - [R2 pricing](https://developers.cloudflare.com/r2/pricing/): Standard Free allowance 10 GB-month storage, 1 triệu Class A và 10 triệu Class B operations mỗi tháng; egress miễn phí. Vượt mức có thể tính phí; Infrequent Access có mô hình phí khác.

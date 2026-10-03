@@ -35,6 +35,10 @@ jobs:
       - name: Browser data contract and release checksums
         run: node --test tests/*.test.mjs
       - name: JavaScript syntax
-        run: node --check public/app.js
+        run: |
+          node --check public/app.js
+          node --check public/diagnostics.js
+          node --check public/diagnostic-model.js
+          node --check scripts/restore-private-snapshot-r2.mjs
       - name: Whitespace
         run: git diff --check HEAD^ HEAD
