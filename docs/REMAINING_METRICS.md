@@ -6,6 +6,8 @@ Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`e
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
+Hướng giải quyết chi tiết source gate E9-01/E3-01/E8-01, điều kiện nghiệm thu và phương án thay thế tại [REMAINING_SOURCE_RESOLUTION.md](REMAINING_SOURCE_RESOLUTION.md).
+
 | Ưu tiên | ID | Chỉ số | Hiện trạng | Việc bắt đầu được |
 |---|---|---|---|---|
 | 1 | E2 | ETH NUPL dẫn xuất | Contract diagnostic đã khóa: `1 - 1/MVRV`; phụ thuộc cùng nguồn định giá với E7 | Nếu cần normalized diagnostic/UI, mở protocol riêng; không thêm phiếu Core |
