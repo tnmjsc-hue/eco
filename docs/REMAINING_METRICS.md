@@ -6,7 +6,7 @@ Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 dùng helper `nupl_diagnostic` tron
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
-**CORE10-01 `IN_PROGRESS` (2026-10-03):** E2/C1/C2 chuẩn hóa và tích hợp local trong `core-v0.2.0`, Core 10 Experimental; E2 chia ngân sách định giá, hai metric sàn chia họ sàn. Dashboard 10 thành phần có Core 4/ECO 7 bất biến. Production/hosted nghiệm thu đang thực hiện; [CORE_TEN](CORE_TEN.md), [ADR-008](ADR-008-core-ten-experimental.md). Các mục bốn thành phần/raw bên dưới mô tả version cũ, vẫn giữ nguyên hợp đồng.
+**CORE10-01 `DONE` (2026-10-03):** E2/C1/C2 chuẩn hóa và tích hợp trong `core-v0.2.0`, Core 10 Experimental; E2 chia ngân sách định giá, hai metric sàn chia họ sàn. Dashboard 10 thành phần có Core 4/ECO 7 bất biến. CI/Pages/năm release chain/ba UI và hai hosted daily đã success; [CORE_TEN](CORE_TEN.md), [ADR-008](ADR-008-core-ten-experimental.md), [evidence](evidence/core-ten-publication-2026-10-03.json). Các mục bốn thành phần/raw bên dưới mô tả version cũ, vẫn giữ nguyên hợp đồng.
 
 **Bổ sung theo yêu cầu 2026-10-03:** ba metric thay thế vai trò E3/E8/E9 đã có source contract mới, full-history ETH thật, engine, đánh giá exploratory và public research artifacts/UI. Xem [NETWORK_PROXIES](NETWORK_PROXIES.md) và [ADR-005](ADR-005-network-research-proxies.md). Đây là `exchange_share`, `address_activity`, `value_per_transfer` dưới `network-proxies-v0.1.0`. Original RHODL/Dormancy/adjusted-NVT contracts và probe lịch sử vẫn giữ trạng thái nguồn cũ; không đổi tên metric mới thành bản tương đương hoặc ghép vào Core. Production đã xác minh tại eco.tnmp.cloud/#extended; hosted daily run thành công. Bằng chứng cuối phiên trong HANDOFF.
 
