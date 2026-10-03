@@ -1,24 +1,24 @@
 # Task cho các chỉ số ETH còn lại
 
-**Lập ngày 2026-10-03.** Phạm vi: bóc tách Q04 thành backlog E2/E3/E4/E8/E9. Đây là kế hoạch thực thi; các task dưới đây chưa được triển khai trong phiên lập danh sách.
+**Lập ngày 2026-10-03, cập nhật sau chuỗi triển khai cùng ngày.** Phạm vi: bóc tách Q04 thành backlog E2/E3/E4/E8/E9. Chuỗi Q02 → X00 → E2-01 → E4-04 đã hoàn tất; E2 chỉ là diagnostic và E4 chỉ giữ ở R&D-only, chưa trở thành Core/public.
 
-Core `core-v0.1.0` đã có E1/E5/E6/E7. E2 đã có raw `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py) và test công thức trong [`tests/test_core.py`](../tests/test_core.py), nhưng publisher hiện chỉ xuất bốn component Core. E3/E4/E8/E9 chưa có engine được chấp nhận. Bằng chứng nguồn dùng ở đây là D05 ngày 2026-10-03 trong [metric-feasibility.md](metric-feasibility.md) và [live probe](evidence/d05-live-probe-2026-10-03.json); phiên này không chạy lại API.
+Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`eco/core.py`](../eco/core.py), contract diagnostic và evidence; publisher vẫn chỉ xuất bốn component Core. E4 đã có full-history audit, protocol, engine riêng và đánh giá exploratory, nhưng bị giữ R&D-only. E3/E8/E9 chưa có source/entitlement/history/rights đủ để code. Bằng chứng nguồn dùng ở đây là D05 ngày 2026-10-03 trong [metric-feasibility.md](metric-feasibility.md) và [live probe](evidence/d05-live-probe-2026-10-03.json).
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
 | Ưu tiên | ID | Chỉ số | Hiện trạng | Việc bắt đầu được |
 |---|---|---|---|---|
-| 1 | E2 | ETH NUPL dẫn xuất | Raw đã có: `1 - 1/MVRV`; phụ thuộc cùng nguồn định giá với E7 | Chốt hợp đồng diagnostic và phần còn thiếu ở JSON/UI |
-| 2 | E4 | ETH Fee Activity Multiple | `FeeTotNtv` có sample HTTP 200, 3/3 ngày; chưa audit full history | Audit lịch sử phí ETH, thành phần phí và quyền dùng |
+| 1 | E2 | ETH NUPL dẫn xuất | Contract diagnostic đã khóa: `1 - 1/MVRV`; phụ thuộc cùng nguồn định giá với E7 | Nếu cần normalized diagnostic/UI, mở protocol riêng; không thêm phiếu Core |
+| 2 | E4 | ETH Fee Activity Multiple | Full-history `FeeTotNtv` audit, protocol và engine đã xong; exploratory kém Core | Giữ R&D-only; chỉ mở revision/prospective nếu có câu hỏi nghiên cứu mới |
 | 3 | E9 | ETH NVT proxy | `TxTfrValAdjUSD` có catalog ETH nhưng sample Community trả 403 | Xác minh đường dữ liệu được phép truy cập và licence |
 | 4 | E3 | ETH realized-value age ratio | Chưa xác minh endpoint/lịch sử age bands ETH; RHODL tham chiếu hiện chỉ có bằng chứng BTC | Audit metadata, age bands và phương pháp tài khoản ETH |
 | 4 | E8 | ETH dormancy/spending proxy | Chưa xác minh entitlement/history dormancy ETH; `SplyAct1yr` sample trả 403 | Audit nguồn dormancy account-based và định nghĩa tuổi ETH |
 
-Ưu tiên triển khai E2 rồi E4; audit nguồn E9/E3/E8 có thể làm độc lập trong lúc chờ các dependency nghiên cứu. Một sample truy cập được chưa chứng minh có dữ liệu đủ dài hoặc quyền phát hành. E2 giữ vai trò diagnostic, không tự thêm thành phiếu độc lập cạnh E7.
+E2 và E4 đã qua các task được phép theo dependency. Audit nguồn E9/E3/E8 có thể làm độc lập; một sample truy cập được chưa chứng minh có dữ liệu đủ dài hoặc quyền phát hành. E2 giữ vai trò diagnostic, không tự thêm thành phiếu độc lập cạnh E7.
 
 ## 2. Task chung và dependency
 
-Task cha **Q04 vẫn `TODO`**, dependency D05 đã `DONE`, Q02 còn `IN_PROGRESS`. Có thể chuẩn bị source contract và audit dữ liệu ngay; khóa protocol đánh giá mở rộng sau khi hoàn tất correlation/ablation/regime của Q02. Không phải chờ đủ cả năm nguồn mới nghiên cứu một ứng viên đã đạt cổng dữ liệu.
+Task cha **Q04 vẫn `TODO`** vì E3/E8/E9 chưa qua source gate; dependency D05 và Q02 đã `DONE`. X00 đã hoàn tất; E2-01 và toàn bộ nhánh E4 đã hoàn tất ở phạm vi được phép. Không phải chờ đủ cả năm nguồn mới nghiên cứu một ứng viên đã đạt cổng dữ liệu.
 
 | ID | Trạng thái | Dependency | Công việc và nghiệm thu |
 |---|---|---|---|
