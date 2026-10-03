@@ -163,7 +163,7 @@ export function qualityReport(rows, start, end, metrics = coreMetrics) {
 
 export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date()), {
   outputRoot = join(root, 'data', 'raw', 'coinmetrics'), request = requestPage, sleep = pause, now = () => new Date(),
-  metrics = coreMetrics, runPrefix = 'coinmetrics-backfill', allowZeroMetrics = [],
+  metrics = coreMetrics, runPrefix = 'coinmetrics-backfill', allowZeroMetrics = [], preserveMetricStatus = false,
   origin = apiOrigin, provider = 'coinmetrics_community_api', authorization = 'none', sourceRights = null,
 } = {}) {
   if (!['https://community-api.coinmetrics.io', 'https://api.coinmetrics.io'].includes(origin)) {
@@ -282,6 +282,10 @@ export async function backfill(startArg = '2015-08-01', asOf = isoDate(new Date(
     retrieved_at: row._retrieved_at,
     source_page_sha256: row._source_page_sha256,
     metrics: Object.fromEntries(metrics.map((metric) => [metric, row[metric] ?? null])),
+    ...(preserveMetricStatus ? { metric_status: Object.fromEntries(metrics.map(metric => [metric, {
+      status: row[`${metric}-status`] ?? null,
+      status_time: row[`${metric}-status-time`] ?? null,
+    }])) } : {}),
   }));
   const canonicalBody = canonicalRecords.map((record) => JSON.stringify(record)).join('\n') + (canonicalRecords.length ? '\n' : '');
   const canonicalFile = 'canonical.jsonl';

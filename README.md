@@ -2,9 +2,11 @@
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
-**Phiên 2026-10-03: đã xây engine và dashboard Core nghiên cứu với dữ liệu ETH thật.** Điểm gần nhất 41.379812239861 (UI 41/100) cho 2026-10-01; 4 metric E1/E5/E6/E7, lịch sử reconstructed. Primary evaluation đã chạy; chưa chứng minh cải thiện so với mọi baseline. Đây là **Experimental research preview**, không phải xác suất, tín hiệu đầu tư hay bản đủ 9 metric. Quyết định và quyền phi thương mại: [ADR-002](docs/ADR-002-experimental-research-preview.md). Xác minh production được ghi trong HANDOFF sau deploy.
+**Phiên 2026-10-03: đã xây engine và dashboard Core nghiên cứu với dữ liệu ETH thật.** Điểm gần nhất 40.009962172523664 (UI 40/100) cho 2026-10-02; 4 metric E1/E5/E6/E7, lịch sử reconstructed. Primary evaluation đã chạy; chưa chứng minh cải thiện so với mọi baseline. Đây là **Experimental research preview**, không phải xác suất, tín hiệu đầu tư hay bản đủ 9 metric. Quyết định và quyền phi thương mại: [ADR-002](docs/ADR-002-experimental-research-preview.md). Xác minh production được ghi trong HANDOFF sau deploy.
 
 Dashboard dùng native ES modules, ECharts và Lucide trên Pages static `public`; engine Python 3.12 + NumPy 2.3.5. Snapshot raw giữ local/R2 private; web lấy versioned JSON đã tính sẵn, không gọi API provider hay bucket raw. Daily batch chạy GitHub Actions dự kiến **10:17**, kiểm tra lại **14:17 giờ Việt Nam**, và dashboard kiểm tra release mới mỗi 15 phút khi đang mở. Xem [runbook cập nhật](docs/DAILY_UPDATES.md). Chưa hoàn thành shadow 30 ngày; biểu đồ vẫn reconstructed.
+
+**Đã bổ sung ba metric ETH trong tab Mở rộng:** tỷ trọng ETH trên sàn (E3 proxy), cường độ địa chỉ hoạt động (E8 proxy), vốn hóa/lượt chuyển ETH (E9 proxy). Nguồn thật 4.083 ngày đến 2026-10-02, công thức/version/coverage và CSV riêng; không tương đương RHODL/Dormancy/NVT gốc và không thêm trọng số Core. [Phương pháp và kết quả thực thi](docs/NETWORK_PROXIES.md), [ADR-005](docs/ADR-005-network-research-proxies.md). Lịch proxy kiểm tra 10:47/14:47 Việt Nam; cờ exchange `flash` được nêu là tạm thời.
 
 ## Lệnh thực tế
 

@@ -7,10 +7,10 @@
   <meta name="description" content="Dashboard nghiên cứu chu kỳ Ethereum: điểm Core, giá ETH, thành phần và kiểm định có thể kiểm chứng.">
   <title>ECO | Dashboard Ethereum Core</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=dashboard-1">
+  <link rel="stylesheet" href="/styles.css?v=proxies-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=daily-1"></script>
+  <script type="module" src="/app.js?v=proxies-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -18,6 +18,7 @@
     <a class="brand" href="/" aria-label="ECO dashboard"><span class="brand-mark">E</span><strong>ECO</strong><span class="brand-detail">ETHEREUM CORE</span></a>
     <nav aria-label="Điều hướng chính">
       <button class="nav-tab active" data-view="dashboard" aria-current="page"><i data-lucide="chart-no-axes-combined"></i><span>Dashboard</span></button>
+      <button class="nav-tab" data-view="extended"><i data-lucide="network"></i><span>Mở rộng</span></button>
       <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
       <button class="nav-tab" data-view="methodology"><i data-lucide="notebook-text"></i><span>Phương pháp</span></button>
     </nav>
@@ -29,7 +30,7 @@
     <div id="workspace" hidden>
       <section id="view-dashboard" class="view">
         <div class="page-heading"><div><p class="eyebrow">ETH / USD · DAILY UTC</p><h1>Ethereum Core</h1></div><div class="heading-actions"><span class="badge">Reconstructed</span><button id="refresh" class="icon-button" title="Kiểm tra bản dữ liệu mới" aria-label="Kiểm tra bản dữ liệu mới"><i data-lucide="refresh-cw"></i></button><button id="export" class="icon-button" title="Tải CSV của khoảng ngày đang xem" aria-label="Tải CSV"><i data-lucide="download"></i></button></div></div>
-        <div class="notice research-notice"><i data-lucide="info"></i><span>Điểm nghiên cứu 0–100, không phải xác suất hay khuyến nghị đầu tư. Core gồm 4 metric; không phải bản đủ 9 metric.</span></div>
+        <div class="notice research-notice"><i data-lucide="info"></i><span>Điểm nghiên cứu 0–100, không phải xác suất hay khuyến nghị đầu tư. Core gồm 4 metric. Ba proxy ETH bổ sung có trong tab Mở rộng, với công thức và lịch sử riêng.</span></div>
         <div id="freshness" class="data-status"></div>
         <section class="overview" aria-label="Tổng quan ngày đã chọn">
           <div class="score-block"><div class="label" id="score-label">ECO Core</div><div class="score-line"><strong id="score-value">—</strong><span>/ 100</span></div><div class="heat-scale" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><b id="heat-marker"></b></div><div class="scale-labels"><span>Thấp</span><span>Cao</span></div><div id="custom-comparison" class="small muted" hidden></div></div>
@@ -48,6 +49,24 @@
           <div class="table-wrap"><table class="metric-table"><thead><tr><th class="selection-column">Chọn</th><th>Metric</th><th>Điểm</th><th>Trọng số</th><th>Trạng thái</th></tr></thead><tbody id="component-rows"></tbody></table></div>
           <div class="small muted component-footnote">E2 (NUPL dẫn xuất) không thêm phiếu: có phụ thuộc đại số với MVRV. E3/E4/E8/E9 chưa tham gia Core.</div>
         </section>
+      </section>
+      <section id="view-extended" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">ETH · METRIC NGHIÊN CỨU</p><h1>Ba góc nhìn on-chain</h1></div><button id="proxy-refresh" class="icon-button" aria-label="Cập nhật metric mở rộng" title="Cập nhật metric mở rộng"><i data-lucide="refresh-cw"></i></button></div>
+        <div class="notice research-notice">Ba proxy thay thế vai trò E3/E8/E9 từ dữ liệu ETH thật. Điểm 0–100 đo mức tương đối trong lịch sử gần, không phải xác suất. Core giữ bốn thành phần; các proxy chưa được ghép vào điểm chính thức.</div>
+        <div id="proxy-loading" class="loading" role="status">Đang xác minh metric mở rộng…</div>
+        <div id="proxy-error" class="notice error" role="alert" hidden><span id="proxy-error-text"></span><button id="proxy-retry" class="text-button">Thử lại</button></div>
+        <div id="proxy-content" hidden>
+          <p id="proxy-freshness" class="small muted"></p>
+          <div class="proxy-toolbar"><label for="proxy-date" class="small">Ngày quan sát · UTC <input id="proxy-date" type="date"></label><button id="proxy-latest" class="text-button">Ngày nguồn gần nhất</button><button id="proxy-export" class="text-button">Tải CSV</button></div>
+          <div id="proxy-cards" class="proxy-cards"></div>
+          <div class="section-toolbar"><div><h2>Lịch sử ba proxy · 0–100</h2><p class="small muted">Reconstructed · q05/q95 chỉ dùng quá khứ · nhấn đường để chọn ngày</p></div><div class="segmented" role="group" aria-label="Khoảng lịch sử proxy"><button data-proxy-range="1y" aria-pressed="false">1 năm</button><button data-proxy-range="3y" aria-pressed="false">3 năm</button><button class="active" data-proxy-range="all" aria-pressed="true">Tất cả</button></div></div>
+          <div id="proxy-chart" class="history-chart" role="img" aria-label="Lịch sử điểm ba proxy ETH E3 E8 E9"></div>
+          <h2>Đánh giá so với Core</h2><p id="proxy-evaluation" class="small muted"></p>
+          <div class="table-wrap"><table><thead><tr><th>Proxy</th><th>AP riêng</th><th>AP Core</th><th>Δ AP khi ghép thử</th><th>CI 95%</th></tr></thead><tbody id="proxy-results"></tbody></table></div>
+          <p class="small muted">Phép ghép thử: 75% Core + 25% một proxy. Chênh lệch dùng cùng ngày và bootstrap ghép cặp 90 ngày, 10.000 lần. Công bố nghiên cứu không đồng nghĩa đã chứng minh khả năng dự báo hoặc tính độc lập.</p>
+          <p class="small muted">Nguồn: Coin Metrics Community · CC BY-NC 4.0 · SMA, tỷ số, log và chuẩn hóa do dự án thực hiện. Dữ liệu không được bảo đảm; native ETH L1 không bao quát toàn bộ hệ sinh thái.</p>
+          <div class="proxy-links"><a id="proxy-manifest" target="_blank" rel="noreferrer">Manifest & coverage</a><a id="proxy-research-json" target="_blank" rel="noreferrer">Báo cáo JSON</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-005-network-research-proxies.md" target="_blank" rel="noreferrer">Phương pháp & quyết định thay thế</a></div>
+        </div>
       </section>
       <section id="view-research" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">CORE-V0.1.0-PROTOCOL-1</p><h1>Kiểm định nghiên cứu</h1></div><span class="badge">Reconstructed</span></div>
@@ -74,8 +93,8 @@
         <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
           <tr><td>E1 / E5 / E6 / E7</td><td>4 thành phần Core</td><td><span class="status-pill ready">Đã tính</span></td></tr>
           <tr><td>E2 · NUPL</td><td>Diagnostic dẫn xuất</td><td>Không thêm trọng số độc lập</td></tr>
-          <tr><td>E3 / E8 / E9</td><td>Ứng viên mở rộng</td><td>Chưa đủ coverage, entitlement hoặc quyền</td></tr>
-          <tr><td>E4 · Fee candidate</td><td>R&amp;D</td><td>Mẫu FeeTotNtv truy cập được; chưa có công thức Core</td></tr>
+          <tr><td>E3 / E8 / E9 · proxy mới</td><td>Xem tab Mở rộng</td><td>Ba phép dẫn xuất đã có lịch sử riêng; không tương đương RHODL/Dormancy/NVT gốc</td></tr>
+          <tr><td>E4 · Fee Activity</td><td>R&amp;D-only</td><td>Đã backfill và đánh giá; kết quả hiện tại không đủ để thêm vào Core</td></tr>
         </tbody></table></div>
         <details><summary>Manifest và khả năng tái lập</summary><dl id="provenance" class="provenance"></dl><a id="manifest-link" class="text-button" target="_blank" rel="noreferrer"><i data-lucide="file-json"></i>Manifest JSON</a></details>
       </section>

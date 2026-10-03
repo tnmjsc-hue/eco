@@ -1,4 +1,5 @@
 import { METRICS, REASONS, customScore, displayScore, scoreColor, dateMinus, validateHistory, exportCSV } from './data-model.js?v=dashboard-1';
+import { initProxies, resizeProxies } from './proxies.js?v=proxies-1';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -64,7 +65,7 @@ async function load() {
     renderResearch();
     renderProvenance();
     icons();
-    requestAnimationFrame(() => { historyChart.resize(); researchChart?.resize(); });
+    requestAnimationFrame(() => { historyChart.resize(); researchChart?.resize(); resizeProxies(); });
   } catch (error) {
     $('loading').hidden = true;
     $('error').hidden = false;
@@ -190,10 +191,11 @@ function view(name) {
   document.querySelectorAll('.view').forEach(node => { node.hidden = node.id !== `view-${name}`; });
   document.querySelectorAll('[data-view]').forEach(node => { node.classList.toggle('active', node.dataset.view === name); if (node.dataset.view === name) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current'); });
   history.replaceState(null, '', name === 'dashboard' ? location.pathname : `#${name}`);
-  if (state.rows.length) requestAnimationFrame(() => { if (name === 'research') plotResearch(); if (name === 'dashboard') historyChart.resize(); });
+  if (state.rows.length) requestAnimationFrame(() => { if (name === 'research') plotResearch(); if (name === 'dashboard') historyChart.resize(); if (name === 'extended') resizeProxies(); });
 }
 function start() {
   icons();
+  initProxies();
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => view(button.dataset.view)));
   document.querySelectorAll('[data-range]').forEach(button => button.addEventListener('click', () => {
     state.range = button.dataset.range;
@@ -219,7 +221,7 @@ function start() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   new ResizeObserver(() => { historyChart?.resize(); researchChart?.resize(); }).observe(document.querySelector('main'));
-  if (['#research', '#methodology'].includes(location.hash)) view(location.hash.slice(1));
+  if (['#research', '#methodology', '#extended'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
   load();

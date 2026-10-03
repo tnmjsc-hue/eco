@@ -2,6 +2,12 @@
   Cache-Control: public, max-age=0, must-revalidate
 /data/status.json
   Cache-Control: public, max-age=0, must-revalidate
+/data/network-proxies/latest.json
+  Cache-Control: public, max-age=0, must-revalidate
+/data/network-proxies/status.json
+  Cache-Control: public, max-age=0, must-revalidate
+/data/network-proxies/releases/*
+  Cache-Control: public, max-age=31536000, immutable
 /data/releases/*
   Cache-Control: public, max-age=31536000, immutable
 /data/publications/*

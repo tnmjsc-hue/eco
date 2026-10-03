@@ -244,3 +244,17 @@ for (const id of ['TxTfrValAdjUSD', 'TxTfrValAdjNtv', 'NVTAdj90', 'NVTAdj', 'NVT
 }
 assert.equal(e9Access.documentation_probes.find(p => p.id === 'current_eth_csv').required_fields_present, false);
 process.stdout.write('E9 frozen candidate protocol and historical access evidence: PASS (source remains blocked)\n');
+const proxyProtocol = await readJson('configs/research/network-proxies-v0.1.0.json');
+const proxyEvidence = await readJson('docs/evidence/network-proxies-source-2026-10-03.json');
+assert.equal(createHash('sha256').update(JSON.stringify(proxyProtocol) + '\n').digest('hex'),
+  '4f3b9ebdf2ce0c69704174c47cd5183731942b1051321e33596d80d39f71af2c');
+assert.equal(await sha256('docs/evidence/network-proxies-source-2026-10-03.json'),
+  '5d35aa2fa85e6a8ef7d6e538d8f7fc8ac456f366b3efedac54cd01b07200e72d');
+assert.deepEqual(Object.keys(proxyProtocol.metrics), ['exchange_share','address_activity','value_per_transfer']);
+assert.equal(proxyProtocol.weights, null);
+assert.equal(proxyProtocol.normalizer.exclude_current_day, true);
+assert.equal(proxyEvidence.access_verified, true);
+assert.equal(proxyEvidence.licence.derived_research_publication, true);
+assert.equal(proxyEvidence.licence.commercial_use, false);
+for (const m of Object.values(proxyProtocol.metrics)) assert.equal(m.equivalent_to_original, false);
+process.stdout.write('Three frozen ETH network proxy definitions and Community research rights: PASS\n');
