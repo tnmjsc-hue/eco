@@ -1,7 +1,8 @@
 import { PROXIES, validateProxyPointer, validateProxyRelease, exportProxyCSV } from './proxy-model.js?v=proxies-1';
+import { numberLocale, translate } from './i18n.js?v=i18n-20261004';
 const $ = id => document.getElementById(id);
-const dateLabel = d => d.split('-').reverse().join('/');
-const fmt = (v, n=2) => v === null ? '—' : v.toLocaleString('vi-VN',{maximumFractionDigits:n,minimumFractionDigits:n});
+const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
+const fmt = (v, n=2) => v === null ? '—' : v.toLocaleString(numberLocale(),{maximumFractionDigits:n,minimumFractionDigits:n});
 const escape = value => String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reasonNames = {feature_warmup:'Chưa đủ cửa sổ SMA',missing_input_or_window:'Thiếu dữ liệu trong cửa sổ',nonpositive_log_argument:'Đối số log không dương',normalizer_warmup:'Chưa đủ 365 raw quá khứ',degenerate_normalizer:'Biên chuẩn hóa trùng nhau',raw_unavailable:'Raw chưa khả dụng'};
 const state = { history:null, manifest:null, research:null, date:null, followLatest:true, busy:false, chart:null, range:'all', checked:0 };
@@ -34,9 +35,9 @@ export async function loadProxies() {
     $('proxy-date').min=history.rows[0].date;$('proxy-date').max=history.rows.at(-1).date;
     $('proxy-loading').hidden=true;$('proxy-content').hidden=false;
     $('proxy-manifest').href=pointer.manifest_url;$('proxy-research-json').href=base+'research.json';
-    const coverage=PROXIES.map(m=>`${m.slot}: ${manifest.coverage[m.id].normalized_rows.toLocaleString('vi-VN')} ngày có điểm, từ ${dateLabel(manifest.coverage[m.id].first_score_date)}`).join(' · ');
-    const failure=status?.release_id===pointer.release_id && status.outcome==='failed'?' Lần cập nhật gần nhất lỗi; đang giữ bản đã xác minh.':'';
-    $('proxy-freshness').textContent=`Nguồn đến ${dateLabel(manifest.last_observation_date)} · ${coverage}.${status?.schedule_vi?' Lịch kiểm tra '+status.schedule_vi+'.':''}${failure}`;
+    const coverage=PROXIES.map(m=>`${m.slot}: ${manifest.coverage[m.id].normalized_rows.toLocaleString(numberLocale())} ${translate('ngày có điểm, từ')} ${dateLabel(manifest.coverage[m.id].first_score_date)}`).join(' · ');
+    const failure=status?.release_id===pointer.release_id && status.outcome==='failed'?` ${translate('Lần cập nhật gần nhất lỗi; đang giữ bản đã xác minh.')}`:'';
+    $('proxy-freshness').textContent=`${translate('Nguồn đến')} ${dateLabel(manifest.last_observation_date)} · ${coverage}.${status?.schedule_vi?` ${translate('Lịch kiểm tra')} ${translate(status.schedule_vi)}.`:''}${failure}`;
     const r=research;
     $('proxy-evaluation').textContent=`Đánh giá exploratory ${dateLabel(r.start)} – ${dateLabel(r.end)}: ${fmt(r.n,0)} ngày, ${fmt(r.positive_labels,0)} nhãn dương. Holdout này đã được dùng cho Core; cần dữ liệu kiểm định mới để xác nhận khả năng dự báo.`;
     $('proxy-results').innerHTML=PROXIES.map(m=>{const c=r.comparisons[`with_${m.id}_vs_core`];return `<tr><td>${m.slot} · ${m.name}</td><td>${fmt(r.statistics[m.id].average_precision,3)}</td><td>${fmt(r.statistics.core.average_precision,3)}</td><td>${fmt(c.ap_delta,4)}</td><td>[${fmt(c.lower_95,4)}; ${fmt(c.upper_95,4)}]</td></tr>`;}).join('');
@@ -68,17 +69,18 @@ function plot() {
     state.chart.on('click',p=>{if(p.data?.[0]) {state.date=p.data[0];state.followLatest=false;render();}});
   }
   const rows=filteredRows();const mobile=innerWidth<=600;
-  state.chart.setOption({animation:false,aria:{enabled:true},legend:{data:PROXIES.map(m=>m.slot+' proxy'),textStyle:{fontSize:11},top:8},
+  state.chart.setOption({animation:false,aria:{enabled:true},legend:{data:PROXIES.map(m=>m.slot+' '+translate('proxy')),textStyle:{fontSize:11},top:8},
     grid:{left:mobile?32:45,right:18,top:48,bottom:40},tooltip:{trigger:'axis',confine:true},
     xAxis:{type:'time',splitNumber:mobile?4:8,axisLabel:{fontSize:10,hideOverlap:true}},
     yAxis:{type:'value',min:0,max:100,interval:25,axisLabel:{fontSize:10},splitLine:{lineStyle:{color:'#e7eeeb'}}},
     dataZoom:[{type:'inside',zoomOnMouseWheel:false},{type:'slider',height:14,bottom:4,showDetail:false}],
-    series:PROXIES.map(m=>({name:m.slot+' proxy',type:'line',showSymbol:false,connectNulls:false,
+    series:PROXIES.map(m=>({name:m.slot+' '+translate('proxy'),type:'line',showSymbol:false,connectNulls:false,
       data:rows.map(r=>[r.date,r.metrics[m.id].score]),lineStyle:{color:m.color,width:1.5},itemStyle:{color:m.color}}))},{notMerge:true});
   state.chart.resize();
 }
 export function resizeProxies() { plot();state.chart?.resize(); }
 export function initProxies() {
+  document.addEventListener('eco-language-changed',render);
   $('proxy-refresh').addEventListener('click',loadProxies);$('proxy-retry').addEventListener('click',loadProxies);
   $('proxy-date').addEventListener('change',e=>{if(state.history?.rows.some(r=>r.date===e.target.value)){state.date=e.target.value;state.followLatest=false;render();}else e.target.value=state.date??'';});
   $('proxy-latest').addEventListener('click',()=>{if(state.history){state.date=state.history.rows.at(-1).date;state.followLatest=true;render();}});

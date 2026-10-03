@@ -1,29 +1,31 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fafbfb">
-  <meta name="description" content="Core 10 Experimental tích hợp NUPL, nguồn cung và số dư sàn ETH; mười thành phần, dữ liệu và kiểm định có thể kiểm chứng.">
+  <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with verifiable data and methodology.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=diagnostics-1">
+  <link rel="stylesheet" href="/styles.css?v=i18n-20261004">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=core-ten-only-1"></script>
+  <script type="module" src="/app.js?v=i18n-20261004"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="ECO dashboard"><span class="brand-mark">E</span><strong>ECO</strong><span class="brand-detail">ETHEREUM · CORE 10</span></a>
+    <a class="brand" href="/" aria-label="ECO bảng điều khiển"><span class="brand-mark">E</span><strong>ECO</strong><span class="brand-detail">ETHEREUM · CORE 10</span></a>
     <nav aria-label="Điều hướng chính">
-      <button class="nav-tab active" data-view="dashboard" aria-current="page"><i data-lucide="chart-no-axes-combined"></i><span>Dashboard</span></button>
+      <button class="nav-tab active" data-view="dashboard" aria-current="page"><i data-lucide="chart-no-axes-combined"></i><span>Tổng quan</span></button>
       <button class="nav-tab" data-view="extended"><i data-lucide="network"></i><span>Mở rộng</span></button>
       <button class="nav-tab" data-view="diagnostics"><i data-lucide="activity"></i><span>Chẩn đoán</span></button>
       <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
       <button class="nav-tab" data-view="methodology"><i data-lucide="notebook-text"></i><span>Phương pháp</span></button>
     </nav>
-    <span class="badge experimental">Experimental</span>
+    <label class="language-control"><span class="sr-only">Ngôn ngữ</span><select id="language-picker" aria-label="Ngôn ngữ">
+      <option value="en">English</option><option value="vi">Tiếng Việt</option><option value="ko">한국어</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="tr">Türkçe</option><option value="pt-BR">Português (Brasil)</option><option value="en-NG">English (Nigeria)</option>
+    </select></label><span class="badge experimental">Thử nghiệm</span>
   </header>
   <main id="main">
     <div id="error" class="notice error" role="alert" hidden><span id="error-text"></span><button id="retry" class="text-button"><i data-lucide="rotate-cw"></i>Thử lại</button></div>
@@ -47,7 +49,7 @@
         <section class="components-section" aria-labelledby="component-title">
           <div class="section-toolbar"><div><h2 id="component-title">Mười thành phần</h2><p class="small muted">Giá 37,5% · định giá 37,5% · mạng 25%</p></div><div class="segmented" role="group" aria-label="Chế độ điểm"><button class="active" data-mode="ten" aria-pressed="true">Core 10</button><button data-mode="custom" aria-pressed="false">Tùy chỉnh</button></div></div>
           <div id="selection-note" class="notice" hidden></div>
-          <div class="table-wrap"><table class="metric-table"><thead><tr><th class="selection-column">Chọn</th><th>Metric</th><th>Điểm</th><th>Trọng số</th><th>Trạng thái</th></tr></thead><tbody id="component-rows"></tbody></table></div>
+          <div class="table-wrap"><table class="metric-table"><thead><tr><th class="selection-column">Chọn</th><th>Chỉ số</th><th>Điểm</th><th>Trọng số</th><th>Trạng thái</th></tr></thead><tbody id="component-rows"></tbody></table></div>
           <div class="small muted component-footnote">E2 và E7 chia nhóm định giá 37,5%; hai phép đo sàn chia nhóm sàn 6,25%. C1 đo khan hiếm tương đối, C2 đo thay đổi ròng theo nhãn sàn. E3/E8/E9 proxy giữ công thức riêng; E4 còn R&amp;D.</div>
           <aside class="notice arkham-reference"><div><strong>Đối chiếu ETH với Arkham</strong><p class="small muted">Khám phá chủ sở hữu, thay đổi số dư và dòng tiền sàn. Chọn Ethereum khi đối chiếu; nhãn dự đoán, cầu nối và hợp đồng staking cần được phân biệt. Dữ liệu Arkham đang được đánh giá như nguồn bổ sung, chưa tham gia Core 10.</p><div class="proxy-links"><a href="https://arkm.com/explorer/token/ethereum" target="_blank" rel="noreferrer">ETH · holders & dòng tiền ↗</a><a href="https://arkm.com/explorer/entity/binance" target="_blank" rel="noreferrer">Ví sàn Binance ↗</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ARKHAM_SOURCE.md" target="_blank" rel="noreferrer">Nguồn, coverage & kế hoạch tích hợp</a></div></div></aside>
         </section>
@@ -118,12 +120,12 @@
         </tbody></table></div>
         <div class="method-grid"><section><h2>Nguồn và quyền sử dụng</h2><p><a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a>, ETH native mainnet, USD, daily UTC. P = PriceUSD, M = CapMrktCurUSD, V = CapMVRVCur. Raw được lưu riêng tư tại Cloudflare R2; website chỉ lấy JSON dẫn xuất tính sẵn từ Pages/CDN.</p><p>Dữ liệu và dẫn xuất công bố cho nghiên cứu phi thương mại theo <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a>. ECO đã chuẩn hóa và tổng hợp dữ liệu; Coin Metrics không bảo trợ ECO. Không bảo đảm tính chính xác hay phù hợp đầu tư.</p></section><section><h2>Ngày, lịch sử và phiên bản</h2><p>Ngày quan sát là ngày UTC của nguồn, kết thúc ở nửa đêm ngày kế tiếp. Chỉ dùng ngày đã đóng. Job chạy dự kiến 10:17 và kiểm tra lại 14:17 giờ Việt Nam; dữ liệu nguồn có thể đến chậm. Khi lỗi, giữ nguyên release hợp lệ và báo trạng thái.</p><p>Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.</p></section></div>
         <h2>Mục tiêu nghiên cứu 9 metric</h2>
-        <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
+        <div class="table-wrap"><table><thead><tr><th>Chỉ số</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
           <tr><td>E1 / E5 / E6 / E7</td><td>4 thành phần Core</td><td><span class="status-pill ready">Đã tính</span></td></tr>
           <tr><td>E2 · NUPL</td><td>Core 10 và raw diagnostic</td><td>Chia trọng số nhóm định giá, không thêm nhóm độc lập</td></tr>
           <tr><td>E3 / E8 / E9 · proxy mới</td><td>Core 10</td><td>Ba phép dẫn xuất có lịch sử riêng; không tương đương RHODL/Dormancy/NVT gốc</td></tr>
           <tr><td>C1 / C2</td><td>Nguồn cung / số dư sàn, Core 10</td><td>Chuẩn hóa từ raw đã xác minh; chiều tính là giả thuyết nghiên cứu</td></tr>
-          <tr><td>E4 · Fee Activity</td><td>R&amp;D-only</td><td>Đã backfill và đánh giá; kết quả hiện tại không đủ để thêm vào Core</td></tr>
+          <tr><td>E4 · Fee Activity</td><td>Chỉ nghiên cứu</td><td>Đã backfill và đánh giá; kết quả hiện tại không đủ để thêm vào Core</td></tr>
         </tbody></table></div>
         <details><summary>Manifest và khả năng tái lập</summary><dl id="provenance" class="provenance"></dl><a id="manifest-link" class="text-button" target="_blank" rel="noreferrer"><i data-lucide="file-json"></i>Manifest JSON</a></details>
       </section>

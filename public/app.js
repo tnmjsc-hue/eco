@@ -1,11 +1,12 @@
 import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
-import { initProxies, resizeProxies } from './proxies.js?v=proxies-1';
-import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=diagnostics-1';
+import { initProxies, resizeProxies } from './proxies.js?v=i18n-20261004';
+import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=i18n-20261004';
 import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
+import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=i18n-20261004';
 
 const $ = id => document.getElementById(id);
-const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
-const dateLabel = date => date.split('-').reverse().join('/');
+const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString(numberLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const dateLabel = date => new Intl.DateTimeFormat(numberLocale(), { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const state = { rows: [], manifest: null, research: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'ten', selected: CORE_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
 let historyChart;
@@ -124,13 +125,13 @@ function renderOverview() {
   const pending = state.manifest.pending_dates ?? [];
   const update = state.status;
   const labels = { published: 'Đã phát hành ngày mới', revised: 'Đã phát hành revision', unchanged: 'Dữ liệu không đổi', source_pending: 'Đang chờ dữ liệu nguồn', failed: 'Cập nhật lỗi · giữ bản hợp lệ' };
-  const timeLabel = value => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false });
-  const schedule = update ? `Ghép sau batch Core 10:17/14:17 và proxy 10:47/14:47 (giờ Việt Nam). ${escape(labels[update.outcome] ?? 'Chờ lần chạy đầu')}${update.last_attempt_at ? ` · lần kiểm tra ${escape(timeLabel(update.last_attempt_at))}` : ''}.` : 'Chưa xác minh trạng thái lịch cập nhật.';
+  const timeLabel = value => new Date(value).toLocaleString(numberLocale(), { timeZone: 'Asia/Ho_Chi_Minh', hour12: false });
+  const schedule = update ? `${translate('Ghép sau batch Core 10:17/14:17 và proxy 10:47/14:47 (giờ Việt Nam).')} ${escape(translate(labels[update.outcome] ?? 'Chờ lần chạy đầu'))}${update.last_attempt_at ? ` · ${translate('lần kiểm tra')} ${escape(timeLabel(update.last_attempt_at))}` : ''}.` : translate('Chưa xác minh trạng thái lịch cập nhật.');
   const scoreLag = (Date.now() - Date.parse(state.manifest.last_valid_score_date + 'T00:00:00Z') - 86400000) / 3600000;
   const jobLag = update?.last_attempt_at ? (Date.now() - Date.parse(update.last_attempt_at)) / 3600000 : 0;
-  const warning = scoreLag > 48 || jobLag > 26 ? ' Dữ liệu chậm; điểm gần nhất vẫn có ngày quan sát gốc.' : '';
-  const revision = state.manifest.revision?.changed_dates?.length ? ` Revision nguồn: ${state.manifest.revision.changed_dates.length} ngày lịch sử; release cũ được giữ nguyên.` : '';
-  $('freshness').innerHTML = `<b class="status-dot"></b><span>Nguồn đến ${dateLabel(last)} · cách hiện tại ${age} ngày UTC${missing ? ` · ${missing} ngày đã đóng thiếu dữ liệu` : ''}${pending.length ? ` · ngày chờ ${pending.map(d => escape(dateLabel(d))).join(', ')} (chưa đóng lúc tải)` : ''}. ${schedule}${warning}${revision}</span>`;
+  const warning = scoreLag > 48 || jobLag > 26 ? ` ${translate('Dữ liệu chậm; điểm gần nhất vẫn có ngày quan sát gốc.')}` : '';
+  const revision = state.manifest.revision?.changed_dates?.length ? ` ${translate('Revision nguồn:')} ${state.manifest.revision.changed_dates.length} ${translate('ngày lịch sử; release cũ được giữ nguyên.')}` : '';
+  $('freshness').innerHTML = `<b class="status-dot"></b><span>${translate('Nguồn đến')} ${dateLabel(last)} · ${relativeDaysAgo(age)}${missing ? ` · ${missing} ${translate('ngày đã đóng thiếu dữ liệu')}` : ''}${pending.length ? ` · ${translate('ngày chờ')} ${pending.map(d => escape(dateLabel(d))).join(', ')} (${translate('chưa đóng lúc tải')})` : ''}. ${schedule}${warning}${revision}</span>`;
 }
 function activeMetrics() { return CORE_METRICS; }
 function renderComponents() {
@@ -145,7 +146,10 @@ function renderComponents() {
     const reason = REASONS[row.reasons[m.id]] ?? ({parent_date_unavailable:'Chờ proxy cùng ngày',window_unavailable:'Thiếu dữ liệu cửa sổ',nonpositive_log_argument:'Đối số log không dương'}[row.reasons[m.id]]) ?? row.reasons[m.id] ?? 'Chưa có dữ liệu';
     const weight = active.includes(m.id) && total ? activeWeights[m.id] / total * 100 : 0;
     const flash = row.source_flags[m.id].includes('flash');
-    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="Chọn ${m.slot} ${m.name}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode !== 'custom' ? 'disabled' : ''}></td><td><span class="metric-id">${m.slot}${m.kind==='proxy'?' · proxy':m.kind==='derived'?' · dẫn xuất':''}</span><span class="metric-name">${m.name}</span><div class="metric-description">${m.description}${m.limitation?`<br><span title="${escape(m.limitation)}">${escape(m.interpretation)}</span>`:''}${original?`<br>Giá trị gốc: ${escape(original)}`:''}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? escape(reason) : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 3)}%</td><td><span class="status-pill ${value === null || flash ? 'missing' : 'ready'}" title="${value === null ? escape(reason) : flash ? 'Nhãn sàn và số liệu tạm thời; có thể sửa hồi cứu' : 'Đã chuẩn hóa causal q05/q95'}">${value === null ? 'Chưa đủ' : flash ? 'Tạm thời · flash' : 'Khả dụng'}</span></td></tr>`;
+    const metricType = m.kind === 'proxy' ? ` · ${translate('proxy')}` : m.kind === 'derived' ? ` · ${translate('dẫn xuất')}` : '';
+    const availability = value === null ? translate('Chưa đủ') : flash ? translate('Tạm thời · flash') : translate('Khả dụng');
+    const statusTitle = value === null ? translate(reason) : flash ? translate('Nhãn sàn và số liệu tạm thời; có thể sửa hồi cứu') : translate('Đã chuẩn hóa causal q05/q95');
+    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="${escape(translate(`Chọn ${m.slot} ${m.name}`))}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode !== 'custom' ? 'disabled' : ''}></td><td><span class="metric-id">${m.slot}${metricType}</span><span class="metric-name">${translate(m.name)}</span><div class="metric-description">${translate(m.description)}${m.limitation ? `<br><span title="${escape(translate(m.limitation))}">${escape(translate(m.interpretation))}</span>` : ''}${original ? `<br>${translate('Giá trị gốc:')} ${escape(original)}` : ''}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? escape(translate(reason)) : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 3)}%</td><td><span class="status-pill ${value === null || flash ? 'missing' : 'ready'}" title="${escape(statusTitle)}">${availability}</span></td></tr>`;
   }).join('');
   $('component-rows').querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
     state.selected = input.checked ? [...state.selected, input.dataset.metric] : state.selected.filter(id => id !== input.dataset.metric);
@@ -158,19 +162,21 @@ function renderChart() {
   const rows = filteredRows();
   const mobile = window.innerWidth <= 600;
   const custom = state.mode === 'custom';
-  $('range-label').textContent = `${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString('vi-VN')} ngày`;
+  $('range-label').textContent = `${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString(numberLocale())} ${translate('ngày')}`;
   $('core-legend').hidden = custom;
   $('custom-legend').hidden = !custom;
-  $('chart-title').textContent = `${custom ? 'Tùy chỉnh' : 'Core 10'} & giá ETH`;
-  $('history-chart').setAttribute('aria-label', `Biểu đồ lịch sử điểm ${custom ? 'tùy chỉnh' : 'Core 10'} và giá ETH`);
+  $('chart-title').textContent = custom ? `${translate('Tùy chỉnh')} & ${translate('Giá ETH')}` : translate('Core 10 & giá ETH');
+  $('history-chart').setAttribute('aria-label', custom ? `${translate('Biểu đồ lịch sử điểm')} ${translate('Tùy chỉnh')} ${translate('và')} ${translate('Giá ETH')}` : translate('Biểu đồ lịch sử điểm Core 10 và giá ETH'));
   const color = custom ? '#bb790b' : '#087f72';
-  const series = [{ name: custom ? 'Tùy chỉnh' : 'Core 10', type: 'line', data: rows.map(r => [r.date, custom ? coreScore(r, state.selected) : r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.9, color, type: custom ? 'dashed' : 'solid' }, itemStyle: { color }, z: 3 }];
-  series.push({ name: 'Giá ETH', type: 'line', yAxisIndex: 1, data: rows.map(r => [r.date, r.price_usd]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.2, color: '#455554', opacity: .7 }, itemStyle: { color: '#455554' }, z: 1 });
+  const scoreName = custom ? translate('Tùy chỉnh') : 'Core 10';
+  const priceName = translate('Giá ETH');
+  const series = [{ name: scoreName, type: 'line', data: rows.map(r => [r.date, custom ? coreScore(r, state.selected) : r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.9, color, type: custom ? 'dashed' : 'solid' }, itemStyle: { color }, z: 3 }];
+  series.push({ name: priceName, type: 'line', yAxisIndex: 1, data: rows.map(r => [r.date, r.price_usd]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.2, color: '#455554', opacity: .7 }, itemStyle: { color: '#455554' }, z: 1 });
   historyChart.setOption({ animation: false, aria: { enabled: true }, grid: { left: mobile ? 34 : 42, right: mobile ? 50 : 66, top: 28, bottom: 48 }, textStyle: { fontFamily: 'Segoe UI, Arial, sans-serif' }, tooltip: { trigger: 'axis', confine: true, backgroundColor: '#fff', borderColor: '#dfe6e5', textStyle: { color: '#232b2b' }, formatter: params => {
     const date = params[0]?.value?.[0];
     if (!date) return '';
-    return `<div class="ec-tooltip"><strong>${escape(dateLabel(date))} · UTC</strong>${params.map(p => `${escape(p.seriesName)}<span>${p.value[1] === null ? '—' : p.seriesName === 'Giá ETH' ? '$' + fmt(p.value[1]) : fmt(p.value[1], 2)}</span><br>`).join('')}</div>`;
-  } }, xAxis: { type: 'time', axisLine: { lineStyle: { color: '#dfe6e5' } }, axisTick: { show: false }, axisLabel: { fontSize: 10, color: '#687575', hideOverlap: true }, splitNumber: mobile ? 4 : 8 }, yAxis: [{ type: 'value', min: 0, max: 100, interval: 25, name: 'Điểm', nameTextStyle: { color: '#087f72', fontSize: 10, align: 'left' }, axisLabel: { color: '#687575', fontSize: 10 }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, { type: $('log-price').checked ? 'log' : 'value', name: 'USD', nameTextStyle: { color: '#687575', fontSize: 10 }, axisLabel: { color: '#687575', fontSize: 9, formatter: value => value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}` }, splitLine: { show: false } }], dataZoom: [{ type: 'inside', filterMode: 'none', zoomOnMouseWheel: false, moveOnMouseWheel: false }, { type: 'slider', height: 13, bottom: 6, borderColor: 'transparent', backgroundColor: '#edf3f0', fillerColor: '#087f7217', handleStyle: { color: '#7ba79c' }, showDetail: false, brushSelect: false }], series }, { notMerge: true });
+    return `<div class="ec-tooltip"><strong>${escape(dateLabel(date))} · UTC</strong>${params.map(p => `${escape(p.seriesName)}<span>${p.value[1] === null ? '—' : p.seriesName === priceName ? '$' + fmt(p.value[1]) : fmt(p.value[1], 2)}</span><br>`).join('')}</div>`;
+  } }, xAxis: { type: 'time', axisLine: { lineStyle: { color: '#dfe6e5' } }, axisTick: { show: false }, axisLabel: { fontSize: 10, color: '#687575', hideOverlap: true }, splitNumber: mobile ? 4 : 8 }, yAxis: [{ type: 'value', min: 0, max: 100, interval: 25, name: translate('Điểm'), nameTextStyle: { color: '#087f72', fontSize: 10, align: 'left' }, axisLabel: { color: '#687575', fontSize: 10 }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, { type: $('log-price').checked ? 'log' : 'value', name: 'USD', nameTextStyle: { color: '#687575', fontSize: 10 }, axisLabel: { color: '#687575', fontSize: 9, formatter: value => value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}` }, splitLine: { show: false } }], dataZoom: [{ type: 'inside', filterMode: 'none', zoomOnMouseWheel: false, moveOnMouseWheel: false }, { type: 'slider', height: 13, bottom: 6, borderColor: 'transparent', backgroundColor: '#edf3f0', fillerColor: '#087f7217', handleStyle: { color: '#7ba79c' }, showDetail: false, brushSelect: false }], series }, { notMerge: true });
 }
 function renderResearch() {
   const r = state.research;
@@ -231,6 +237,8 @@ function start() {
   if (['#research', '#methodology', '#extended', '#diagnostics'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
+  initLanguage();
+  document.addEventListener('eco-language-changed', () => { if (!state.rows.length) return; render(); renderResearch(); renderProvenance(); requestAnimationFrame(() => historyChart?.resize()); });
   load();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();

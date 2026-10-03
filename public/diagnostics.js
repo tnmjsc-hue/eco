@@ -1,7 +1,8 @@
 import { DIAGNOSTICS, validateDiagnosticPointer, validateDiagnosticRelease, diagnosticRange, exportDiagnosticCSV } from './diagnostic-model.js?v=diagnostics-1';
+import { numberLocale, translate } from './i18n.js?v=i18n-20261004';
 const $ = id => document.getElementById(id);
-const dateLabel = d => d.split('-').reverse().join('/');
-const fmt = (v,n=3) => v===null?'—':v.toLocaleString('vi-VN',{minimumFractionDigits:n,maximumFractionDigits:n});
+const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
+const fmt = (v,n=3) => v===null?'—':v.toLocaleString(numberLocale(),{minimumFractionDigits:n,maximumFractionDigits:n});
 const escape = v => String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const reasons={missing_input:'MVRV thiếu hoặc không dương',invalid_mvrv:'MVRV không hợp lệ',nonpositive_mvrv:'MVRV không dương',parent_day_unavailable:'Nguồn chưa có ngày này',window_warmup:'Chưa đủ 31 ngày quan sát',missing_or_invalid_window:'Thiếu dữ liệu hợp lệ trong cửa sổ 31 ngày',invalid_derived_value:'Phép tính không cho giá trị hữu hạn'};
 const state={history:null,manifest:null,manifestHash:null,date:null,followLatest:true,busy:false,checked:0,range:'all',start:null,end:null,metric:DIAGNOSTICS[0].id,chart:null};
@@ -38,8 +39,8 @@ export async function loadDiagnostics() {
     $('diag-start').value=state.start;$('diag-end').value=state.end;
     $('diag-loading').hidden=true;$('diag-content').hidden=false;
     $('diag-manifest').href=pointer.manifest_url;$('diag-report').href=base+'research.json';
-    $('diag-freshness').textContent=`Nguồn đến ${dateLabel(manifest.last_observation_date)} · ${DIAGNOSTICS.map(d=>d.slot+': '+manifest.coverage[d.id].valid_rows.toLocaleString('vi-VN')+' ngày hợp lệ').join(' · ')}.${status?.schedule_vi?' '+status.schedule_vi+'.':''}${status?.outcome==='failed'?' Lần cập nhật gần nhất lỗi; đang giữ bản đã xác minh.':''}`;
-    $('diag-lineage').textContent=`Phiên bản ${manifest.methodology_version} · E2 dùng snapshot Core ${manifest.parents.core.release_id}; C1/C2 dùng snapshot ${manifest.parents.proxies.release_id}. Thời điểm nguồn sẵn có trong quá khứ chưa được xác định.`;
+    $('diag-freshness').textContent=`${translate('Nguồn đến')} ${dateLabel(manifest.last_observation_date)} · ${DIAGNOSTICS.map(d=>d.slot+': '+manifest.coverage[d.id].valid_rows.toLocaleString(numberLocale())+' '+translate('ngày hợp lệ')).join(' · ')}.${status?.schedule_vi?` ${translate(status.schedule_vi)}.`:''}${status?.outcome==='failed'?` ${translate('Lần cập nhật gần nhất lỗi; đang giữ bản đã xác minh.')}`:''}`;
+    $('diag-lineage').textContent=`${translate('Phiên bản')} ${manifest.methodology_version} · E2 ${translate('dùng snapshot Core')} ${manifest.parents.core.release_id}; C1/C2 ${translate('dùng snapshot')} ${manifest.parents.proxies.release_id}. ${translate('Thời điểm nguồn sẵn có trong quá khứ chưa được xác định.')}`;
     $('diag-coverage').innerHTML=DIAGNOSTICS.map(d=>{const c=report.coverage[d.id];return `<tr><td>${d.slot} · ${d.name}</td><td>${fmt(c.valid_rows,0)}</td><td>${fmt(c.null_rows,0)}</td><td>${c.first_valid_date?dateLabel(c.first_valid_date):'—'}</td><td>${fmt(c.negative_rows,0)}</td><td>${fmt(c.flagged_rows,0)}</td></tr>`;}).join('');
     render();
   }catch(error) {
@@ -64,14 +65,14 @@ function plot() {
     state.chart.on('click',p=>{if(p.data?.[0])selectDate(p.data[0]);});
   }
   const d=DIAGNOSTICS.find(d=>d.id===state.metric),rows=filtered(),mobile=innerWidth<=600;
-  $('diag-range-label').textContent=`${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString('vi-VN')} ngày · nhấn đường để chọn ngày`;
+  $('diag-range-label').textContent=`${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString(numberLocale())} ${translate('ngày')} · ${translate('nhấn đường để chọn ngày')}`;
   $('diag-chart').setAttribute('aria-label',`Lịch sử ${d.name}, đơn vị ${d.unit==='ETH'?'ETH':'phần trăm'}, có giá trị âm và ngày thiếu dữ liệu`);
   state.chart.setOption({animation:false,aria:{enabled:true},grid:{left:mobile?56:75,right:20,top:30,bottom:44},
     tooltip:{trigger:'axis',confine:true,valueFormatter:v=>v===null?'—':fmt(v,d.unit==='ETH'?0:3)+(d.unit==='ETH'?' ETH':'%')},
     xAxis:{type:'time',splitNumber:mobile?4:8,axisLabel:{fontSize:10,hideOverlap:true}},
-    yAxis:{type:'value',scale:true,name:d.unit==='ETH'?'ETH':'%',axisLabel:{fontSize:10,formatter:v=>d.unit==='ETH'?Intl.NumberFormat('vi-VN',{notation:'compact'}).format(v):fmt(v,1)},splitLine:{lineStyle:{color:'#e7eeeb'}}},
+    yAxis:{type:'value',scale:true,name:d.unit==='ETH'?'ETH':'%',axisLabel:{fontSize:10,formatter:v=>d.unit==='ETH'?Intl.NumberFormat(numberLocale(),{notation:'compact'}).format(v):fmt(v,1)},splitLine:{lineStyle:{color:'#e7eeeb'}}},
     dataZoom:[{type:'inside',zoomOnMouseWheel:false},{type:'slider',height:14,bottom:4,showDetail:false}],
-    series:[{name:d.name,type:'line',showSymbol:false,connectNulls:false,data:rows.map(r=>[r.date,r.metrics[d.id].value===null?null:r.metrics[d.id].value*d.scale]),
+    series:[{name:translate(d.name),type:'line',showSymbol:false,connectNulls:false,data:rows.map(r=>[r.date,r.metrics[d.id].value===null?null:r.metrics[d.id].value*d.scale]),
       lineStyle:{color:d.color,width:1.5},itemStyle:{color:d.color}}]},{notMerge:true});state.chart.resize();
 }
 function selectDate(day,latest=false) {
@@ -83,6 +84,7 @@ function rangeUI() {
 }
 export function resizeDiagnostics() {plot();state.chart?.resize();}
 export function initDiagnostics() {
+  document.addEventListener('eco-language-changed',render);
   $('diag-refresh').addEventListener('click',loadDiagnostics);$('diag-retry').addEventListener('click',loadDiagnostics);
   $('diag-date').addEventListener('change',e=>selectDate(e.target.value));
   for(const [id,offset] of [['diag-prev',-1],['diag-next',1]])$(id).addEventListener('click',()=>{if(state.date)selectDate(new Date(Date.parse(state.date)+offset*86400000).toISOString().slice(0,10));});
