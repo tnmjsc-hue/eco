@@ -10,7 +10,7 @@ Dashboard dùng native ES modules, ECharts và Lucide trên Pages static `public
 
 **Theo yêu cầu tích hợp mới:** dashboard chính mặc định ECO 7 Experimental, `extended-v0.1.0` = 75% Core + 25% trung bình ba proxy. Điểm 31.979753577249287 (UI 32), đủ 7/7 ngày 2026-10-02. Có chế độ Core 4 (40 cùng ngày), tùy chỉnh bảy thành phần, lịch sử/CSV cùng ngày UTC và manifest pin hai release cha. Core/proxy cũ bất biến. [ADR-006](docs/ADR-006-extended-experimental-dashboard.md), [kết quả ECO 7](docs/EXTENDED_DASHBOARD.md). Kiểm định mở rộng thăm dò chưa chứng minh cải thiện so với Core.
 
-Arkham được thêm làm đường đối chiếu holders/flow trên dashboard; đã kiểm API docs, giới hạn coverage và probe 403. [Kế hoạch nguồn](docs/ARKHAM_SOURCE.md) và [hồ sơ xin trial cho người dùng](docs/ARKHAM_TRIAL_REQUEST.md) đã chuẩn bị; chưa có key hoặc quyền công khai dẫn xuất và chưa đưa Arkham vào điểm tính.
+Arkham được thêm làm đường đối chiếu holders/flow trên dashboard; đã kiểm API docs, giới hạn coverage và probe 403. [Kế hoạch nguồn](docs/ARKHAM_SOURCE.md) và [hồ sơ xin trial](docs/ARKHAM_TRIAL_REQUEST.md) đã thực hiện: account miễn phí đã xác minh email, yêu cầu trial nghiên cứu không thẻ/không tự gia hạn đã gửi support và có thư xác nhận nhận. Chưa có key/quyền dữ liệu, còn chờ Arkham duyệt; chưa đưa Arkham vào điểm tính.
 
 ## Lệnh thực tế
 

@@ -1,28 +1,32 @@
 # Hồ sơ xin Arkham API trial — ECO
 
-Đã chuẩn bị theo yêu cầu của người dùng ngày 2026-10-03. **Chưa gửi, chưa đăng ký account hoặc chấp nhận API Terms.** Hồ sơ dùng để xin trial phi thương mại và làm rõ quyền; không cam kết subscription, auto-renewal hoặc chi phí.
+**Đã tạo tài khoản Arkham miễn phí, xác minh email và gửi hồ sơ ngày 2026-10-03.** Người dùng đã cung cấp tên thật và xác nhận đồng ý điều khoản. Thư gửi từ `tnmjsc@gmail.com` đến `support@arkm.com` lúc **18:03 giờ Việt Nam**, đã kiểm Sent/người nhận; Arkham gửi xác nhận **[Request received] lúc 18:06**. Trial/API key và quyền sử dụng còn chờ đội hỗ trợ xét duyệt. Không kích hoạt subscription, auto-renewal hoặc trả phí.
+
+Biểu mẫu trial hiện yêu cầu thẻ, miễn phí 30 ngày rồi tự kích hoạt Starter **1.500 USD/tháng**. Vì ngân sách được phép là 0 USD, đã gửi yêu cầu trial nghiên cứu thủ công **không cần thẻ, không tự gia hạn, không overage** qua kênh support chính thức. [Metadata xác minh](evidence/arkham-registration-2026-10-03.json) không chứa credential hoặc thư nguyên văn. Bản định danh và email gửi thực tế giữ private trong `data/raw/arkham/registration-2026-10-03/`; bản dưới đây là mẫu công khai.
 
 ## Thông tin điền biểu mẫu
 
 | Trường | Nội dung đã chuẩn bị |
 |---|---|
-| Full Name | **Còn thiếu tên thật người đứng tên đăng ký**; không tự dùng email hoặc tên dự án thay tên cá nhân |
+| Full Name | Đã được người dùng cung cấp và điền; tên trong bản định danh private |
 | Email | `tnmjsc@gmail.com` |
-| Use case | Researcher nếu có lựa chọn; nếu biểu mẫu chỉ Individual thì dùng mục đó và mô tả nghiên cứu bên dưới |
+| Use case | Individual; mô tả nghiên cứu ETH trong thư (form chỉ có Individual/Business/Government) |
 | Project | ECO — Ethereum cycle research dashboard |
 | Website | https://eco.tnmp.cloud/ |
 | Source repository | https://github.com/tnmjsc-hue/eco |
 | Access requested | Free, time-limited API trial; ETH native on Ethereum L1; tối đa 5 entity CEX trong đợt đầu |
 | Chi phí được phép | 0 USD; chưa cho phép mua plan hoặc phát sinh overage/x402 |
-| Terms checkbox | Chưa chấp thuận; cần làm rõ các quyền dưới đây trước khi xác nhận |
+| Terms checkbox | Người dùng đã xác nhận đồng ý; platform terms đã chấp thuận khi đăng ký. Không submit/kích hoạt trial tự gia hạn; quyền dữ liệu API vẫn cần Arkham cấp riêng |
 
-Form chính thức: https://arkm.com/api . Hướng dẫn truy cập: https://arkm.com/docs#getting-started/access . Account/login là dependency của form hiện tại. Tên người đăng ký và bước chấp thuận hợp đồng là hai phần còn cần người dùng cung cấp/xác nhận trước submission. Không gửi email tự động từ tài liệu này.
+Form chính thức: https://arkm.com/api . Hướng dẫn truy cập: https://arkm.com/docs#getting-started/access . Account và xác minh email đã đạt; CAPTCHA do người dùng hoàn tất. Mật khẩu ngẫu nhiên lưu DPAPI ngoài repo, không lưu password trong browser hoặc công khai. Chấp thuận của người dùng không thay quyền automation/cache/public derived của Arkham. Không cấu hình tự gửi email từ tài liệu hoặc upstream.
 
-## Nội dung yêu cầu sẵn để gửi
+## Mẫu nội dung yêu cầu
 
 **Subject: Free ETH research API trial and derived-publication permission — ECO**
 
 Hello Arkham API team,
+
+I have created and verified my Arkham account with tnmjsc@gmail.com. Your current trial form requires a credit card and automatic activation of a $1,500/month Starter subscription after 30 days. Please advise whether you can offer a manually approved noncommercial research trial with no credit card, no automatic renewal, no paid overages and zero charges. We will not activate the card-based trial.
 
 We are developing ECO, a noncommercial Ethereum research dashboard at https://eco.tnmp.cloud/ with open-source computation code at https://github.com/tnmjsc-hue/eco. Please provision any approved trial to tnmjsc@gmail.com.
 
@@ -50,7 +54,7 @@ We are requesting a free trial only, with no payment details, automatic renewal,
 
 Thank you,
 
-**[Tên người đăng ký — người dùng cần điền]**
+**[Tên người đăng ký đã xác nhận — xem bản định danh private]**
 
 ECO research project
 

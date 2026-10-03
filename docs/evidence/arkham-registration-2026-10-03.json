@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "recorded_at": "2026-10-03T11:11:26.729796+00:00",
+  "evidence_type": "account_registration_and_trial_request",
+  "provider": "Arkham",
+  "account_email": "tnmjsc@gmail.com",
+  "requested_full_name_confirmed_by_user": true,
+  "personalized_application_private": true,
+  "user_authorized_registration": true,
+  "user_authorized_terms_acceptance": true,
+  "captcha_completed_by_user": true,
+  "captcha_solved_by_agent": false,
+  "account_created": true,
+  "account_email_verified": true,
+  "platform_terms_accepted": true,
+  "credential_storage": "Windows DPAPI outside repository; no plaintext in Git, frontend or tool output",
+  "credential_contents_in_evidence": false,
+  "request": {
+    "recipient": "support@arkm.com",
+    "subject": "Free ETH research API trial and derived-publication permission — ECO",
+    "body_sha256": "ab759239d976649c3dd444259f6c553348d48dcfbff4d3a35d65f09cc881a7e7",
+    "sent": true,
+    "sent_folder_verified": true,
+    "recipient_details_verified": true,
+    "sent_local_time": "2026-10-03T18:03:00+07:00",
+    "time_precision": "minute_as_displayed_by_gmail",
+    "body_text_canonical_sha256": "a9c0501c35f76382ee28932925ed180097b68279ea51a3ea0173b51fe0c0e53a",
+    "body_encoding": "utf-8",
+    "body_file_line_endings": "CRLF"
+  },
+  "acknowledgement": {
+    "received": true,
+    "subject": "[Request received]",
+    "received_local_time": "2026-10-03T18:06:00+07:00",
+    "time_precision": "minute_as_displayed_by_gmail",
+    "support_will_reply": true,
+    "trial_approval": false
+  },
+  "card_based_trial": {
+    "source_url": "https://arkm.com/api",
+    "credit_card_required": true,
+    "free_period_days": 30,
+    "automatic_subscription_after_trial": "Starter",
+    "subscription_monthly_usd": 1500,
+    "activated": false,
+    "payment_details_entered": false,
+    "paid_subscription_created": false
+  },
+  "requested_manual_trial": {
+    "spending_limit_usd": 0,
+    "no_credit_card": true,
+    "no_automatic_renewal": true,
+    "no_paid_overages": true,
+    "initial_sample_requests_max": 10,
+    "steady_state_calls_per_day_estimate": 14,
+    "credits_per_call_unknown": true
+  },
+  "entitlement": {
+    "api_key_received": false,
+    "api_data_requests_with_key": 0,
+    "history_verified": false,
+    "coverage": null,
+    "backend_automation_permission_received": false,
+    "private_caching_permission_received": false,
+    "derived_publication_permission_received": false
+  },
+  "prior_probe_evidence": {
+    "path": "docs/evidence/arkham-source-2026-10-03.json",
+    "sha256": "7cec3683f806293d8319b0c680d90658e08b8d96c78c0ef71c5cbd5a4641fe59",
+    "modified": false
+  },
+  "private_ui_screenshot_hashes": {
+    "arkham-account-api-trial.png": "96d738e80468cc076b612ebf461586f737507e4414db15e88a6e8eaafd798647",
+    "arkham-trial-email-sent.png": "5f95783f3a19f49b9f34a0ecf21001fbe3410400de6c9ca1abf0e07d4f64b600",
+    "arkham-trial-received.png": "3f61fbcb940ccf1396c1fd43de5a71c44c2cfd7dfc5def4f51d6fcd39588cd9a"
+  },
+  "methodology_changed": false,
+  "arkham_values_used_in_scores": false
+}

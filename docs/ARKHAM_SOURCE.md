@@ -24,7 +24,9 @@ Các endpoint được xác minh trên [API Reference](https://arkm.com/docs#api
 
 ## Truy cập và quyền
 
-[Getting Access](https://arkm.com/docs#getting-started/access) yêu cầu account, API plan hoặc trial được xét duyệt, rồi key. Tài liệu công bố mức subscription bắt đầu $100; chưa mua hoặc cam kết chi phí. Biểu mẫu `/api` hiện yêu cầu Full Name, Email, Use case, đăng nhập và chấp nhận API Terms. Người dùng đã cho phép sử dụng email cho đăng ký nếu cần, nhưng chưa có tên người đăng ký và không tự chấp thuận hợp đồng thay người dùng.
+[Getting Access](https://arkm.com/docs#getting-started/access) yêu cầu account, API plan hoặc trial được xét duyệt, rồi key. Tài liệu công bố mức subscription bắt đầu $100; chưa mua hoặc cam kết chi phí. Biểu mẫu `/api` yêu cầu Full Name, Email, Use case, đăng nhập và API Terms. Sau khi người dùng cung cấp tên thật/xác nhận điều khoản, tài khoản miễn phí và xác minh email đã hoàn tất; mật khẩu random lưu DPAPI ngoài repo. CAPTCHA do người dùng hoàn tất. Không có credential trong evidence, Git hoặc frontend.
+
+**Trial hiện hành đã kiểm trên browser sau đăng nhập:** cần thẻ, miễn phí 30 ngày rồi tự kích hoạt Starter **1.500 USD/tháng**. Không submit/kích hoạt luồng trial đó hoặc nhập thẻ. Đã gửi yêu cầu trial nghiên cứu thủ công không thẻ/không tự gia hạn/0 USD đến `support@arkm.com`, địa chỉ quan sát được trong menu Contact Support chính thức. Thư có trong Sent lúc **18:03 ngày 2026-10-03 (Việt Nam)**; Arkham xác nhận **[Request received] lúc 18:06**, còn chờ xét duyệt trial/quyền. Đây là xác nhận nhận thư, chưa là API entitlement hoặc licence.
 
 [Using with AI Agents](https://arkm.com/docs#resources/coding-agents) mô tả MCP, coding agent và x402. Tuy nhiên [API Terms](https://arkm.com/api-terms-of-service) mục 1.2 giới hạn Authorized Users là người, mục 8.2 hạn chế chia sẻ và công khai dữ liệu/dẫn xuất. Hướng dẫn kỹ thuật không tự thay điều khoản cấp quyền. Cần xác nhận bằng văn bản theo trial/subscription cho automation của backend, lưu raw private/R2, giữ revision và công khai chỉ số/CSV dẫn xuất phi thương mại. Không bật x402 hoặc request bằng key khi quota/đơn giá chưa được xác định.
 
@@ -32,7 +34,7 @@ Probe `node scripts/probe-arkham.mjs 2026-10-02` chỉ dùng endpoint chính th�
 
 Probe thực tế 2026-10-03: cả holders và histogram trả HTTP 403, content-type HTML, tại perimeter Cloudflare. Không phân biệt được entitlement của backend từ response này; không gọi đây là thiếu lịch sử ETH. [Evidence chỉ chứa metadata/hash](evidence/arkham-source-2026-10-03.json), SHA-256 `7cec3683f806293d8319b0c680d90658e08b8d96c78c0ef71c5cbd5a4641fe59`. Browser đọc trang/tài liệu được sau security verification tự hoàn tất; không giải CAPTCHA hoặc dùng session cookie để vượt cổng API.
 
-Đã chuẩn bị [hồ sơ trial](ARKHAM_TRIAL_REQUEST.md) theo yêu cầu mới của người dùng; chưa gửi, còn tên thật người đăng ký và xác nhận hợp đồng sau làm rõ quyền.
+[Hồ sơ trial](ARKHAM_TRIAL_REQUEST.md) đã gửi theo yêu cầu trực tiếp của người dùng. [Evidence đăng ký/gửi/nhận](evidence/arkham-registration-2026-10-03.json), SHA-256 `8d037205929c7b723663dc905b529f520cef2ae229b2b7ee1e9ed3d6879a5241`, chỉ có metadata/hash; bản định danh, thư và screenshot private. Evidence probe cũ giữ nguyên: account chưa tồn tại tại lần probe trước. Chưa có API key, quota/đơn giá và quyền backend/cache/public derived được cấp; lịch sử/coverage vẫn chưa xác minh.
 
 ## Thứ tự triển khai khi cổng truy cập đạt
 
