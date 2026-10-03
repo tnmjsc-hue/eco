@@ -6,7 +6,7 @@ Core `core-v0.1.0` vẫn có E1/E5/E6/E7. E2 có raw `nupl_diagnostic` trong [`e
 
 ## 1. Thứ tự ưu tiên và mức sẵn sàng
 
-**Bổ sung theo yêu cầu 2026-10-03:** ba metric thay thế vai trò E3/E8/E9 đã có source contract mới, full-history ETH thật, engine, đánh giá exploratory và public research artifacts/UI. Xem [NETWORK_PROXIES](NETWORK_PROXIES.md) và [ADR-005](ADR-005-network-research-proxies.md). Đây là `exchange_share`, `address_activity`, `value_per_transfer` dưới `network-proxies-v0.1.0`. Original RHODL/Dormancy/adjusted-NVT contracts và probe lịch sử vẫn giữ trạng thái nguồn cũ; không đổi tên metric mới thành bản tương đương hoặc ghép vào Core. Deployment cuối phiên ghi trong HANDOFF.
+**Bổ sung theo yêu cầu 2026-10-03:** ba metric thay thế vai trò E3/E8/E9 đã có source contract mới, full-history ETH thật, engine, đánh giá exploratory và public research artifacts/UI. Xem [NETWORK_PROXIES](NETWORK_PROXIES.md) và [ADR-005](ADR-005-network-research-proxies.md). Đây là `exchange_share`, `address_activity`, `value_per_transfer` dưới `network-proxies-v0.1.0`. Original RHODL/Dormancy/adjusted-NVT contracts và probe lịch sử vẫn giữ trạng thái nguồn cũ; không đổi tên metric mới thành bản tương đương hoặc ghép vào Core. Production đã xác minh tại eco.tnmp.cloud/#extended; hosted daily run thành công. Bằng chứng cuối phiên trong HANDOFF.
 
 | Task bổ sung | Source/backfill | Engine/evaluation | Publication/UI |
 |---|---|---|---|

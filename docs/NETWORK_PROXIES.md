@@ -52,3 +52,7 @@ Chỉ dùng paths thực tế. Uploader cần existing bucket-scoped credentials
 `public/data/network-proxies/latest.json` chỉ trỏ release đầy đủ có checksum; manifest/derived history/research riêng. Lịch sử đã xuất giữ bất biến, revision ghi ngày sửa/ngày thêm/lý do. Rounding tương đương giữ số đã công bố; snapshot mới có cùng values/baseline/code không tạo release trùng. Mất dữ liệu khả dụng hoặc source/R2 failure giữ pointer trước và status thất bại. Core assets/pointer không đổi.
 
 Workflow `network-proxies-update.yml` kiểm lúc 10:47/14:47 Việt Nam, chung concurrency với Core. Chỉ stage status/pointer/releases proxy; không stage raw. Snapshot vẫn full-refresh; tối ưu incremental và restore/shadow là việc vận hành tiếp theo. Bằng chứng kích hoạt workflow/deploy và kiểm tra thực tế cuối phiên trong HANDOFF.
+
+## Production đã xác minh
+
+Tab [Mở rộng](https://eco.tnmp.cloud/#extended) đã deploy và kiểm checksum/browser, cả domain riêng và Pages HTTP 200. Release `proxy-f9edb79c4231efbbb9fe`, manifest SHA `2dca7a91c433143a42bd80541495ac6627e987295e56fb3257ba32987c679a0b`. Code commit `d4d055b`; [hosted daily run 37113065848](https://github.com/tnmjsc-hue/eco/actions/runs/37113065848) completed/success, outcome unchanged, bot chỉ cập nhật status. Lịch 10:47/14:47 Việt Nam active; chưa quan sát lượt cron tương lai hoặc shadow30 ngày. 63 Python/14 Node tests, QA 1440/768/390/360, CSV/null/keyboard/network/checksum và Core preservation đã PASS.
