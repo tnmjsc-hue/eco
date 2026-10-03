@@ -1,0 +1,76 @@
+{
+  "checked_at": "2026-10-03T16:10:27.696365+00:00",
+  "task": "CORE10-UI-02",
+  "phase": "production_verified",
+  "scope": "UI_and_download_CSV_only",
+  "code_commit": "0f737000c422c754dfdd955ac4db16e1d1f46b5d",
+  "ci": {
+    "run_id": 37135727918,
+    "conclusion": "success"
+  },
+  "cloudflare": {
+    "deployment_id": "6cedac7f-f789-40cd-99b0-1350e4d3ace7",
+    "environment": "production",
+    "stage": "deploy",
+    "status": "success",
+    "commit_sha": "0f737000c422c754dfdd955ac4db16e1d1f46b5d"
+  },
+  "display": {
+    "official_score_series": [
+      "Core 10"
+    ],
+    "price_series": "Giá ETH",
+    "custom_mode": "replaces official series; one composite shown",
+    "removed_modes": [
+      "core",
+      "extended"
+    ],
+    "removed_hero_legacy_comparison": true,
+    "removed_csv_columns": [
+      "extended_score",
+      "core_four_score"
+    ],
+    "removed_standalone_core_four_research": true,
+    "baseline_details": "collapsed by default; preserves weaker Core 10 finding"
+  },
+  "unchanged": {
+    "methodology_version": "core-v0.2.0",
+    "release_id": "core10-34bb9fdc3f68092404ec",
+    "manifest_sha256": "7ed69572e3d116f987fa837a09d8010a1e534d9de1c495e1cdf8c47ecf5fd1cf",
+    "legacy_published_points": true,
+    "component_count": 10,
+    "parent_lineage_gates": 4,
+    "batch_workflows": true
+  },
+  "verification": {
+    "python_tests": 102,
+    "node_tests": 30,
+    "frozen_artifacts": "PASS",
+    "origins": [
+      "https://eco.tnmp.cloud",
+      "https://eco-tnmp.pages.dev"
+    ],
+    "files_hash_verified_per_origin": 38,
+    "release_chains_verified": 5,
+    "cache_headers": "PASS",
+    "browser_views": [
+      "dashboard",
+      "extended",
+      "diagnostics"
+    ],
+    "viewports": [
+      1440,
+      768,
+      390,
+      360
+    ],
+    "csv_and_nulls": "PASS",
+    "custom_series_days": 366,
+    "network_and_checksum_retention": "PASS",
+    "automatic_refresh_and_historical_selection": "PASS",
+    "page_errors": [],
+    "score_ui": 38,
+    "date_utc": "2026-10-02",
+    "production_screenshots_inspected": true
+  }
+}
