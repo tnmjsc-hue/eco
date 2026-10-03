@@ -258,3 +258,17 @@ assert.equal(proxyEvidence.licence.derived_research_publication, true);
 assert.equal(proxyEvidence.licence.commercial_use, false);
 for (const m of Object.values(proxyProtocol.metrics)) assert.equal(m.equivalent_to_original, false);
 process.stdout.write('Three frozen ETH network proxy definitions and Community research rights: PASS\n');
+const extendedProtocol = await readJson('configs/research/extended-v0.1.0.json');
+assert.equal(createHash('sha256').update(JSON.stringify(extendedProtocol)+'\n').digest('hex'),
+  '719b9873e7e96546f829df915051d993dafbb960e53878495c1bce249c948bcb');
+assert.equal(extendedProtocol.required_coverage,7);
+assert.equal(extendedProtocol.weights.E7,.375);
+assert.equal(extendedProtocol.release_scope,'noncommercial_experimental_research_preview');
+const arkhamEvidence = await readJson('docs/evidence/arkham-source-2026-10-03.json');
+assert.equal(await sha256('docs/evidence/arkham-source-2026-10-03.json'),
+  '7cec3683f806293d8319b0c680d90658e08b8d96c78c0ef71c5cbd5a4641fe59');
+assert.equal(arkhamEvidence.public_data_rights_verified,false);
+assert.equal(arkhamEvidence.credential_used,false);
+assert.equal(arkhamEvidence.browser_verification.group_by_entity_verified,true);
+for (const p of arkhamEvidence.probes) { assert.equal(p.auth,'none'); assert.equal(p.coverage,null); assert.equal(p.full_history_verified,false); }
+process.stdout.write('Frozen ECO 7 protocol and Arkham source evidence (no rights/backfill claim): PASS\n');

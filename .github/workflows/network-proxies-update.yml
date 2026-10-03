@@ -33,6 +33,11 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: python -m eco.proxy_pipeline daily
+      - name: Join verified parents into ECO 7 Experimental
+        id: extended
+        if: always() && steps.batch.outcome == 'success'
+        continue-on-error: true
+        run: python -m eco.seven
       - name: Verify data and source contracts
         id: verify
         if: steps.batch.outcome == 'success'
@@ -46,12 +51,19 @@ jobs:
         if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure')
         env:
           BATCH_OUTCOME: ${{ steps.batch.outcome }}
+          EXTENDED_OUTCOME: ${{ steps.extended.outcome }}
         run: |
           git config user.name 'eco-daily[bot]'
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
           git add -- public/data/network-proxies/status.json
+          if [ "$EXTENDED_OUTCOME" != 'skipped' ] && [ -f public/data/extended/status.json ]; then
+            git add -- public/data/extended/status.json
+          fi
           if [ "$BATCH_OUTCOME" = 'success' ]; then
             git add -- public/data/network-proxies/latest.json public/data/network-proxies/releases
+            if [ "$EXTENDED_OUTCOME" = 'success' ]; then
+              git add -- public/data/extended/latest.json public/data/extended/releases
+            fi
           fi
           if git diff --cached --quiet; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
@@ -67,5 +79,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-daily-deploy.mjs
       - name: Surface capture or backup failure
-        if: always() && steps.batch.outcome == 'failure'
+        if: always() && (steps.batch.outcome == 'failure' || steps.extended.outcome == 'failure')
         run: exit 1

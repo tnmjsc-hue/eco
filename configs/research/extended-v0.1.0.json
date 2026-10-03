@@ -1,0 +1,19 @@
+{
+  "methodology_version": "extended-v0.1.0",
+  "protocol": "extended-v0.1.0-protocol-1",
+  "frozen_on": "2026-10-03",
+  "asset": "eth",
+  "frequency": "1d",
+  "series_type": "reconstructed",
+  "parent_versions": ["core-v0.1.0", "network-proxies-v0.1.0"],
+  "components": ["E1", "E5", "E6", "E7", "exchange_share", "address_activity", "value_per_transfer"],
+  "weights": {"E1": 0.125, "E5": 0.125, "E6": 0.125, "E7": 0.375, "exchange_share": 0.08333333333333333, "address_activity": 0.08333333333333333, "value_per_transfer": 0.08333333333333333},
+  "aggregation": "0.75 * Core + 0.25 * mean(exchange_share,address_activity,value_per_transfer)",
+  "weight_rationale": "Preserve relative Core weights; cap the three exploratory and correlated proxies at one quarter; no optimization on historical results",
+  "required_coverage": 7,
+  "missing_policy": "null_if_any_selected_component_missing; no_forward_fill; join_same_UTC_observation_date",
+  "source_available_at": null,
+  "evaluation": {"status": "exploratory_reused_holdout", "start": "2020-01-01", "horizon_calendar_days": 365, "drawdown": -0.5, "baselines": ["core", "normalized_E7_only", "normalized_price_group_only"], "bootstrap": {"replicates": 10000, "block_calendar_days": 90, "seed": 20261003}, "ablation": "drop_one_component_and_renormalize_frozen_weights"},
+  "release_scope": "noncommercial_experimental_research_preview",
+  "limitations": ["not_probability", "not_validated_predictive_model", "unknown_historical_availability", "provisional_exchange_labels", "proxy_not_original_metric", "correlated_components", "native_ETH_L1_only"]
+}

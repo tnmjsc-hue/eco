@@ -1,4 +1,4 @@
-# ECO — Dashboard Ethereum Core
+# ECO — Dashboard Ethereum 7 chỉ số
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
@@ -7,6 +7,10 @@ Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm
 Dashboard dùng native ES modules, ECharts và Lucide trên Pages static `public`; engine Python 3.12 + NumPy 2.3.5. Snapshot raw giữ local/R2 private; web lấy versioned JSON đã tính sẵn, không gọi API provider hay bucket raw. Daily batch chạy GitHub Actions dự kiến **10:17**, kiểm tra lại **14:17 giờ Việt Nam**, và dashboard kiểm tra release mới mỗi 15 phút khi đang mở. Xem [runbook cập nhật](docs/DAILY_UPDATES.md). Chưa hoàn thành shadow 30 ngày; biểu đồ vẫn reconstructed.
 
 **Đã bổ sung ba metric ETH trong tab Mở rộng:** tỷ trọng ETH trên sàn (E3 proxy), cường độ địa chỉ hoạt động (E8 proxy), vốn hóa/lượt chuyển ETH (E9 proxy). Nguồn thật 4.083 ngày đến 2026-10-02, công thức/version/coverage và CSV riêng; không tương đương RHODL/Dormancy/NVT gốc và không thêm trọng số Core. [Phương pháp và kết quả thực thi](docs/NETWORK_PROXIES.md), [ADR-005](docs/ADR-005-network-research-proxies.md). Lịch proxy kiểm tra 10:47/14:47 Việt Nam; cờ exchange `flash` được nêu là tạm thời.
+
+**Theo yêu cầu tích hợp mới:** dashboard chính mặc định ECO 7 Experimental, `extended-v0.1.0` = 75% Core + 25% trung bình ba proxy. Điểm 31.979753577249287 (UI 32), đủ 7/7 ngày 2026-10-02. Có chế độ Core 4 (40 cùng ngày), tùy chỉnh bảy thành phần, lịch sử/CSV cùng ngày UTC và manifest pin hai release cha. Core/proxy cũ bất biến. [ADR-006](docs/ADR-006-extended-experimental-dashboard.md), [kết quả ECO 7](docs/EXTENDED_DASHBOARD.md). Kiểm định mở rộng thăm dò chưa chứng minh cải thiện so với Core.
+
+Arkham được thêm làm đường đối chiếu holders/flow trên dashboard; đã kiểm API docs, giới hạn coverage và probe 403. [Kế hoạch nguồn](docs/ARKHAM_SOURCE.md) và [hồ sơ xin trial cho người dùng](docs/ARKHAM_TRIAL_REQUEST.md) đã chuẩn bị; chưa có key hoặc quyền công khai dẫn xuất và chưa đưa Arkham vào điểm tính.
 
 ## Lệnh thực tế
 

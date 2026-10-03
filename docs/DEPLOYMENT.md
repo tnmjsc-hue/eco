@@ -84,4 +84,6 @@ Nếu các điều kiện chưa đạt, vẫn có thể deploy phần giao diệ
 
 ## 6. Bằng chứng đã có
 
+Từ ADR-006 ngày 2026-10-03, website còn công bố `extended-v0.1.0` Experimental trong `/data/extended/`, mặc định ECO 7, có Core 4 để đối chiếu. Source/rights gate dùng hai release cha Community đã xác minh, giữ hash/version/lịch sử cha. Pipeline `eco.seven` tách khỏi module E4 `eco.extended`. Pointer/status revalidate; history/research/manifest immutable. Verifier deploy và CI kiểm cả Core, proxy và Extended. Cần xác minh exact commit, CI, Pages production và domain/browser trước báo hoàn thành; evidence thực tế ở nhật ký mới trong HANDOFF.
+
 Ngày 2026-10-03, hai commit `906e579` và `0e7cce0` trên `main` đã có Pages deployment `success`/`production`. Cloudflare Custom domains hiển thị `Active` và `SSL enabled` cho `eco.tnmp.cloud`; HTTP GET trên Pages hostname và domain riêng trả 200. Sau commit thứ hai, nội dung mới được thấy trên domain riêng. Đây là bằng chứng cho **quy trình triển khai trang tĩnh hiện tại**, chưa phải kiểm thử cho app React, batch dữ liệu hoặc release chỉ số ETH.

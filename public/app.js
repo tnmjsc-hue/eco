@@ -1,11 +1,12 @@
-import { METRICS, REASONS, customScore, displayScore, scoreColor, dateMinus, validateHistory, exportCSV } from './data-model.js?v=dashboard-1';
+import { METRICS, REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
 import { initProxies, resizeProxies } from './proxies.js?v=proxies-1';
+import { EXTENDED_METRICS, extendedScore, validateExtendedPointer, validateExtended, exportExtendedCSV } from './extended-model.js?v=extended-1';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString('vi-VN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const dateLabel = date => date.split('-').reverse().join('/');
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const state = { rows: [], manifest: null, research: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'core', selected: METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
+const state = { rows: [], manifest: null, coreManifest: null, research: null, extendedResearch: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'extended', selected: EXTENDED_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
 let historyChart, researchChart;
 const baselineNames = { core: 'Core', normalized_E7_only: 'E7 độc lập', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá độc lập' };
 
@@ -28,27 +29,33 @@ async function load() {
   try {
     if (!window.echarts || !window.lucide) throw new Error('Thư viện giao diện chưa tải được. Vui lòng tải lại trang.');
     let status = null;
-    try { status = JSON.parse(new TextDecoder().decode(await getBytes('/data/status.json', true))); } catch { /* Data remains usable when operational status is unavailable. */ }
-    const pointer = JSON.parse(new TextDecoder().decode(await getBytes('/data/latest.json', true)));
-    if (!/^core-[a-f0-9]{20}$/.test(pointer.release_id) || pointer.manifest_url !== `/data/releases/${pointer.release_id}/manifest.json`) throw new Error('Release pointer không hợp lệ.');
-    state.status = status?.project === 'ECO' && status.release_id === pointer.release_id ? status : null;
+    try { status = JSON.parse(new TextDecoder().decode(await getBytes('/data/extended/status.json', true))); } catch { /* Data remains usable when operational status is unavailable. */ }
+    const pointer = JSON.parse(new TextDecoder().decode(await getBytes('/data/extended/latest.json', true)));
+    validateExtendedPointer(pointer);
     state.lastChecked = Date.now();
     if (state.manifest?.release_id === pointer.release_id && state.pointerHash === pointer.manifest_sha256) {
+      state.status = status?.release_id === pointer.release_id ? status : null;
       renderOverview();
       return;
     }
     const manifest = await verify(await getBytes(pointer.manifest_url), pointer.manifest_sha256);
-    if (manifest.release_id !== pointer.release_id || manifest.methodology_version !== 'core-v0.1.0' || manifest.series_type !== 'reconstructed') throw new Error('Manifest không đúng phiên bản.');
-    const base = `/data/releases/${pointer.release_id}/`;
-    const [data, research] = await Promise.all(['history.json', 'research.json'].map(async name => verify(await getBytes(base + name), manifest.files[name])));
-    validateHistory(data, pointer.release_id);
-    const validRows = data.rows.filter(r => r.score !== null);
-    if (data.rows.length !== manifest.rows || validRows.length !== manifest.score_rows || validRows.at(-1)?.date !== manifest.last_valid_score_date || validRows.at(-1)?.score !== manifest.last_valid_score) throw new Error('Manifest và lịch sử không khớp.');
+    if (manifest.release_id !== pointer.release_id) throw new Error('Manifest không đúng release.');
+    const base = `/data/extended/releases/${pointer.release_id}/`;
+    const [data, extendedResearch] = await Promise.all(['history.json', 'research.json'].map(async name => verify(await getBytes(base + name), manifest.files[name])));
+    validateExtended(data, manifest, extendedResearch);
+    const coreParent = manifest.parents.core;
+    const coreManifest = await verify(await getBytes(coreParent.manifest_url), coreParent.manifest_sha256);
+    if (coreManifest.release_id !== coreParent.release_id || coreManifest.methodology_version !== 'core-v0.1.0'
+        || coreManifest.files['history.json'] !== coreParent.history_sha256) throw new Error('Core cha không khớp.');
+    const research = await verify(await getBytes(`/data/releases/${coreParent.release_id}/research.json`), coreManifest.files['research.json']);
     if (research.protocol !== 'core-v0.1.0-protocol-1' || typeof research.success !== 'boolean') throw new Error('Research không đúng protocol.');
     state.rows = data.rows;
     state.manifest = manifest;
+    state.coreManifest = coreManifest;
     state.pointerHash = pointer.manifest_sha256;
     state.research = research;
+    state.extendedResearch = extendedResearch;
+    state.status = status?.release_id === pointer.release_id ? status : null;
     if (state.followLatest || !state.rows.some(r => r.date === state.date)) state.date = manifest.last_valid_score_date;
     $('selected-date').min = state.rows[0].date;
     $('selected-date').max = state.rows.at(-1).date;
@@ -92,22 +99,26 @@ function render() { if (!state.rows.length) return; renderOverview(); renderComp
 function renderOverview() {
   const index = state.rows.findIndex(r => r.date === state.date);
   const row = state.rows[index];
-  const score = state.mode === 'core' ? row.score : customScore(row, state.selected);
-  $('score-label').textContent = state.mode === 'core' ? 'ECO Core' : 'Điểm tùy chỉnh · không phải Core';
+  if (!row) return;
+  const score = state.mode === 'core' ? row.core_score : state.mode === 'extended' ? row.score : extendedScore(row, state.selected);
+  $('score-label').textContent = state.mode === 'core' ? 'ECO Core · 4' : state.mode === 'extended' ? 'ECO 7 · Experimental' : 'Điểm tùy chỉnh · Experimental';
+  $('score-version').textContent = state.mode === 'core' ? 'core-v0.1.0' : 'extended-v0.1.0';
   $('score-value').textContent = displayScore(score);
   $('score-value').title = score === null ? 'Không có điểm hợp lệ' : fmt(score, 4);
   $('score-value').style.color = scoreColor(score);
   $('heat-marker').hidden = score === null;
   $('heat-marker').style.left = `calc(${score ?? 0}% - 1px)`;
-  $('custom-comparison').hidden = state.mode === 'core';
-  $('custom-comparison').textContent = `Core cùng ngày: ${displayScore(row.score)} / 100`;
+  $('custom-comparison').hidden = false;
+  $('custom-comparison').textContent = state.mode === 'core' ? `ECO 7 cùng ngày: ${displayScore(row.score)} / 100` : `Core 4 cùng ngày: ${displayScore(row.core_score)} / 100`;
   $('price-value').textContent = row.price_usd === null ? '—' : `$${fmt(row.price_usd)}`;
   const previousPrice = state.rows[index - 1]?.price_usd;
   const change = row.price_usd !== null && previousPrice ? (row.price_usd / previousPrice - 1) * 100 : null;
   $('price-change').textContent = change === null ? 'Không đủ dữ liệu ngày liền trước' : `${change >= 0 ? '+' : ''}${fmt(change)}% so với ngày trước`;
   $('price-change').className = `daily-change ${change === null ? '' : change >= 0 ? 'positive' : 'negative'}`;
-  $('coverage-value').textContent = `${row.coverage} / 4`;
-  $('coverage-note').textContent = row.coverage === 4 ? 'Đủ thành phần Core' : 'Thiếu thành phần · Core null';
+  const selected = state.mode === 'core' ? METRICS.map(m=>m.id) : state.mode === 'custom' ? state.selected : EXTENDED_METRICS.map(m=>m.id);
+  const available = selected.filter(id=>row.components[id] !== null).length;
+  $('coverage-value').textContent = `${available} / ${selected.length}`;
+  $('coverage-note').textContent = score !== null ? 'Đủ thành phần đã chọn' : 'Thiếu thành phần / tập chọn rỗng';
   $('selected-date').value = state.date;
   $('previous-day').disabled = index === 0;
   $('next-day').disabled = index === state.rows.length - 1;
@@ -117,10 +128,10 @@ function renderOverview() {
   const age = Math.max(0, Math.round((Date.parse(today) - Date.parse(last)) / 86400000));
   const missing = state.manifest.missing_dates.length;
   const pending = state.manifest.pending_dates ?? [];
-  const update = state.status?.daily_update;
+  const update = state.status;
   const labels = { published: 'Đã phát hành ngày mới', revised: 'Đã phát hành revision', unchanged: 'Dữ liệu không đổi', source_pending: 'Đang chờ dữ liệu nguồn', failed: 'Cập nhật lỗi · giữ bản hợp lệ' };
   const timeLabel = value => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false });
-  const schedule = update?.enabled ? `Tự cập nhật lúc 10:17 và kiểm tra lại 14:17 (giờ Việt Nam). ${escape(labels[update.outcome] ?? 'Chờ lần chạy đầu')}${update.last_attempt_at ? ` · lần kiểm tra ${escape(timeLabel(update.last_attempt_at))}` : ''}.` : 'Chưa xác minh trạng thái lịch cập nhật.';
+  const schedule = update ? `Ghép sau batch Core 10:17/14:17 và proxy 10:47/14:47 (giờ Việt Nam). ${escape(labels[update.outcome] ?? 'Chờ lần chạy đầu')}${update.last_attempt_at ? ` · lần kiểm tra ${escape(timeLabel(update.last_attempt_at))}` : ''}.` : 'Chưa xác minh trạng thái lịch cập nhật.';
   const scoreLag = (Date.now() - Date.parse(state.manifest.last_valid_score_date + 'T00:00:00Z') - 86400000) / 3600000;
   const jobLag = update?.last_attempt_at ? (Date.now() - Date.parse(update.last_attempt_at)) / 3600000 : 0;
   const warning = scoreLag > 48 || jobLag > 26 ? ' Dữ liệu chậm; điểm gần nhất vẫn có ngày quan sát gốc.' : '';
@@ -129,20 +140,21 @@ function renderOverview() {
 }
 function renderComponents() {
   const row = state.rows.find(r => r.date === state.date);
-  const active = state.mode === 'core' ? METRICS.map(m => m.id) : state.selected;
-  const total = METRICS.filter(m => active.includes(m.id)).reduce((sum, m) => sum + m.weight, 0);
-  $('component-rows').innerHTML = METRICS.map(m => {
+  const active = state.mode === 'core' ? METRICS.map(m => m.id) : state.mode === 'extended' ? EXTENDED_METRICS.map(m=>m.id) : state.selected;
+  const total = EXTENDED_METRICS.filter(m => active.includes(m.id)).reduce((sum, m) => sum + m.weight, 0);
+  $('component-rows').innerHTML = EXTENDED_METRICS.map(m => {
     const value = row.components[m.id];
-    const reason = REASONS[row.reasons[m.id]] ?? 'Chưa có dữ liệu';
+    const reason = REASONS[row.reasons[m.id]] ?? ({parent_date_unavailable:'Chờ proxy cùng ngày',window_unavailable:'Thiếu dữ liệu cửa sổ',nonpositive_log_argument:'Đối số log không dương'}[row.reasons[m.id]]) ?? row.reasons[m.id] ?? 'Chưa có dữ liệu';
     const weight = active.includes(m.id) && total ? m.weight / total * 100 : 0;
-    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="Chọn ${m.id} ${m.name}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode === 'core' ? 'disabled' : ''}></td><td><span class="metric-id">${m.id}</span><span class="metric-name">${m.name}</span><div class="metric-description">${m.description}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? reason : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 1)}%</td><td><span class="status-pill ${value === null ? 'missing' : 'ready'}" title="${value === null ? reason : 'Đã chuẩn hóa causal q05/q95'}">${value === null ? 'Chưa đủ' : 'Khả dụng'}</span></td></tr>`;
+    const flash = row.source_flags[m.id].includes('flash');
+    return `<tr><td><input type="checkbox" data-metric="${m.id}" aria-label="Chọn ${m.slot} ${m.name}" ${active.includes(m.id) ? 'checked' : ''} ${state.mode !== 'custom' ? 'disabled' : ''}></td><td><span class="metric-id">${m.slot}${m.formula?' · proxy':''}</span><span class="metric-name">${m.name}</span><div class="metric-description">${m.description}${m.limitation?`<br><span title="${escape(m.limitation)}">${escape(m.interpretation)}</span>`:''}</div></td><td><div class="metric-score"><strong style="color:${scoreColor(value)}" title="${value === null ? escape(reason) : fmt(value, 4)}">${displayScore(value)}</strong><div class="mini-meter"><span style="width:${value ?? 0}%;background:${scoreColor(value)}"></span></div></div></td><td>${fmt(weight, 2)}%</td><td><span class="status-pill ${value === null || flash ? 'missing' : 'ready'}" title="${value === null ? escape(reason) : flash ? 'Nhãn sàn và số liệu tạm thời; có thể sửa hồi cứu' : 'Đã chuẩn hóa causal q05/q95'}">${value === null ? 'Chưa đủ' : flash ? 'Tạm thời · flash' : 'Khả dụng'}</span></td></tr>`;
   }).join('');
   $('component-rows').querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
     state.selected = input.checked ? [...state.selected, input.dataset.metric] : state.selected.filter(id => id !== input.dataset.metric);
     render();
   }));
-  $('selection-note').hidden = state.mode === 'core';
-  $('selection-note').textContent = state.selected.length ? `Tùy chỉnh ${state.selected.length}/4 metric. Trọng số gốc được chuẩn hóa trên tập đã chọn; chỉ có điểm khi mọi metric đã chọn đều hợp lệ.` : 'Tập chọn rỗng · không có điểm tùy chỉnh.';
+  $('selection-note').hidden = state.mode !== 'custom';
+  $('selection-note').textContent = state.selected.length ? `Tùy chỉnh ${state.selected.length}/7 metric. Trọng số Extended được chuẩn hóa trên tập đã chọn; chỉ có điểm khi mọi metric đã chọn đều hợp lệ.` : 'Tập chọn rỗng · không có điểm tùy chỉnh.';
 }
 function renderChart() {
   const rows = filteredRows();
@@ -150,14 +162,15 @@ function renderChart() {
   const custom = state.mode === 'custom';
   $('range-label').textContent = `${dateLabel(rows[0].date)} – ${dateLabel(rows.at(-1).date)} · ${rows.length.toLocaleString('vi-VN')} ngày`;
   $('custom-legend').hidden = !custom;
-  const series = [{ name: 'Core', type: 'line', data: rows.map(r => [r.date, r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.7, color: '#087f72' }, itemStyle: { color: '#087f72' }, z: 3 }];
-  if (custom) series.push({ name: 'Tùy chỉnh', type: 'line', data: rows.map(r => [r.date, customScore(r, state.selected)]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.5, color: '#bb790b', type: 'dashed' }, itemStyle: { color: '#bb790b' }, z: 4 });
+  const series = [{ name: 'ECO 7', type: 'line', data: rows.map(r => [r.date, r.score]), showSymbol: false, connectNulls: false, lineStyle: { width: state.mode === 'core'?1.2:1.9, color: '#087f72' }, itemStyle: { color: '#087f72' }, z: 3 },
+    { name: 'Core 4', type: 'line', data: rows.map(r=>[r.date,r.core_score]),showSymbol:false,connectNulls:false,lineStyle:{width:state.mode==='core'?1.9:1.2,color:'#7b62a3',type:'dashed'},itemStyle:{color:'#7b62a3'},z:2 }];
+  if (custom) series.push({ name: 'Tùy chỉnh', type: 'line', data: rows.map(r => [r.date, extendedScore(r, state.selected)]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.5, color: '#bb790b', type: 'dashed' }, itemStyle: { color: '#bb790b' }, z: 4 });
   series.push({ name: 'Giá ETH', type: 'line', yAxisIndex: 1, data: rows.map(r => [r.date, r.price_usd]), showSymbol: false, connectNulls: false, lineStyle: { width: 1.2, color: '#455554', opacity: .7 }, itemStyle: { color: '#455554' }, z: 1 });
   historyChart.setOption({ animation: false, aria: { enabled: true }, grid: { left: mobile ? 34 : 42, right: mobile ? 50 : 66, top: 28, bottom: 48 }, textStyle: { fontFamily: 'Segoe UI, Arial, sans-serif' }, tooltip: { trigger: 'axis', confine: true, backgroundColor: '#fff', borderColor: '#dfe6e5', textStyle: { color: '#232b2b' }, formatter: params => {
     const date = params[0]?.value?.[0];
     if (!date) return '';
     return `<div class="ec-tooltip"><strong>${escape(dateLabel(date))} · UTC</strong>${params.map(p => `${escape(p.seriesName)}<span>${p.value[1] === null ? '—' : p.seriesName === 'Giá ETH' ? '$' + fmt(p.value[1]) : fmt(p.value[1], 2)}</span><br>`).join('')}</div>`;
-  } }, xAxis: { type: 'time', axisLine: { lineStyle: { color: '#dfe6e5' } }, axisTick: { show: false }, axisLabel: { fontSize: 10, color: '#687575', hideOverlap: true }, splitNumber: mobile ? 4 : 8 }, yAxis: [{ type: 'value', min: 0, max: 100, interval: 25, name: 'Core', nameTextStyle: { color: '#087f72', fontSize: 10, align: 'left' }, axisLabel: { color: '#687575', fontSize: 10 }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, { type: $('log-price').checked ? 'log' : 'value', name: 'USD', nameTextStyle: { color: '#687575', fontSize: 10 }, axisLabel: { color: '#687575', fontSize: 9, formatter: value => value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}` }, splitLine: { show: false } }], dataZoom: [{ type: 'inside', filterMode: 'none', zoomOnMouseWheel: false, moveOnMouseWheel: false }, { type: 'slider', height: 13, bottom: 6, borderColor: 'transparent', backgroundColor: '#edf3f0', fillerColor: '#087f7217', handleStyle: { color: '#7ba79c' }, showDetail: false, brushSelect: false }], series }, { notMerge: true });
+  } }, xAxis: { type: 'time', axisLine: { lineStyle: { color: '#dfe6e5' } }, axisTick: { show: false }, axisLabel: { fontSize: 10, color: '#687575', hideOverlap: true }, splitNumber: mobile ? 4 : 8 }, yAxis: [{ type: 'value', min: 0, max: 100, interval: 25, name: 'Điểm', nameTextStyle: { color: '#087f72', fontSize: 10, align: 'left' }, axisLabel: { color: '#687575', fontSize: 10 }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, { type: $('log-price').checked ? 'log' : 'value', name: 'USD', nameTextStyle: { color: '#687575', fontSize: 10 }, axisLabel: { color: '#687575', fontSize: 9, formatter: value => value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}` }, splitLine: { show: false } }], dataZoom: [{ type: 'inside', filterMode: 'none', zoomOnMouseWheel: false, moveOnMouseWheel: false }, { type: 'slider', height: 13, bottom: 6, borderColor: 'transparent', backgroundColor: '#edf3f0', fillerColor: '#087f7217', handleStyle: { color: '#7ba79c' }, showDetail: false, brushSelect: false }], series }, { notMerge: true });
 }
 function renderResearch() {
   const r = state.research;
@@ -180,11 +193,15 @@ function plotResearch() {
 function renderProvenance() {
   const m = state.manifest;
   $('provenance').replaceChildren();
-  for (const [label, value] of [ ['Release', m.release_id], ['Snapshot SHA-256', m.snapshot_sha256], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tải dữ liệu UTC', m.retrieved_at], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.source_rows} ngày nguồn · ${m.score_rows} ngày có Core · bắt đầu ${m.first_score_date}`] ]) {
+  for (const [label, value] of [ ['Release ECO 7', m.release_id], ['Core cha', m.parents.core.release_id], ['Proxy cha', m.parents.proxies.release_id], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.rows} ngày lịch · ${m.score_rows} ngày có ECO 7 · bắt đầu ${m.first_score_date}`] ]) {
     const dt = document.createElement('dt'); dt.textContent = label;
     const dd = document.createElement('dd'); dd.textContent = value;
     $('provenance').append(dt, dd);
   }
+  const r = state.extendedResearch;
+  $('extended-evaluation').textContent = `${r.n.toLocaleString('vi-VN')} ngày đánh giá ${dateLabel(r.start)}–${dateLabel(r.end)}, ${r.positive_labels} nhãn dương. Holdout đã dùng lại; kết quả thăm dò, chưa chứng minh cải thiện dự báo.`;
+  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='extended'?'ECO 7':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='extended'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='extended'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
+  $('extended-research-link').href = `/data/extended/releases/${m.release_id}/research.json`;
 }
 function view(name) {
   state.view = name;
@@ -205,17 +222,18 @@ function start() {
   document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
     state.mode = button.dataset.mode;
     document.querySelectorAll('[data-mode]').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
-    render();
+    if (state.rows.length) render();
   }));
   $('selected-date').addEventListener('change', event => selectDate(event.target.value));
   $('previous-day').addEventListener('click', () => selectDate(dateMinus(state.date, 1)));
   $('next-day').addEventListener('click', () => selectDate(dateMinus(state.date, -1)));
-  $('latest-day').addEventListener('click', () => selectDate(state.manifest.last_valid_score_date, true));
+  $('latest-day').addEventListener('click', () => { if (state.rows.length) selectDate(state.mode==='core'?state.coreManifest.last_valid_score_date:state.manifest.last_valid_score_date, true); });
   $('log-price').addEventListener('change', renderChart);
   $('refresh').addEventListener('click', load);
   $('retry').addEventListener('click', load);
   $('export').addEventListener('click', () => {
-    const csv = exportCSV(filteredRows(), state.selected, state.mode, state.manifest);
+    if (!state.rows.length) return;
+    const csv = exportExtendedCSV(filteredRows(), state.selected, state.mode, state.manifest);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a'); link.href = url; link.download = `eco-${state.manifest.release_id}-${state.mode}-${state.range}.csv`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);

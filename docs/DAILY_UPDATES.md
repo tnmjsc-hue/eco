@@ -40,3 +40,9 @@ Dashboard tự kiểm pointer/status mỗi 15 phút khi tab hiển thị, và kh
 - Pause: disable workflow trong GitHub Actions; nếu dừng dài hạn, cập nhật status/UI `enabled=false` trong một commit có lý do. Không giữ nhãn đang chạy sau khi tắt.
 
 Fault/restore drill toàn chuỗi và shadow >=30 ngày vẫn là O03/O04, chưa nghiệm thu chỉ từ một manual run.
+
+## ECO 7 sau hai batch cha
+
+Theo ADR-006, hai workflow gọi `python -m eco.seven` sau Core/proxy batch thành công, trong cùng concurrency. Artifact riêng `/data/extended/latest.json`, `status.json`, immutable `releases/`; không đổi job/score/version Core hoặc proxy. Join cùng ngày UTC, 7/7 mới có điểm, không forward-fill; ngày mới thiếu proxy giữ last valid ngày gốc và ghi `source_pending`. Parent/hash/rights/regression/computation lỗi giữ pointer tốt cũ và status failed; workflow báo lỗi riêng, không silently thêm proxy vào Core cũ.
+
+Được stage riêng đúng allowlist: Extended status và, khi bước Extended thành công, latest/releases; Node/Python tests và research validators phải đạt trước commit. Deploy verifier kiểm ba bộ pointer/status/manifest/history/research trên domain. Website kiểm cả hash/coverage/weights, cho chọn ECO 7/Core 4/custom, giữ dữ liệu đã xác minh khi refresh lỗi. Arkham chưa có key/rights nên không có batch Arkham hoặc credential mới.

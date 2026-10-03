@@ -7,6 +7,8 @@ const expectedStatus = await readFile('public/data/status.json');
 const expectedPointer = await readFile('public/data/latest.json');
 const expectedProxyPointer = await readFile('public/data/network-proxies/latest.json');
 const expectedProxyStatus = await readFile('public/data/network-proxies/status.json');
+const expectedExtendedPointer = await readFile('public/data/extended/latest.json');
+const expectedExtendedStatus = await readFile('public/data/extended/status.json');
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
 if (!hook || new URL(hook).hostname !== 'api.cloudflare.com') throw new Error('Missing or unexpected Cloudflare deployment hook.');
 try {
@@ -46,8 +48,20 @@ for (let attempt = 0; attempt < 40; attempt++) {
       if (!['history.json','research.json'].includes(file)) throw new Error('Unexpected proxy artifact');
       if (hash(await bytes(`/data/network-proxies/releases/${proxy.release_id}/${file}`)) !== sha) throw new Error('Proxy checksum mismatch');
     }
+    if (hash(await bytes('/data/extended/latest.json')) !== hash(expectedExtendedPointer)
+        || hash(await bytes('/data/extended/status.json')) !== hash(expectedExtendedStatus)) continue;
+    const extended = JSON.parse(expectedExtendedPointer);
+    if (!/^extended-[a-f0-9]{20}$/.test(extended.release_id)
+        || extended.manifest_url !== `/data/extended/releases/${extended.release_id}/manifest.json`) throw new Error('Invalid Extended pointer');
+    const extendedBytes = await bytes(extended.manifest_url);
+    if (hash(extendedBytes) !== extended.manifest_sha256) continue;
+    const extendedManifest = JSON.parse(extendedBytes);
+    for (const [file,sha] of Object.entries(extendedManifest.files)) {
+      if (!['history.json','research.json'].includes(file)) throw new Error('Unexpected Extended artifact');
+      if (hash(await bytes(`/data/extended/releases/${extended.release_id}/${file}`)) !== sha) throw new Error('Extended checksum mismatch');
+    }
     verified = true;
-    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id }));
+    console.log(JSON.stringify({ production_verified: true, release_id: pointer.release_id, proxy_release_id: proxy.release_id, extended_release_id:extended.release_id }));
     break;
   } catch { /* Keep waiting for the complete new deployment, never accept a mixed release. */ }
 }

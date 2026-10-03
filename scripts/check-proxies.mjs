@@ -12,6 +12,7 @@ try {
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('#workspace').waitFor({state:'visible'});
+  await page.locator('[data-mode="core"]').click();
   const coreScore=await page.locator('#score-value').innerText();
   await page.locator('[data-view="extended"]').click();
   await page.locator('#proxy-content').waitFor({state:'visible'});
@@ -62,7 +63,7 @@ try {
   await page.locator('#proxy-date').fill('2020-01-01');await page.locator('#proxy-date').dispatchEvent('change');
   await page.locator('#proxy-refresh').click();await page.waitForFunction(()=>!document.getElementById('proxy-refresh').disabled);
   assert.equal(await page.locator('#proxy-date').inputValue(),'2020-01-01');
-  await page.locator('[data-view="dashboard"]').click();assert.equal(await page.locator('#score-value').innerText(),coreScore);
+  await page.locator('[data-view="dashboard"]').click();await page.locator('[data-mode="core"]').click();assert.equal(await page.locator('#score-value').innerText(),coreScore);
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({url,proxy_release:pointer.release_id,metrics:3,calendar_rows:history.rows.length,
     viewport_checks:[1440,768,390,360],chart_nonblank_pixels:chart.pixels,csv:'366 days verified',
