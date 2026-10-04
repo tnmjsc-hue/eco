@@ -1,7 +1,8 @@
 {
   "incident_id": "OPS-INCIDENT-20261004",
   "investigation_status": "complete",
-  "remediation_status": "todo",
+  "remediation_status": "complete",
+  "resolution_evidence": "cron-recovery-2026-10-04.json",
   "github_checked_at": "2026-10-04T10:00:44.1469512Z",
   "scope": "Kiểm tra email báo cron ETH thất bại; chỉ đọc trạng thái/log và tái hiện cô lập, không phát hành.",
   "remote_main_sha": "3b7af58a3a8e401b82e8131c899e3b8f90925348",
@@ -116,7 +117,7 @@
   "network_followup": {
     "incident_id": "OPS-NETWORK-INCIDENT-20261004",
     "investigation_status": "complete",
-    "remediation_status": "todo",
+    "remediation_status": "complete",
     "run_id": 37194675211,
     "job_id": 111413957196,
     "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37194675211",
@@ -188,7 +189,7 @@
   },
   "next_task": {
     "id": "OPS-CRON-01",
-    "status": "TODO",
+    "status": "DONE",
     "description": "Sửa test fixtures/assertions cho calendars lệch, dùng cùng cutoff ngày cho causal-prefix test và ledger chỉ khi ngày có score; thêm xác minh lag hai hướng và trường hợp latest null. Giữ mọi data/methodology/rights/backup gates; không bỏ test để phát hành. Sau kiểm tra, triển khai bản sửa riêng, dispatch cả hai đường batch và xác minh production. Kiểm tra đường ghi status nếu validation thất bại mà không stage partial releases."
   }
 }

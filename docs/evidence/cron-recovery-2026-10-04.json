@@ -1,0 +1,148 @@
+{
+  "task_id": "OPS-CRON-01",
+  "status": "DONE",
+  "fixed_commit": "dd100ca4f97978fb14cd45ea660135e28b3a9b9a",
+  "data_commit": "1f5583b495d93bef4d447efeb0cc77b99f4ae3d5",
+  "local_validation": {
+    "python_tests": 104,
+    "python_seconds": 136.647,
+    "node_tests": 31,
+    "frozen_protocols": "PASS",
+    "vendor_build": "PASS",
+    "git_diff_check": "PASS",
+    "secret_pattern_review": "PASS"
+  },
+  "ci": {
+    "run_id": 37196740000,
+    "job_id": 111420097324,
+    "conclusion": "success",
+    "python_tests": 104,
+    "python_seconds": 78.206,
+    "node_tests": 31,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37196740000"
+  },
+  "core_recovery": {
+    "run_id": 37196758845,
+    "job_id": 111420156367,
+    "conclusion": "success",
+    "python_tests": 104,
+    "python_seconds": 89.87,
+    "node_tests": 31,
+    "production_verified": true,
+    "outcome": "source_pending",
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37196758845",
+    "bot_commit": "af46407664d7a11643b06ebe6500803cf6950996",
+    "pages_deployment": "0b697836-f3b6-4422-8afe-ad01fb165e99"
+  },
+  "network_recovery": {
+    "run_id": 37196999164,
+    "job_id": 111420847188,
+    "conclusion": "success",
+    "python_tests": 104,
+    "python_seconds": 88.202,
+    "node_tests": 31,
+    "production_verified": true,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37196999164",
+    "bot_commit": "1f5583b495d93bef4d447efeb0cc77b99f4ae3d5",
+    "pages_deployment": "61d997e9-485e-447f-85bc-741a253c4aa4"
+  },
+  "private_backup_proofs": {
+    "core": {
+      "canonical_sha256": "26e4dccef71e38f4b6d932fe7e99e5dfe64934e107e7fe0a60b454a1a1077b05",
+      "file_count": 7,
+      "objects_readback_verified": true
+    },
+    "proxies": {
+      "canonical_sha256": "755f7cfe93ed257ebdcee6280abe12300b6b69358083658445570628bcf06d0b",
+      "file_count": 8,
+      "objects_readback_verified": true
+    }
+  },
+  "production": {
+    "checked_at": "2026-10-04T11:00:17.394Z",
+    "hosts": [
+      {
+        "host": "https://eco.tnmp.cloud",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      },
+      {
+        "host": "https://eco-tnmp.pages.dev",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      }
+    ],
+    "releases": {
+      "core": {
+        "release_id": "core-8d35bd24f354eec6dfd9",
+        "methodology_version": "core-v0.1.0",
+        "last_valid_score_date": "2026-10-03",
+        "last_valid_score": 40.87062234278811,
+        "last_observation_date": "2026-10-03"
+      },
+      "network-proxies": {
+        "release_id": "proxy-daea9b5ae7269d5b8474",
+        "methodology_version": "network-proxies-v0.1.0",
+        "last_observation_date": "2026-10-03"
+      },
+      "extended": {
+        "release_id": "extended-6a9e1a7cd88758e4e2e0",
+        "methodology_version": "extended-v0.1.0",
+        "last_valid_score_date": "2026-10-03",
+        "last_valid_score": 32.717185535856125,
+        "last_observation_date": "2026-10-03"
+      },
+      "diagnostics": {
+        "release_id": "diagnostic-85fd8ae0d72702e62e11",
+        "methodology_version": "diagnostics-v0.1.0",
+        "last_observation_date": "2026-10-03"
+      },
+      "core-v2": {
+        "release_id": "core10-10af0e796d4bcc31e4bf",
+        "methodology_version": "core-v0.2.0",
+        "last_valid_score_date": "2026-10-03",
+        "last_valid_score": 38.34472418045449,
+        "last_observation_date": "2026-10-03"
+      }
+    }
+  },
+  "browser_qa": {
+    "url": "https://eco.tnmp.cloud/",
+    "language": "vi",
+    "viewport_widths": [
+      1440,
+      768,
+      390,
+      360
+    ],
+    "pending_tail": "PASS",
+    "complete_tail": "PASS",
+    "csv": "PASS",
+    "keyboard": "PASS",
+    "network_failure_retention": "PASS",
+    "auto_refresh": "PASS",
+    "page_errors": 0
+  },
+  "immutability": [
+    {
+      "reference_commit": "3b7af58",
+      "files_verified": 34,
+      "unchanged": true
+    },
+    {
+      "reference_commit": "af46407664d7a11643b06ebe6500803cf6950996",
+      "files_verified": 51,
+      "unchanged": true
+    }
+  ],
+  "engine_and_config_unchanged": {
+    "files_verified": 24,
+    "unchanged": true
+  },
+  "unpublished_work_preserved": "Ba commit WLAB trong workspace gốc giữ nguyên, không push cùng bản sửa.",
+  "limitations": [
+    "Hai lượt khôi phục là workflow_dispatch; lịch vẫn giữ nguyên, chưa quan sát lượt cron tương lai sau sửa.",
+    "Public status khi validation fail là follow-up vận hành riêng; không nới gate hoặc stage partial release.",
+    "Shadow 30 ngày/restore drill/incremental vẫn chưa nghiệm thu."
+  ]
+}
