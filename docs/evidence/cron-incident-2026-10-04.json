@@ -1,0 +1,194 @@
+{
+  "incident_id": "OPS-INCIDENT-20261004",
+  "investigation_status": "complete",
+  "remediation_status": "todo",
+  "github_checked_at": "2026-10-04T10:00:44.1469512Z",
+  "scope": "Kiểm tra email báo cron ETH thất bại; chỉ đọc trạng thái/log và tái hiện cô lập, không phát hành.",
+  "remote_main_sha": "3b7af58a3a8e401b82e8131c899e3b8f90925348",
+  "local_head_sha_short": "59a64ba",
+  "local_unpushed_commits_at_start": 3,
+  "run": {
+    "id": 37193405420,
+    "job_id": 111410160532,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37193405420",
+    "workflow": ".github/workflows/daily-update.yml",
+    "event": "schedule",
+    "created_at": "2026-10-04T09:49:59Z",
+    "completed_at": "2026-10-04T09:52:17Z",
+    "created_at_vi": "2026-10-04T16:49:59+07:00",
+    "conclusion": "failure",
+    "failed_step": "Validate before publication",
+    "failed_command": "python -m unittest discover -s tests -v",
+    "tests_run": 102,
+    "test_failures": 2,
+    "test_errors": 3,
+    "test_duration_seconds": 56.207,
+    "commit_step": "skipped",
+    "deploy_step": "skipped"
+  },
+  "batch_log_metadata": {
+    "private_backup_verified": true,
+    "private_backup_objects": 7,
+    "core_candidate_release_id": "core-e11d2040eebadf756463",
+    "core_last_valid_score_date": "2026-10-03",
+    "core_last_valid_score": 40.87062234278811,
+    "extended_candidate_release_id": "extended-008486ee63656ccb3d2b",
+    "extended_outcome": "source_pending",
+    "diagnostic_candidate_release_id": "diagnostic-08353a905df499a336e2",
+    "diagnostic_outcome": "revised",
+    "nupl_last_valid_date": "2026-10-03",
+    "supply_last_valid_date": "2026-10-02",
+    "exchange_last_valid_date": "2026-10-02",
+    "core_ten_candidate_release_id": "core10-306f58eb760cef1de686",
+    "core_ten_outcome": "source_pending",
+    "candidate_reached_production": false
+  },
+  "failed_tests": [
+    {
+      "file": "tests/test_core_ten.py",
+      "test": "test_engine_revision_preserves_previous_release_and_first_publication",
+      "error": "FileNotFoundError: publications/2026-10-03.json",
+      "cause": "Test tìm ledger của dòng cuối dù ngày đó chưa có điểm đủ 10 thành phần."
+    },
+    {
+      "file": "tests/test_core_ten.py",
+      "test": "test_publication_idempotency_failure_and_ledgers_are_immutable",
+      "error": "FileNotFoundError: publications/2026-10-03.json",
+      "cause": "Cùng giả định ledger luôn tồn tại cho ngày cuối thay vì chỉ ngày có điểm hợp lệ."
+    },
+    {
+      "file": "tests/test_core_ten.py",
+      "test": "test_real_join_preserves_all_legacy_scores_and_flags",
+      "error": "AssertionError: 5 != 10",
+      "cause": "Test mặc định coverage cuối là 10; ngày Core tiến trước network chỉ có 4 Core + E2."
+    },
+    {
+      "file": "tests/test_seven.py",
+      "test": "test_same_day_real_join_matches_formula_and_keeps_core",
+      "error": "TypeError: unsupported operand type(s) for +: int and NoneType",
+      "cause": "Test cộng các proxy null trên dòng cuối chưa có ngày tương ứng ở nguồn network."
+    },
+    {
+      "file": "tests/test_seven.py",
+      "test": "test_causal_join_prefix_ignores_future_shock",
+      "error": "AssertionError: differing prefix element 4080",
+      "cause": "Test bỏ một dòng cuối mỗi parent và shock cuối proxy; khi calendar lệch, dòng proxy đó vẫn thuộc prefix Core."
+    }
+  ],
+  "workflow_state": {
+    "core": "active",
+    "network": "active",
+    "core_runs_total": 5,
+    "network_runs_total": 4,
+    "network_latest_run_id": 37134106123,
+    "network_latest_event": "workflow_dispatch",
+    "network_latest_conclusion": "success",
+    "network_latest_created_at": "2026-10-03T15:41:02Z",
+    "network_scheduled_runs_on_2026_10_04_observed": 0,
+    "note": "Không kết luận Coin Metrics thiếu dữ liệu network ngày 03/10; workflow Core dùng release network cũ và chưa quan sát cron network hôm nay."
+  },
+  "isolated_reproduction": {
+    "type": "synthetic_date_advance_using_copies_of_existing_public_rows",
+    "healthy_existing_seven_tests_passed": 2,
+    "lagged_existing_seven_tests_reproduced": ["TypeError", "AssertionError"],
+    "lagged_extended_coverage": 4,
+    "lagged_core_ten_coverage": 5,
+    "lagged_core_ten_score": null,
+    "last_valid_core_ten_date": "2026-10-02",
+    "synthetic_values_published": false,
+    "repository_public_data_modified": false
+  },
+  "production": {
+    "checked_at": "2026-10-04T09:59:29.509Z",
+    "hosts": [
+      {"host": "https://eco.tnmp.cloud", "verified_files": 26, "all_sha256_match_workspace": true},
+      {"host": "https://eco-tnmp.pages.dev", "verified_files": 26, "all_sha256_match_workspace": true}
+    ],
+    "checked_scope": "HTML + 5 status + 5 pointers + 5 manifests + 10 history/research; HTTP 200 và exact SHA-256.",
+    "core_ten_release_id": "core10-34bb9fdc3f68092404ec",
+    "methodology_version": "core-v0.2.0",
+    "last_valid_score_date": "2026-10-02",
+    "last_valid_score": 37.71262149722105,
+    "display_score": 38,
+    "published_status_reflects_failed_run": false,
+    "status_note": "Validation lỗi làm commit bị skip; status công khai vẫn là lượt thành công 03/10, không phải bằng chứng cron hôm nay thành công."
+  },
+  "network_followup": {
+    "incident_id": "OPS-NETWORK-INCIDENT-20261004",
+    "investigation_status": "complete",
+    "remediation_status": "todo",
+    "run_id": 37194675211,
+    "job_id": 111413957196,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37194675211",
+    "event": "schedule",
+    "head_sha": "3b7af58a3a8e401b82e8131c899e3b8f90925348",
+    "created_at": "2026-10-04T10:13:32Z",
+    "job_started_at": "2026-10-04T10:13:35Z",
+    "job_completed_at": "2026-10-04T10:15:58Z",
+    "job_duration_seconds": 143,
+    "run_completed_at": "2026-10-04T10:15:59Z",
+    "conclusion": "failure",
+    "source_backup_step": "success",
+    "extended_step": "success",
+    "diagnostics_step": "success",
+    "core_ten_step": "success",
+    "failed_step": "Verify data and source contracts",
+    "failed_command": "python -m unittest discover -s tests -v",
+    "tests_run": 102,
+    "test_failures": 3,
+    "test_errors": 0,
+    "test_duration_seconds": 67.935,
+    "commit_step": "skipped",
+    "deploy_step": "skipped",
+    "candidate_proxy_release_id": "proxy-0740c1aa626030a7e992",
+    "candidate_extended_release_id": "extended-a24367bd80e46adee91d",
+    "candidate_diagnostic_release_id": "diagnostic-59445040f9a2352bed2d",
+    "candidate_core_ten_release_id": "core10-f199d42527f4b75ca202",
+    "core_last_date": "2026-10-02",
+    "network_last_date": "2026-10-03",
+    "failed_tests": [
+      {
+        "file": "tests/test_core_ten.py",
+        "test": "test_real_join_preserves_all_legacy_scores_and_flags",
+        "error": "AssertionError: -208715.0385640096 != -243124.7014747318",
+        "cause": "Test so Core10 tail ngày 02/10 với diagnostic tail ngày 03/10 thay vì cùng ngày."
+      },
+      {
+        "file": "tests/test_seven.py",
+        "test": "test_bad_calendar_and_components_rejected",
+        "error": "AssertionError: ValueError not raised",
+        "cause": "Test đặt boolean ở proxy tail ngày 03/10 ngoài calendar Core, nên join không dùng dòng lỗi đó."
+      },
+      {
+        "file": "tests/test_seven.py",
+        "test": "test_source_lag_never_forward_fills",
+        "error": "AssertionError: 7 != 4",
+        "cause": "Bỏ một dòng cuối proxy chỉ đưa calendar về 02/10, vẫn đủ dữ liệu cho Core tail; test chưa tạo lag thật."
+      }
+    ],
+    "isolated_reproduction": {
+      "type": "synthetic_proxy_calendar_advance_by_one_day_using_in_memory_copies",
+      "healthy_existing_seven_tests_passed": 2,
+      "same_seven_tests_after_proxy_advances": ["ValueError not raised", "7 != 4"],
+      "repository_public_data_modified": false,
+      "synthetic_values_published": false
+    },
+    "production_recheck": {
+      "checked_at": "2026-10-04T10:30:50.8611171Z",
+      "hosts": ["https://eco.tnmp.cloud", "https://eco-tnmp.pages.dev"],
+      "files_per_host": 4,
+      "scope": "Core10/network latest.json và status.json, HTTP200; kiểm release ID/outcome/time, không chạy lại full hashes trong lượt bổ sung.",
+      "core_ten_release_id": "core10-34bb9fdc3f68092404ec",
+      "network_release_id": "proxy-f9edb79c4231efbbb9fe",
+      "core_ten_status_last_attempt_at": "2026-10-03T22:45:00.620431+07:00",
+      "network_status_last_attempt_at": "2026-10-03T22:44:46.107775+07:00",
+      "candidate_reached_production": false
+    },
+    "note": "Lượt network xuất hiện sau lần GET API 10:00:44Z ở phần workflow_state; không phủ nhận bằng chứng lịch sử rằng chưa có lượt network ở thời điểm kiểm trước. Không phải cùng năm test lỗi của Core; cả hai hướng calendar lệch cần được sửa."
+  },
+  "next_task": {
+    "id": "OPS-CRON-01",
+    "status": "TODO",
+    "description": "Sửa test fixtures/assertions cho calendars lệch, dùng cùng cutoff ngày cho causal-prefix test và ledger chỉ khi ngày có score; thêm xác minh lag hai hướng và trường hợp latest null. Giữ mọi data/methodology/rights/backup gates; không bỏ test để phát hành. Sau kiểm tra, triển khai bản sửa riêng, dispatch cả hai đường batch và xác minh production. Kiểm tra đường ghi status nếu validation thất bại mà không stage partial releases."
+  }
+}

@@ -27,26 +27,45 @@ class ExtendedTests(unittest.TestCase):
 
     def test_same_day_real_join_matches_formula_and_keeps_core(self):
         rows = join(self.core,self.proxy)
-        last = rows[-1]
+        last = next(r for r in reversed(rows) if r["score"] is not None)
         expected = .75*last["core_score"]+.25*sum(last["components"][m] for m in IDS[4:])/3
         self.assertAlmostEqual(expected,last["score"],places=12)
         self.assertEqual(last["coverage"],7)
-        self.assertEqual(last["components"]["exchange_share"],0)
-        self.assertIn("flash",last["source_flags"]["exchange_share"])
+        proxy = next(r for r in self.proxy if r["date"] == last["date"])
+        self.assertEqual(last["components"]["exchange_share"],proxy["metrics"]["exchange_share"]["score"])
+        self.assertEqual(last["source_flags"]["exchange_share"],proxy["metrics"]["exchange_share"]["source_flags"])
         self.assertEqual([r["core_score"] for r in rows],[r["score"] for r in self.core])
 
     def test_source_lag_never_forward_fills(self):
-        row = join(self.core,self.proxy[:-1])[-1]
-        self.assertEqual(row["coverage"],4)
+        # Remove the Core tail date itself, even when proxies run further ahead.
+        row = join(self.core,[r for r in self.proxy if r["date"] < self.core[-1]["date"]])[-1]
+        self.assertEqual(row["coverage"],sum(v is not None for v in self.core[-1]["components"].values()))
         self.assertIsNone(row["score"])
         self.assertEqual(row["core_score"],self.core[-1]["score"])
         self.assertTrue(all(row["reasons"][m]=="parent_date_unavailable" for m in IDS[4:]))
 
     def test_causal_join_prefix_ignores_future_shock(self):
-        prefix = join(self.core[:-1],self.proxy[:-1])
+        common = min(self.core[-1]["date"],self.proxy[-1]["date"])
+        cutoff = next(r["date"] for r in reversed(self.core) if r["date"] < common)
+        prefix = join([r for r in self.core if r["date"] <= cutoff],
+                      [r for r in self.proxy if r["date"] <= cutoff])
         future = copy.deepcopy(self.proxy)
-        future[-1]["metrics"]["exchange_share"]["score"] = 100
-        self.assertEqual(prefix,join(self.core,future)[:-1])
+        next(r for r in future if r["date"] == common)["metrics"]["exchange_share"]["score"] = 100
+        self.assertEqual(prefix,[r for r in join(self.core,future) if r["date"] <= cutoff])
+
+    def test_join_handles_both_parent_calendar_directions(self):
+        complete = next(r for r in reversed(join(self.core,self.proxy)) if r["score"] is not None)
+        core = [r for r in self.core if r["date"] <= complete["date"]]
+        proxies = [r for r in self.proxy if r["date"] <= complete["date"]]
+        with self.subTest(ahead="core"):
+            rows = join(core,proxies[:-1])
+            self.assertEqual(rows[-1]["coverage"],4)
+            self.assertIsNone(rows[-1]["score"])
+            self.assertEqual(rows[-1]["core_score"],core[-1]["score"])
+            self.assertTrue(all(rows[-1]["components"][m] is None for m in IDS[4:]))
+            self.assertEqual(rows[:-1],join(core[:-1],proxies[:-1]))
+        with self.subTest(ahead="proxies"):
+            self.assertEqual(join(core[:-1],proxies),join(core[:-1],proxies[:-1]))
 
     def test_custom_empty_duplicates_missing_and_real_zero(self):
         r = dict.fromkeys(IDS,0)
@@ -62,7 +81,8 @@ class ExtendedTests(unittest.TestCase):
         for rows in (self.proxy[1:10]+self.proxy[1:2],self.proxy[:3]+self.proxy[4:10]):
             with self.assertRaises(ValueError): join(self.core,rows)
         invalid = copy.deepcopy(self.proxy)
-        invalid[-1]["metrics"]["address_activity"]["score"] = True
+        common = min(self.core[-1]["date"],self.proxy[-1]["date"])
+        next(r for r in invalid if r["date"] == common)["metrics"]["address_activity"]["score"] = True
         with self.assertRaises(ValueError): join(self.core,invalid)
 
     def copy_parents(self, public):

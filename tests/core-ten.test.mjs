@@ -8,6 +8,7 @@ const read=async path=>JSON.parse(await readFile('public'+path,'utf8'));
 const pointer=await read('/data/core-v2/latest.json'), manifest=await read(pointer.manifest_url);
 const base=pointer.manifest_url.replace('manifest.json','');
 const history=await read(base+'history.json'), research=await read(base+'research.json');
+const lastValidIndex=history.rows.findLastIndex(r=>r.score!==null);
 const parents=Object.fromEntries(await Promise.all(Object.entries(manifest.parents).map(async ([kind,ref])=>[kind,await read(ref.manifest_url)])));
 
 test('Core 10 frozen protocol, all hashes and original information-family budgets', async()=>{
@@ -20,7 +21,8 @@ test('Core 10 frozen protocol, all hashes and original information-family budget
   assert.equal(CORE_METRICS.reduce((s,m)=>s+m.weight,0),1);
   assert.equal(CORE_METRICS.filter(m=>['E7','E2'].includes(m.id)).reduce((s,m)=>s+m.weight,0),.375);
   assert.equal(CORE_METRICS.filter(m=>['exchange_share','exchange_balance_pressure'].includes(m.id)).reduce((s,m)=>s+m.weight,0),.0625);
-  assert.equal(manifest.last_valid_score,coreScore(history.rows.at(-1)));
+  assert.equal(history.rows[lastValidIndex].date,manifest.last_valid_score_date);
+  assert.equal(manifest.last_valid_score,coreScore(history.rows[lastValidIndex]));
   assert.ok(Math.abs(research.comparisons.core.ap_delta-(research.statistics.core_ten.average_precision-research.statistics.core.average_precision))<1e-12);
 });
 
@@ -53,7 +55,7 @@ test('Malformed weights, methodology, feature units/signed raw and lineage are r
     const m=structuredClone(manifest);mutate(m);assert.throws(()=>validateCore(history,m,research));
   }
   for(const mutate of [r=>r.components.E2=true,r=>r.new_features.E2.input_unit='USD',r=>r.new_features.supply_scarcity.raw=-1,r=>r.coverage=9,r=>r.extended_score=50]) {
-    const h=structuredClone(history);mutate(h.rows.at(-1));assert.throws(()=>validateCore(h,manifest,research));
+    const h=structuredClone(history);mutate(h.rows[lastValidIndex]);assert.throws(()=>validateCore(h,manifest,research));
   }
   const p=structuredClone(parents);p.diagnostics.parents.core.history_sha256='0'.repeat(64);
   assert.throws(()=>validateCoreParents(manifest,p));
@@ -62,11 +64,26 @@ test('Malformed weights, methodology, feature units/signed raw and lineage are r
 });
 
 test('CSV includes all ten scores, signed units and lineage; empty/missing custom selection stays null',()=>{
-  const row=history.rows.at(-1);
+  const row=history.rows[lastValidIndex];
   assert.equal(coreScore(row,[]),null);assert.equal(coreScore(row,['E2','E2']),null);
   assert.equal(coreScore(row,['E2']),row.components.E2);assert.equal(coreScore(history.rows[0]),null);
   const csv=exportCoreCSV([row],['E2','supply_scarcity'],'custom',manifest);
   for(const term of [CORE_VERSION,'CC BY-NC 4.0','core_ten_score','E2_input_value','supply_scarcity_input_unit','exchange_balance_pressure_oriented_raw',String(row.new_features.exchange_balance_pressure.input_value),manifest.parents.diagnostics.release_id]) assert.ok(csv.includes(term),term);
   for(const term of ['extended_score','core_four_score']) assert.ok(!csv.split('\r\n')[0].includes(term),term);
   assert.equal(csv.split('\r\n').length,2);
+});
+
+test('Missing tail inputs keep the composite null and CSV cells blank',()=>{
+  const row=structuredClone(history.rows[lastValidIndex]);
+  for(const id of ['supply_scarcity','exchange_balance_pressure']) {
+    row.components[id]=null;row.reasons[id]='parent_date_unavailable';
+    Object.assign(row.new_features[id],{input_value:null,raw:null,score:null,reason:'parent_date_unavailable'});
+  }
+  row.score=null;row.coverage=8;
+  assert.equal(coreScore(row),null);
+  const csv=exportCoreCSV([row],[], 'core',manifest), [header,line]=csv.split('\r\n');
+  const cells=line.slice(1,-1).split('","'), columns=header.replace(/^\uFEFF/,'').split(',');
+  for(const column of ['core_ten_score','supply_scarcity','exchange_balance_pressure','exchange_balance_pressure_input_value'])
+    assert.equal(cells[columns.indexOf(column)],'');
+  assert.equal(cells[columns.indexOf('exchange_balance_pressure_reason')],'parent_date_unavailable');
 });

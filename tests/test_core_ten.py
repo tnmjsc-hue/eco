@@ -9,6 +9,8 @@ from eco import core_ten as ten
 from eco.pipeline import ROOT, read_json, encode, digest
 from eco import seven
 
+FROZEN_COMPLETE_RELEASE = "core10-34bb9fdc3f68092404ec"
+
 
 def current(public, prefix):
     pointer = read_json(public/"data"/prefix/"latest.json")
@@ -31,11 +33,18 @@ class CoreTenTests(unittest.TestCase):
     def setUpClass(cls):
         cls.rows, cls.parents, cls.proofs = ten.expected(ROOT/"public")
 
-    def copy_parents(self, public):
+    def copy_parents(self, public, *, complete_fixture=False):
+        # Immutable ETH fixture for ledger tests that require a complete last day.
+        refs = read_json(ROOT/"public/data/core-v2/releases"/FROZEN_COMPLETE_RELEASE/"manifest.json")["parents"] if complete_fixture else None
         for prefix in ("", "network-proxies", "extended", "diagnostics"):
             root = public/"data"/prefix; root.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT/"public/data"/prefix/"latest.json", root/"latest.json")
-            source = current(ROOT/"public", prefix)
+            if refs is None:
+                shutil.copyfile(ROOT/"public/data"/prefix/"latest.json", root/"latest.json")
+                source = current(ROOT/"public", prefix)
+            else:
+                ref = refs[{"": "core", "network-proxies": "proxies", "extended": "extended", "diagnostics": "diagnostics"}[prefix]]
+                (root/"latest.json").write_bytes(encode({"schema_version": "1.0.0", **{k: ref[k] for k in ("release_id", "methodology_version", "manifest_url", "manifest_sha256")}}))
+                source = ROOT/"public"/ref["manifest_url"].lstrip("/").replace("/manifest.json", "")
             shutil.copytree(source, root/"releases"/source.name)
 
     def rehash(self, public, prefix, manifest):
@@ -103,11 +112,14 @@ class CoreTenTests(unittest.TestCase):
         public = ROOT/"public"; old = read_json(current(public, "extended")/"history.json")["rows"]
         self.assertEqual([r["extended_score"] for r in self.rows], [r["score"] for r in old])
         self.assertEqual([r["core_score"] for r in self.rows], [r["core_score"] for r in old])
-        self.assertEqual(self.rows[-1]["coverage"], 10)
-        self.assertAlmostEqual(self.rows[-1]["score"], sum(self.rows[-1]["components"][m]*ten.WEIGHTS[m] for m in ten.IDS), places=10)
-        diagnostic = read_json(current(public, "diagnostics")/"history.json")["rows"][-1]
-        self.assertEqual(self.rows[-1]["new_features"]["exchange_balance_pressure"]["input_value"], diagnostic["metrics"]["exchange_balance_change_30d"]["value"])
-        self.assertIn("flash", self.rows[-1]["source_flags"]["exchange_balance_pressure"])
+        last = next(r for r in reversed(self.rows) if r["score"] is not None)
+        self.assertEqual(last["coverage"], 10)
+        self.assertAlmostEqual(last["score"], sum(last["components"][m]*ten.WEIGHTS[m] for m in ten.IDS), places=10)
+        diagnostic = {r["date"]: r for r in read_json(current(public, "diagnostics")/"history.json")["rows"]}
+        for row in self.rows:
+            item = diagnostic[row["date"]]["metrics"]["exchange_balance_change_30d"]
+            self.assertEqual(row["new_features"]["exchange_balance_pressure"]["input_value"], item["value"])
+            self.assertEqual(row["source_flags"]["exchange_balance_pressure"], item["source_flags"])
         self.assertIsNone(self.rows[0]["score"])
 
     def test_custom_selection_does_not_fill_missing_or_duplicate(self):
@@ -146,11 +158,11 @@ class CoreTenTests(unittest.TestCase):
 
     def test_publication_idempotency_failure_and_ledgers_are_immutable(self):
         with tempfile.TemporaryDirectory() as tmp:
-            public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public)
+            public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public, complete_fixture=True)
             folder = ten.build(public, output); self.assertEqual(ten.publish(folder, public), "published")
             pointer_path = public/"data/core-v2/latest.json"; before = pointer_path.read_bytes()
             published = current(public, "core-v2"); hashes = {f.name: digest(f.read_bytes()) for f in published.iterdir()}
-            ledger = public/"data/core-v2/publications"/(self.rows[-1]["date"]+".json"); ledger_bytes = ledger.read_bytes()
+            ledger = public/"data/core-v2/publications"/(read_json(folder/"manifest.json")["last_valid_score_date"]+".json"); ledger_bytes = ledger.read_bytes()
             self.assertEqual(ten.publish(folder, public), "unchanged"); self.assertEqual(pointer_path.read_bytes(), before)
             self.assertEqual(set(hashes), {"manifest.json", "research.json", "history.json"})
             self.assertEqual(len(list(ledger.parent.iterdir())), 1)
@@ -171,10 +183,10 @@ class CoreTenTests(unittest.TestCase):
 
     def test_engine_revision_preserves_previous_release_and_first_publication(self):
         with tempfile.TemporaryDirectory() as tmp:
-            public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public)
+            public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public, complete_fixture=True)
             folder = ten.build(public, output); ten.publish(folder, public)
             old = current(public, "core-v2"); original = {f.name: f.read_bytes() for f in old.iterdir()}
-            ledger = public/"data/core-v2/publications"/(self.rows[-1]["date"]+".json"); ledger_bytes = ledger.read_bytes()
+            ledger = public/"data/core-v2/publications"/(read_json(folder/"manifest.json")["last_valid_score_date"]+".json"); ledger_bytes = ledger.read_bytes()
             with patch("eco.core_ten.engine_hash", return_value="1"*64):
                 revised = ten.build(public, output); self.assertEqual(ten.publish(revised, public), "revised")
             new = current(public, "core-v2"); self.assertNotEqual(new.name, old.name)
@@ -183,13 +195,42 @@ class CoreTenTests(unittest.TestCase):
             self.assertEqual({f.name: f.read_bytes() for f in old.iterdir()}, original)
             self.assertEqual(ledger.read_bytes(), ledger_bytes)
 
+    def test_pending_tail_preserves_valid_score_and_first_publication(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public, complete_fixture=True)
+            folder = ten.build(public, output); ten.publish(folder, public)
+            rows, parents, proofs = ten.expected(public)
+            original = current(public, "core-v2")
+            old_bytes = {f.name: f.read_bytes() for f in original.iterdir()}
+            ledger = public/"data/core-v2/publications"/(rows[-1]["date"]+".json")
+            ledger_bytes = ledger.read_bytes()
+            pending = copy.deepcopy(rows[-1])
+            pending["date"] = (date.fromisoformat(pending["date"])+timedelta(days=1)).isoformat()
+            pending.update(score=None, extended_score=None, coverage=5, source_row_present=False, proxy_row_present=False)
+            for metric in ("exchange_share", "address_activity", "value_per_transfer", "supply_scarcity", "exchange_balance_pressure"):
+                pending["components"][metric] = None; pending["reasons"][metric] = "parent_date_unavailable"
+            for metric in ("supply_scarcity", "exchange_balance_pressure"):
+                pending["new_features"][metric].update(input_value=None, raw=None, score=None, reason="parent_date_unavailable")
+            with patch("eco.core_ten.engine_hash", return_value="3"*64), patch("eco.core_ten.expected", return_value=(rows+[pending], parents, proofs)):
+                result = ten.daily(public, output)
+            self.assertEqual(result["outcome"], "source_pending")
+            manifest = read_json(current(public, "core-v2")/"manifest.json")
+            self.assertEqual(manifest["last_valid_score_date"], rows[-1]["date"])
+            self.assertEqual(manifest["last_valid_score"], rows[-1]["score"])
+            self.assertEqual(manifest["last_observation_date"], pending["date"])
+            self.assertFalse((ledger.parent/(pending["date"]+".json")).exists())
+            self.assertEqual(ledger.read_bytes(), ledger_bytes)
+            self.assertEqual({f.name: f.read_bytes() for f in original.iterdir()}, old_bytes)
+            self.assertEqual(len(list(ledger.parent.iterdir())), 1)
+
     def test_coverage_regression_rejects_release_and_keeps_pointer(self):
         with tempfile.TemporaryDirectory() as tmp:
             public = Path(tmp)/"public"; output = Path(tmp)/"private"; self.copy_parents(public)
             folder = ten.build(public, output); ten.publish(folder, public)
             before = (public/"data/core-v2/latest.json").read_bytes(); lost = copy.deepcopy(self.rows)
-            lost[-1]["components"]["E2"] = None; lost[-1]["reasons"]["E2"] = "missing_input"; lost[-1]["score"] = None; lost[-1]["coverage"] = 9
-            lost[-1]["new_features"]["E2"].update(input_value=None, raw=None, score=None, reason="missing_input")
+            row = next(r for r in reversed(lost) if r["score"] is not None)
+            row["components"]["E2"] = None; row["reasons"]["E2"] = "missing_input"; row["score"] = None; row["coverage"] = 9
+            row["new_features"]["E2"].update(input_value=None, raw=None, score=None, reason="missing_input")
             with patch("eco.core_ten.engine_hash", return_value="2"*64), patch("eco.core_ten.expected", return_value=(lost, self.parents, self.proofs)):
                 candidate = ten.build(public, output)
                 with self.assertRaisesRegex(ValueError, "lost previously usable components"): ten.publish(candidate, public)

@@ -9,6 +9,7 @@ const base = `public/data/extended/releases/${pointer.release_id}/`;
 const mb = await readFile(base+'manifest.json'), manifest = JSON.parse(mb);
 const hb = await readFile(base+'history.json'), history = JSON.parse(hb);
 const rb = await readFile(base+'research.json'), research = JSON.parse(rb);
+const lastValidIndex=history.rows.findLastIndex(r=>r.score!==null);
 test('seven-component release hashes, frozen weights and parent lineage', async()=>{
   validateExtendedPointer(pointer); validateExtended(history,manifest,research);
   assert.equal(sha(mb),pointer.manifest_sha256);
@@ -18,8 +19,9 @@ test('seven-component release hashes, frozen weights and parent lineage', async(
     assert.equal(sha(bytes),p.manifest_sha256); assert.equal(m.files['history.json'],p.history_sha256);
   }
   assert.equal(EXTENDED_METRICS.length,7);
-  const last = history.rows.at(-1);
-  assert.equal(last.coverage,7); assert.equal(last.components.exchange_share,0);
+  const last = history.rows[lastValidIndex];
+  assert.equal(last.date,manifest.last_valid_score_date);
+  assert.equal(last.coverage,7);
   assert.ok(Math.abs(last.score-(.75*last.core_score+.25*(last.components.exchange_share+last.components.address_activity+last.components.value_per_transfer)/3))<1e-10);
   assert.equal(Object.keys(research.ablation).length,7);
   assert.equal(research.comparisons.core.valid_replicates,10000);
@@ -32,7 +34,7 @@ test('seven-component custom preserves null, weights and zero',()=>{
   row.components.E7=100; assert.equal(extendedScore(row,['E1','E7']),75);
 });
 test('tampered score, coverage, protocol, flags and unknown parent rejected',()=>{
-  for (const change of [h=>h.rows.at(-1).score=99,h=>h.rows.at(-1).components.exchange_share=null,
+  for (const change of [h=>h.rows[lastValidIndex].score=99,h=>h.rows[lastValidIndex].components.exchange_share=null,
     h=>h.weights.E7=.5,h=>h.rows.at(-1).source_flags.exchange_share=[3],h=>h.rows.pop()]) {
     const bad = structuredClone(history); change(bad); assert.throws(()=>validateExtended(bad,manifest,research));
   }

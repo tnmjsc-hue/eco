@@ -4,6 +4,8 @@
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).
 
+**OPS-CRON-01 IN_PROGRESS (04/10):** khắc phục hai cron [Core 37193405420](https://github.com/tnmjsc-hue/eco/actions/runs/37193405420) và [network 37194675211](https://github.com/tnmjsc-hue/eco/actions/runs/37194675211) lỗi kiểm thử khi calendar lệch. Các bước nguồn/R2/joins đã success; commit/deploy bị skip. Sửa Python/Node test để đối chiếu cùng ngày, chọn last valid và giữ ledger khi latest null; không đổi engine/config/weights/provider/gates. [Chẩn đoán](evidence/cron-incident-2026-10-04.json). Checkout phát hành riêng từ `origin/main` tại `3b7af58`, giữ ba commit WLAB chưa push ở workspace gốc. Local test đang xác minh; chưa nghiệm thu hosted recovery.
+
 ## 1. Đã hoàn thành và chưa hoàn thành
 
 Đã đọc website/FAQ/một số file engine chính thức của CBBI; chốt SHA tham chiếu; kiểm tra workspace; thử một số truy vấn dữ liệu ETH thật; viết bộ kế hoạch và checklist tiếp tục.
@@ -558,3 +560,10 @@ Lệnh đã chạy thật: python -m eco.core_ten (published), unittest discover
 Code commit 43629af3a85a08669d2187e8ec44d20c7cfa84d4: CI 37133876410 success, Pages 11efd1be-42bb-4268-ac9f-55027111bb7b success exact SHA. Hosted Core run 37134104578/job 111234974711 và network run 37134106123/job 111235505636 đều success cả Core 10 + tests + deploy verifier; logs selected public metadata xác nhận outcome unchanged cùng release. Bot 421a799 và 9d400ed chỉ bốn status mỗi commit; Pages bot exact SHA success (e845887d-a116-46be-b753-589779dd2d62 / 1ee10300-5afd-4759-811c-b06bedfb9d5d). Sau hai lượt đã fast-forward và kiểm lại hai hostname HTTP200/38 file/năm chain/cache khớp Git blobs.
 
 Không đổi trọng số sau AP kém Core 4, không mở gate xác suất hoặc thương mại. E2 có cùng ngân sách MVRV; C1/C2 có chiều giả thuyết, regime và nhãn sàn tạm thời đã ghi rõ. Task kế tiếp sẵn sàng: S04 incremental có full audit, O03 fault/restore drill, O04 prospective shadow; original E3/E8/E9 và quyền Arkham vẫn chờ entitlement. Không tự mua API hoặc thêm E4 sau kết quả R&D kém.
+
+## Phiên 2026-10-04 — khắc phục cron lệch ngày, đang phát hành
+
+- Người dùng yêu cầu khắc phục luôn; OPS-CRON-01 IN_PROGRESS. Managed checkout `E:\codex-wt\fix-daily-calendar-tests\ETH-CBBI` từ `origin/main`/`3b7af58`; ba commit WLAB và WIP gốc được giữ nguyên, không phát hành chung. Không tạo subagent.
+- Sửa năm file test: `test_seven.py`, `test_core_ten.py`, `core-ten.test.mjs`, `extended.test.mjs`, `diagnostics.test.mjs`. Test đối chiếu cùng ngày và last valid; cutoff theo ngày chung, bad-value nằm trong calendar dùng thật, tạo lag bằng cutoff thay vì bỏ dòng tùy ý. Test ledger dùng bốn parent immutable của Core10 `core10-34bb9fdc3f68092404ec`, không giả ngày mới luôn đủ score. Thêm kiểm cả hai chiều lệch ngày, null tail giữ last valid/ledger/release cũ, CSV thiếu input là ô trống. Giữ live latest/hash/lineage/gates tests, không skip test hoặc sửa engine/protocol/weights/normalizer/provider.
+- Kiểm local thực tế: Python target Core10 15/15 (123,223s), seven10/10; toàn suite **104/104 (136,647s)**. Node **31/31**, frozen artifacts PASS, `node --check public/app.js` PASS, `git diff --check` PASS. `pnpm install --frozen-lockfile` và `pnpm build` PASS, vendor Git diff không đổi. Không publish dữ liệu mô phỏng hoặc raw.
+- Phát hành/CI/hosted recovery/production đang chờ xác minh sau commit. Snapshot/data hiện tại trong checkout vẫn last valid02/10, `core-v0.2.0`; lỗi validation trước có thể để status success cũ vì commit skipped. Cải thiện đường status khi validation fail là follow-up vận hành riêng, không bỏ gate hoặc stage partial release để xử lý thông báo.

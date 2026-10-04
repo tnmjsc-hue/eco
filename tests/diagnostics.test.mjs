@@ -47,8 +47,12 @@ test('inclusive calendar ranges and raw CSV preserve values, units, null reasons
   const csv=exportDiagnosticCSV(rows,manifest),lines=csv.trim().split('\n');
   assert.equal(lines.length,369);assert.match(csv,/CC BY-NC 4.0/);assert.match(lines[2],/nupl_diagnostic_unit/);
   assert.match(csv,/"ratio"/);assert.match(csv,/"percent"/);assert.match(csv,/"ETH"/);assert.match(csv,/"flash"/);
-  assert.ok(csv.includes(String(rows.at(-1).metrics.exchange_balance_change_30d.value)));
+  const lastValid=rows.findLast(r=>r.metrics.exchange_balance_change_30d.value!==null);
+  assert.ok(csv.includes(String(lastValid.metrics.exchange_balance_change_30d.value)));
   assert.ok(csv.includes(manifest.private_inputs_verified.core.canonical_sha256));
   const warmup=exportDiagnosticCSV(history.rows.slice(0,1),manifest);assert.match(warmup,/"","percent","window_warmup"/);
   assert.doesNotMatch(lines[2],/score|probability/);
+  const pending=structuredClone(rows.at(-1));
+  Object.assign(pending.metrics.exchange_balance_change_30d,{value:null,reason:'parent_date_unavailable'});
+  assert.match(exportDiagnosticCSV([pending],manifest),/"","ETH","parent_date_unavailable"/);
 });
