@@ -1,6 +1,6 @@
 {
   "task_id": "OPS-NETWORK-02",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "investigated_at": "2026-10-07T02:30:01Z",
   "run": {
     "id": 37452223736,
@@ -27,15 +27,25 @@
     "stored_score": 39.327726022613376,
     "javascript_recomputed_score": 39.32772602261338,
     "absolute_difference": 7.105427357601002e-15,
-    "existing_absolute_tolerance": 1e-8,
-    "contract_locations": ["public/core-model.js:24", "eco/core_ten.py:147", "docs/DAILY_UPDATES.md"],
+    "existing_absolute_tolerance": 1e-08,
+    "contract_locations": [
+      "public/core-model.js:24",
+      "eco/core_ten.py:147",
+      "docs/DAILY_UPDATES.md"
+    ],
     "strict_equality_reproduced_false": true
   },
   "fix": {
     "file": "tests/core-ten.test.mjs",
     "description": "Giữ manifest/history bằng nhau tuyệt đối; đối chiếu score tính lại với sai số hiện hữu. Regression kiểm cả hai dấu trong/vượt ngưỡng và từ chối mismatch manifest dù rất nhỏ.",
-    "accepted_test_deltas": [-5e-9, 5e-9],
-    "rejected_test_deltas": [-2e-8, 2e-8],
+    "accepted_test_deltas": [
+      -5e-09,
+      5e-09
+    ],
+    "rejected_test_deltas": [
+      -2e-08,
+      2e-08
+    ],
     "rejected_manifest_only_delta": 1e-10,
     "engine_methodology_workflow_and_existing_data_changed": false,
     "local_unpublished_research_preserved": true
@@ -47,11 +57,15 @@
     "python_seconds": 138.108,
     "frozen_protocols": "PASS",
     "javascript_syntax": "PASS",
-    "git_diff_check": "PASS"
+    "git_diff_check": "PASS",
+    "staged_paths_and_secret_pattern_review": "PASS"
   },
   "production_before_recovery": {
     "checked_at": "2026-10-07T02:30:00.987Z",
-    "hosts": ["https://eco.tnmp.cloud", "https://eco-tnmp.pages.dev"],
+    "hosts": [
+      "https://eco.tnmp.cloud",
+      "https://eco-tnmp.pages.dev"
+    ],
     "verified_files_per_host": 26,
     "all_sha256_match_checkout": true,
     "pages_production_commit": "9ed726a691e493bc29ce66952123790d03f1fb4a",
@@ -62,11 +76,140 @@
     "last_valid_score": 39.741870669746035,
     "network_last_observation_date": "2026-10-04"
   },
-  "ci": null,
-  "hosted_recovery": null,
-  "production_after_recovery": null,
+  "ci": {
+    "run_id": 37562471271,
+    "job_id": 112602620303,
+    "conclusion": "success",
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37562471271",
+    "python_tests_passed": 104,
+    "python_seconds": 79.425,
+    "node_tests_passed": 32,
+    "locked_dependency_install_and_vendor_build": "PASS",
+    "frozen_protocols": "PASS",
+    "fixed_commit_pages_deployment": "3dd69ecf-125e-4629-b014-b573cad91ba5",
+    "fixed_commit_pages_status": "success"
+  },
+  "hosted_recovery": {
+    "run_id": 37562471828,
+    "job_id": 112602626189,
+    "event": "workflow_dispatch",
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37562471828",
+    "conclusion": "success",
+    "started_at": "2026-10-07T02:32:33Z",
+    "completed_at": "2026-10-07T02:35:22Z",
+    "python_tests_passed": 104,
+    "python_seconds": 62.926,
+    "node_tests_passed": 32,
+    "backup_and_all_joins": "success",
+    "publication_validation_and_bot_commit": "success",
+    "production_verifier": "success",
+    "private_backup_proofs": {
+      "core": {
+        "canonical_sha256": "65306d7dda229545e67acdebc2faaf7743492b245f953c744e10338621436a37",
+        "source_manifest_sha256": "1211b40af5bcf87f4007a3a5cbf508af20548fe29e286e3151d043883839394b",
+        "receipt_sha256": "289bbfb1a8ce250a0919b7ea6d10a922bddc2db598384e3250d6f2ef34e56517",
+        "objects_readback_verified": true,
+        "file_count": 7
+      },
+      "proxies": {
+        "canonical_sha256": "acc16d598b40466335389b61b657685aaba3403fa92bd8d33b0fcdee804dadff",
+        "source_manifest_sha256": "95da210f376f86e330154fe75be2b66611b0237a99f0a9eae68df05b106c1057",
+        "receipt_sha256": "9d827b80f01e12263204cfbbbf48926db2fce286f0157d75bb8b9381b311a71f",
+        "objects_readback_verified": true,
+        "file_count": 8
+      }
+    }
+  },
+  "production_after_recovery": {
+    "checked_at": "2026-10-07T02:36:03.545Z",
+    "hosts": [
+      {
+        "host": "https://eco.tnmp.cloud",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      },
+      {
+        "host": "https://eco-tnmp.pages.dev",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      }
+    ],
+    "releases": {
+      "core": {
+        "release_id": "core-abf2926a7f0f24eceaa8",
+        "methodology_version": "core-v0.1.0",
+        "last_valid_score_date": "2026-10-05",
+        "last_valid_score": 41.96403796800642,
+        "last_observation_date": "2026-10-05"
+      },
+      "network-proxies": {
+        "release_id": "proxy-2b45bd3ce74e8daf59fd",
+        "methodology_version": "network-proxies-v0.1.0",
+        "last_observation_date": "2026-10-06"
+      },
+      "extended": {
+        "release_id": "extended-f4caf2e59810445f83ed",
+        "methodology_version": "extended-v0.1.0",
+        "last_valid_score_date": "2026-10-05",
+        "last_valid_score": 33.36190611418651,
+        "last_observation_date": "2026-10-05"
+      },
+      "diagnostics": {
+        "release_id": "diagnostic-c86d8616e65b9ca6be02",
+        "methodology_version": "diagnostics-v0.1.0",
+        "last_observation_date": "2026-10-06"
+      },
+      "core-v2": {
+        "release_id": "core10-9648aefc49bb930af643",
+        "methodology_version": "core-v0.2.0",
+        "last_valid_score_date": "2026-10-05",
+        "last_valid_score": 39.327726022613376,
+        "last_observation_date": "2026-10-05"
+      }
+    },
+    "pages_deployment": "a6e64348-b03c-48a9-94ba-f9c6a93d881e",
+    "pages_production_commit": "2d41251c3e65be93059ee17af7d62e4fcded62c6",
+    "pages_status": "success",
+    "browser_qa": {
+      "url": "https://eco.tnmp.cloud/",
+      "score": "39",
+      "date": "2026-10-05",
+      "viewport_checks": [
+        1440,
+        768,
+        390,
+        360
+      ],
+      "custom_series_verified": 366,
+      "csv": "verified",
+      "keyboard_controls": "verified",
+      "network_failure_preserves_data": true,
+      "chart_nonblank_pixels": 42259,
+      "auto_refresh": "latest advances; historical selection preserved",
+      "page_errors": []
+    }
+  },
   "limitations": [
     "Public status khi validation fail vẫn có thể giữ lần commit thành công trước; follow-up riêng, chưa thay workflow trong bản sửa này.",
-    "Network incremental, restore/fault drill và shadow 30 ngày chưa nghiệm thu."
-  ]
+    "Network incremental, restore/fault drill và shadow 30 ngày chưa nghiệm thu.",
+    "Lượt khôi phục là workflow_dispatch; lịch không đổi, chưa quan sát cron tương lai sau bản sửa này."
+  ],
+  "fixed_commit": "2ecee1b2b35c2cf9b385d1c0007d3fe45658c015",
+  "data_commit": "2d41251c3e65be93059ee17af7d62e4fcded62c6",
+  "immutability": {
+    "checked_at": "2026-10-07T02:36:03.734901+00:00",
+    "baseline_commit": "9ed726a691e493bc29ce66952123790d03f1fb4a",
+    "current_commit": "2d41251c3e65be93059ee17af7d62e4fcded62c6",
+    "immutable_data_files_verified": 115,
+    "engine_config_workflow_static_files_verified": 47,
+    "all_unchanged": true
+  },
+  "published_roundoff_regression": {
+    "date": "2026-10-05",
+    "stored_score": 39.327726022613376,
+    "javascript_recomputed_score": 39.32772602261338,
+    "old_strict_comparison_passes": false,
+    "absolute_difference": 7.105427357601002e-15,
+    "new_assertion_and_full_hosted_suite": "PASS"
+  }
 }
