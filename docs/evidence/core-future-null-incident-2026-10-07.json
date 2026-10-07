@@ -1,0 +1,84 @@
+{
+  "task_id": "OPS-CORE-03",
+  "status": "IN_PROGRESS",
+  "failed_run": {
+    "id": 37606413604,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37606413604",
+    "job_id": 112742870308,
+    "head_sha": "11e3549e3d42e047ab9109d69da16e75475ae300",
+    "event": "schedule",
+    "started_at": "2026-10-07T10:17:35Z",
+    "completed_at": "2026-10-07T10:19:45Z",
+    "duration_seconds": 130,
+    "failed_step": "Validate before publication",
+    "failed_command": "python -m unittest discover -s tests -v",
+    "failed_test": "test_causal_join_prefix_ignores_future_shock",
+    "failed_location": "tests/test_seven.py:54",
+    "exception": "ValueError: invalid parent component/reason/flags",
+    "python_tests_run": 104,
+    "python_errors": 1,
+    "python_seconds": 59.493,
+    "capture_backup_and_all_joins": "success",
+    "private_backup_objects_readback_verified": 7,
+    "commit_and_deploy": "skipped",
+    "candidate_core_last_valid_date": "2026-10-06",
+    "candidate_core_ten_outcome": "source_pending",
+    "candidate_reached_production": false
+  },
+  "cause": {
+    "description": "Causal-prefix test đổi score null của proxy tương lai thành 100 mà không xóa hai reason thiếu input/normalizer. Fixture trái hợp đồng nên engine từ chối đúng; đây là lỗi test khác với calendar và roundoff trước.",
+    "original_proxy_score": null,
+    "original_raw_reason": "missing_input_or_window",
+    "original_score_reason": "raw_unavailable",
+    "synthetic_core_advance_date": "2026-10-06",
+    "original_test_reproduced": "invalid parent component/reason/flags",
+    "synthetic_provider_observations_published": false
+  },
+  "fix": {
+    "file": "tests/test_seven.py",
+    "description": "Fixture normalized score phải đồng bộ raw_reason/score_reason. Causal prefix vẫn giữ nguyên trước cutoff; kiểm ngày shock được join thật. Kiểm cả ba proxy ở trạng thái usable, raw missing và normalizer pending; giữ negative gate cho score100 kèm một trong hai reason.",
+    "causal_availability_cases": 9,
+    "invalid_score_reason_cases": 6,
+    "fixed_synthetic_core_advance": "PASS",
+    "existing_engine_config_methodology_workflow_static_and_data_changed": false,
+    "local_unpublished_research_preserved": true
+  },
+  "local_validation": {
+    "targeted_seven_tests_passed": 11,
+    "targeted_seven_seconds": 13.036,
+    "all_python_tests_passed": 105,
+    "all_python_seconds": 160.423,
+    "node_tests_passed": 32,
+    "frozen_protocols": "PASS",
+    "javascript_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "network_followup_before_fix": {
+    "run_id": 37608451437,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37608451437",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-10-07T10:35:49Z",
+    "bot_commit": "5561e10bc60d1968558c18e12059816d011b5492",
+    "pages_deployment": "f1cfbda7-83c1-48b5-a859-8ffddc58146a",
+    "pages_production_status": "success"
+  },
+  "production_before_recovery": {
+    "checked_at": "2026-10-07T11:35:56.061Z",
+    "hosts": ["https://eco.tnmp.cloud", "https://eco-tnmp.pages.dev"],
+    "verified_files_per_host": 26,
+    "sha256_matches_checkout": true,
+    "core_ten_release_id": "core10-329de347816c45c0a37d",
+    "methodology_version": "core-v0.2.0",
+    "last_valid_score_date": "2026-10-05",
+    "last_valid_score": 39.327726022613376,
+    "network_last_observation_date": "2026-10-06"
+  },
+  "ci": null,
+  "hosted_core_recovery": null,
+  "production_after_recovery": null,
+  "limitations": [
+    "Public status khi validation fail vẫn giữ lần commit thành công trước; status-only follow-up chưa thực hiện.",
+    "S04 network incremental, O03 restore/fault drill và O04 shadow 30 ngày vẫn chưa nghiệm thu."
+  ]
+}

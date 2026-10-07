@@ -49,9 +49,37 @@ class ExtendedTests(unittest.TestCase):
         cutoff = next(r["date"] for r in reversed(self.core) if r["date"] < common)
         prefix = join([r for r in self.core if r["date"] <= cutoff],
                       [r for r in self.proxy if r["date"] <= cutoff])
-        future = copy.deepcopy(self.proxy)
-        next(r for r in future if r["date"] == common)["metrics"]["exchange_share"]["score"] = 100
-        self.assertEqual(prefix,[r for r in join(self.core,future) if r["date"] <= cutoff])
+        for metric in IDS[4:]:
+            for raw_reason,score_reason in ((None,None),
+                                           ("missing_input_or_window","raw_unavailable"),
+                                           (None,"normalizer_warmup")):
+                with self.subTest(metric=metric,raw_reason=raw_reason,score_reason=score_reason):
+                    future = copy.deepcopy(self.proxy)
+                    item = next(r for r in future if r["date"] == common)["metrics"][metric]
+                    initial_score = None if raw_reason or score_reason else 50
+                    item.update(score=initial_score,raw_reason=raw_reason,score_reason=score_reason)
+                    rows = join(self.core,future)
+                    current = next(r for r in rows if r["date"] == common)
+                    self.assertEqual(current["components"][metric],initial_score)
+                    self.assertEqual(current["reasons"][metric],raw_reason or score_reason)
+                    self.assertEqual(prefix,[r for r in rows if r["date"] <= cutoff])
+                    # A synthetic normalized score must have no missing-data reason.
+                    item.update(score=100,raw_reason=None,score_reason=None)
+                    rows = join(self.core,future)
+                    self.assertEqual(next(r for r in rows if r["date"] == common)["components"][metric],100)
+                    self.assertEqual(prefix,[r for r in rows if r["date"] <= cutoff])
+
+    def test_non_null_proxy_score_with_missing_reason_rejected(self):
+        common = min(self.core[-1]["date"],self.proxy[-1]["date"])
+        for metric in IDS[4:]:
+            for reason_field in ("raw_reason","score_reason"):
+                with self.subTest(metric=metric,reason_field=reason_field):
+                    invalid = copy.deepcopy(self.proxy)
+                    item = next(r for r in invalid if r["date"] == common)["metrics"][metric]
+                    item.update(score=100,raw_reason=None,score_reason=None)
+                    item[reason_field] = "missing_input_or_window" if reason_field == "raw_reason" else "normalizer_warmup"
+                    with self.assertRaisesRegex(ValueError,"invalid parent component/reason/flags"):
+                        join(self.core,invalid)
 
     def test_join_handles_both_parent_calendar_directions(self):
         complete = next(r for r in reversed(join(self.core,self.proxy)) if r["score"] is not None)
