@@ -22,8 +22,22 @@ test('Core 10 frozen protocol, all hashes and original information-family budget
   assert.equal(CORE_METRICS.filter(m=>['E7','E2'].includes(m.id)).reduce((s,m)=>s+m.weight,0),.375);
   assert.equal(CORE_METRICS.filter(m=>['exchange_share','exchange_balance_pressure'].includes(m.id)).reduce((s,m)=>s+m.weight,0),.0625);
   assert.equal(history.rows[lastValidIndex].date,manifest.last_valid_score_date);
-  assert.equal(manifest.last_valid_score,coreScore(history.rows[lastValidIndex]));
+  const lastValid=history.rows[lastValidIndex];
+  assert.equal(manifest.last_valid_score,lastValid.score);
+  assert.ok(Math.abs(lastValid.score-coreScore(lastValid))<=1e-8,'Recomputed Core 10 score exceeds the existing absolute tolerance');
   assert.ok(Math.abs(research.comparisons.core.ap_delta-(research.statistics.core_ten.average_precision-research.statistics.core.average_precision))<1e-12);
+});
+
+test('Runtime score roundoff is accepted within the contract; larger errors and manifest mismatches are rejected',()=>{
+  const computed=coreScore(history.rows[lastValidIndex]);
+  for(const delta of [-5e-9,5e-9,-2e-8,2e-8]) {
+    const h=structuredClone(history), m=structuredClone(manifest);
+    h.rows[lastValidIndex].score=computed+delta;m.last_valid_score=computed+delta;
+    if(Math.abs(delta)<=1e-8) assert.doesNotThrow(()=>validateCore(h,m,research));
+    else assert.throws(()=>validateCore(h,m,research));
+  }
+  const m=structuredClone(manifest);m.last_valid_score+=1e-10;
+  assert.throws(()=>validateCore(history,m,research));
 });
 
 test('Every legacy point and raw input stays equal to pinned parents; independent causal quantile boundary checks',async()=>{

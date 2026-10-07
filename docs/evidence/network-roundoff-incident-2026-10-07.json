@@ -1,0 +1,72 @@
+{
+  "task_id": "OPS-NETWORK-02",
+  "status": "IN_PROGRESS",
+  "investigated_at": "2026-10-07T02:30:01Z",
+  "run": {
+    "id": 37452223736,
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37452223736",
+    "job_id": 112231232318,
+    "event": "schedule",
+    "head_sha": "9ed726a691e493bc29ce66952123790d03f1fb4a",
+    "started_at": "2026-10-06T10:48:36Z",
+    "completed_at": "2026-10-06T10:51:23Z",
+    "job_duration_seconds": 167,
+    "failed_step": "Verify data and source contracts",
+    "failed_command": "node --test tests/*.test.mjs",
+    "failed_test": "Core 10 frozen protocol, all hashes and original information-family budgets",
+    "failed_location": "tests/core-ten.test.mjs:25",
+    "capture_backup_and_all_join_steps": "success",
+    "python_tests_passed": 104,
+    "python_seconds": 91.597,
+    "node_tests_passed": 30,
+    "node_tests_failed": 1,
+    "commit_and_deployment_steps": "skipped"
+  },
+  "cause": {
+    "description": "Test dùng bằng nhau tuyệt đối khi đối chiếu score Python đã lưu với tổng trọng số tính lại trong JavaScript, dù hợp đồng đã cho sai số tuyệt đối 1e-8.",
+    "stored_score": 39.327726022613376,
+    "javascript_recomputed_score": 39.32772602261338,
+    "absolute_difference": 7.105427357601002e-15,
+    "existing_absolute_tolerance": 1e-8,
+    "contract_locations": ["public/core-model.js:24", "eco/core_ten.py:147", "docs/DAILY_UPDATES.md"],
+    "strict_equality_reproduced_false": true
+  },
+  "fix": {
+    "file": "tests/core-ten.test.mjs",
+    "description": "Giữ manifest/history bằng nhau tuyệt đối; đối chiếu score tính lại với sai số hiện hữu. Regression kiểm cả hai dấu trong/vượt ngưỡng và từ chối mismatch manifest dù rất nhỏ.",
+    "accepted_test_deltas": [-5e-9, 5e-9],
+    "rejected_test_deltas": [-2e-8, 2e-8],
+    "rejected_manifest_only_delta": 1e-10,
+    "engine_methodology_workflow_and_existing_data_changed": false,
+    "local_unpublished_research_preserved": true
+  },
+  "local_validation": {
+    "core_ten_node_tests_passed": 6,
+    "all_node_tests_passed": 32,
+    "python_tests_passed": 104,
+    "python_seconds": 138.108,
+    "frozen_protocols": "PASS",
+    "javascript_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "production_before_recovery": {
+    "checked_at": "2026-10-07T02:30:00.987Z",
+    "hosts": ["https://eco.tnmp.cloud", "https://eco-tnmp.pages.dev"],
+    "verified_files_per_host": 26,
+    "all_sha256_match_checkout": true,
+    "pages_production_commit": "9ed726a691e493bc29ce66952123790d03f1fb4a",
+    "pages_deployment": "a0ff5f9a-c145-48a0-a77c-92ea45c56a63",
+    "core_ten_release_id": "core10-fd97ee0a33d35b8e7411",
+    "methodology_version": "core-v0.2.0",
+    "last_valid_score_date": "2026-10-04",
+    "last_valid_score": 39.741870669746035,
+    "network_last_observation_date": "2026-10-04"
+  },
+  "ci": null,
+  "hosted_recovery": null,
+  "production_after_recovery": null,
+  "limitations": [
+    "Public status khi validation fail vẫn có thể giữ lần commit thành công trước; follow-up riêng, chưa thay workflow trong bản sửa này.",
+    "Network incremental, restore/fault drill và shadow 30 ngày chưa nghiệm thu."
+  ]
+}
