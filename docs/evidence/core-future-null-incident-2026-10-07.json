@@ -1,6 +1,6 @@
 {
   "task_id": "OPS-CORE-03",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "failed_run": {
     "id": 37606413604,
     "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37606413604",
@@ -51,7 +51,8 @@
     "node_tests_passed": 32,
     "frozen_protocols": "PASS",
     "javascript_syntax": "PASS",
-    "git_diff_check": "PASS"
+    "git_diff_check": "PASS",
+    "staged_path_and_secret_pattern_review": "PASS"
   },
   "network_followup_before_fix": {
     "run_id": 37608451437,
@@ -65,7 +66,10 @@
   },
   "production_before_recovery": {
     "checked_at": "2026-10-07T11:35:56.061Z",
-    "hosts": ["https://eco.tnmp.cloud", "https://eco-tnmp.pages.dev"],
+    "hosts": [
+      "https://eco.tnmp.cloud",
+      "https://eco-tnmp.pages.dev"
+    ],
     "verified_files_per_host": 26,
     "sha256_matches_checkout": true,
     "core_ten_release_id": "core10-329de347816c45c0a37d",
@@ -74,11 +78,134 @@
     "last_valid_score": 39.327726022613376,
     "network_last_observation_date": "2026-10-06"
   },
-  "ci": null,
-  "hosted_core_recovery": null,
-  "production_after_recovery": null,
+  "ci": {
+    "run_id": 37615636994,
+    "job_id": 112773168890,
+    "conclusion": "success",
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37615636994",
+    "python_tests_passed": 105,
+    "python_seconds": 93.114,
+    "node_tests_passed": 32,
+    "vendor_build_and_frozen_checks": "PASS",
+    "fixed_commit_pages_deployment": "9f91e7ce-a81e-4bbe-be6b-abf7eb8a2f0b",
+    "fixed_commit_pages_status": "success"
+  },
+  "hosted_core_recovery": {
+    "run_id": 37615637299,
+    "job_id": 112773176602,
+    "event": "workflow_dispatch",
+    "url": "https://github.com/tnmjsc-hue/eco/actions/runs/37615637299",
+    "conclusion": "success",
+    "started_at": "2026-10-07T11:40:13Z",
+    "completed_at": "2026-10-07T11:43:38Z",
+    "python_tests_passed": 105,
+    "python_seconds": 72.899,
+    "node_tests_passed": 32,
+    "capture_backup_all_joins_validation_commit_and_deploy_verifier": "success",
+    "private_input_proofs": {
+      "core": {
+        "canonical_sha256": "2df80ba42f378d98e8fcdcb38ba2bf03f23f75fdb875836a7723d5ce7522bd5c",
+        "source_manifest_sha256": "147310c397df0f226bd73f8cbec7d85ec951945b82e5e0d325eb4e88480f67ea",
+        "receipt_sha256": "0557ae0693f0b1df3cc2a06041271885388a37c6733ad8b420993c1295ab820d",
+        "objects_readback_verified": true,
+        "file_count": 7
+      },
+      "proxies": {
+        "canonical_sha256": "1b3e7d6cac929c871bff790d076d4f2873b8da337bc0badcf108b3878aef9ba6",
+        "source_manifest_sha256": "61ca039e2884ad2ec91b0ce2dad6bc536eea9313201a42c9164ac0cb38b9e63d",
+        "receipt_sha256": "f6e00827f5f6431071c77381fdf006567347f6fcb7cd086ce5133904c18c8dec",
+        "objects_readback_verified": true,
+        "file_count": 8
+      }
+    }
+  },
+  "production_after_recovery": {
+    "checked_at": "2026-10-07T11:44:30.250Z",
+    "hosts": [
+      {
+        "host": "https://eco.tnmp.cloud",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      },
+      {
+        "host": "https://eco-tnmp.pages.dev",
+        "verified_files": 26,
+        "all_sha256_match_checkout": true
+      }
+    ],
+    "releases": {
+      "core": {
+        "release_id": "core-04b188703b8131b77277",
+        "methodology_version": "core-v0.1.0",
+        "last_valid_score_date": "2026-10-06",
+        "last_valid_score": 41.360040571253684,
+        "last_observation_date": "2026-10-06"
+      },
+      "network-proxies": {
+        "release_id": "proxy-1cdbe24fce74ae1ab3a3",
+        "methodology_version": "network-proxies-v0.1.0",
+        "last_observation_date": "2026-10-06"
+      },
+      "extended": {
+        "release_id": "extended-edc4a30334cae05dfca7",
+        "methodology_version": "extended-v0.1.0",
+        "last_valid_score_date": "2026-10-06",
+        "last_valid_score": 32.903227245736666,
+        "last_observation_date": "2026-10-06"
+      },
+      "diagnostics": {
+        "release_id": "diagnostic-3cd860fd6ba4636539c1",
+        "methodology_version": "diagnostics-v0.1.0",
+        "last_observation_date": "2026-10-06"
+      },
+      "core-v2": {
+        "release_id": "core10-07e4a8a8227797982a23",
+        "methodology_version": "core-v0.2.0",
+        "last_valid_score_date": "2026-10-06",
+        "last_valid_score": 38.88170443176751,
+        "last_observation_date": "2026-10-06"
+      }
+    },
+    "pages": {
+      "id": "f159e06f-7ee7-428f-878e-cdaee93cd285",
+      "environment": "production",
+      "created_on": "2026-10-07T11:42:50.4371Z",
+      "commit_hash": "cddc8feae8c082a0d4cebafe890214b616056050",
+      "stage": "deploy",
+      "status": "success"
+    },
+    "browser_qa": {
+      "url": "https://eco.tnmp.cloud/",
+      "score": "39",
+      "date": "2026-10-06",
+      "viewport_checks": [
+        1440,
+        768,
+        390,
+        360
+      ],
+      "custom_series_verified": 366,
+      "csv": "verified",
+      "keyboard_controls": "verified",
+      "network_failure_preserves_data": true,
+      "chart_nonblank_pixels": 42343,
+      "auto_refresh": "latest advances; historical selection preserved",
+      "page_errors": []
+    }
+  },
   "limitations": [
     "Public status khi validation fail vẫn giữ lần commit thành công trước; status-only follow-up chưa thực hiện.",
-    "S04 network incremental, O03 restore/fault drill và O04 shadow 30 ngày vẫn chưa nghiệm thu."
-  ]
+    "S04 network incremental, O03 restore/fault drill và O04 shadow 30 ngày vẫn chưa nghiệm thu.",
+    "Khôi phục là workflow_dispatch; chưa quan sát cron Core tương lai sau bản sửa này, lịch giữ nguyên."
+  ],
+  "fixed_commit": "9c60c70a3b8c4daaf2a7b9d6a17bcb26417a4727",
+  "data_commit": "cddc8feae8c082a0d4cebafe890214b616056050",
+  "immutability": {
+    "checked_at": "2026-10-07T11:44:30.437908+00:00",
+    "baseline_commit": "5561e10bc60d1968558c18e12059816d011b5492",
+    "current_commit": "cddc8feae8c082a0d4cebafe890214b616056050",
+    "immutable_data_files_verified": 145,
+    "engine_config_workflow_static_files_verified": 47,
+    "all_unchanged": true
+  }
 }
