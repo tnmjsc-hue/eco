@@ -1,5 +1,7 @@
 # ECO — Ethereum Core 10 Experimental
 
+**Tab Lịch kinh tế:** lịch BLS/BEA/Fed Mỹ, số liệu BLS mới nhất và kịch bản USD/vàng/crypto tại `#calendar`. Batch có cache, snapshot R2/hash và JSON tĩnh; 07:37 mỗi ngày, kiểm số liệu 20:37/01:37 hôm sau ngày làm việc Mỹ (giờ Việt Nam). Chưa có consensus, actual theo từng sự kiện hoặc lịch toàn cầu. [Nguồn và runbook](docs/ECONOMIC_CALENDAR.md).
+
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
 **Core 10 đã deploy:** `core-v0.2.0` đang chạy trên [production](https://eco.tnmp.cloud/), CI/Pages và 38 file/hash tại cả hai hostname đã xác minh; hosted daily nghiệm thu trong [HANDOFF](docs/HANDOFF.md). E2 NUPL, C1 khan hiếm nguồn cung và C2 biến động số dư sàn đã tích hợp từ diagnostic đã xác minh. Điểm 37.71262149722105 (UI 38), đủ 10/10 ngày 2026-10-02; E2 chia ngân sách định giá với E7. Dashboard chỉ hiện Core 10; Core 4/ECO 7 đã bỏ khỏi chế độ điểm, biểu đồ và CSV chính. Lịch sử bất biến giữ riêng để tái lập/kiểm định. Backtest thăm dò AP 0,5226 thấp hơn Core 4 0,5547; chưa có bằng chứng cải thiện dự báo. [ADR-008](docs/ADR-008-core-ten-experimental.md), [coverage và daily](docs/CORE_TEN.md). Các mục ECO 7 bên dưới ghi nhận phiên triển khai trước.

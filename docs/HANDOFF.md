@@ -1,5 +1,14 @@
 # Bàn giao triển khai ETH Cycle Index
 
+**CAL-01 — IN_PROGRESS (2026-10-08):** Theo yêu cầu người dùng, thêm tab lịch kinh tế và đánh giá USD/vàng/crypto. Checkout riêng `E:\codex-wt\economic-calendar\ETH-CBBI` từ `origin/main` (cập nhật `2a0f1ae`), giữ nghiên cứu chưa phát hành tại workspace gốc. Nguồn lịch chính thức BLS/BEA/Fed đã probe HTTP 200; thiết kế batch có cache, snapshots/hash và JSON tĩnh. Chưa nghiệm thu hoặc phát hành.
+
+### CAL-01 — bằng chứng local trước phát hành
+
+- Nguồn thật BLS/BEA ICS + Fed HTML + một POST BLS API keyless; release `calendar-66b4e31ed958b40e784f`, 53 sự kiện/5 indicator. Snapshot `20261008T131448607891Z-66b4e31ed958` có 6/6 object R2 PUT/GET/hash verified trong prefix riêng `raw/calendar/`; raw/cache/private screenshot Git ignored. Batch lần hai `unchanged`, pointer/release giữ nguyên. Quyền public theo BLS/BEA/Fed; phạm vi Mỹ và trường consensus/actual event thiếu được nêu rõ.
+- File: `eco/calendar.py`, calendar model/UI/data, navigation/CSS/i18n imports/translations, cache headers/attributes, workflow/calendar verifier/browser QA/tests, README và [runbook](ECONOMIC_CALENDAR.md). Core10 methodology/weights/score/ETH history không đổi. Calendar mới English/Việt, ngôn ngữ khác tạm English fallback.
+- Local `python -m unittest discover -s tests -v`: 112/112 PASS, 150,157s; Node 34/34 PASS; frozen validator, install frozen/pnpm build, JS syntax/diff PASS. Một fixture ICS fold ban đầu thiếu dấu cách thuộc title đã sửa; rerun toàn Python đạt. Browser 1440/768/390/360, tám lựa chọn locale, VN/ET rollover, filter, network/hash giữ bản tốt, Core10 chart regression và không provider request PASS; ảnh desktop/mobile đã xem.
+- Lịch GitHub riêng 07:37 hằng ngày; 20:37/01:37 hôm sau ngày làm việc Mỹ (giờ Việt Nam), shared concurrency chống tranh publication. Cache/ETag/TTL; không dữ liệu đổi thì không release mới, status tối đa heartbeat một lần/ngày. Chưa có kết quả CI/hosted/Pages/domain tại bước này; CAL-01 vẫn IN_PROGRESS đến nghiệm thu production.
+
 **Cập nhật: 2026-10-07.** Trạng thái: **CORE_TEN_EXPERIMENTAL_PRODUCTION_VERIFIED / ECO_SEVEN_AND_RAW_DIAGNOSTICS_PRODUCTION_VERIFIED / HOSTED_CORE_TEN_JOIN_VERIFIED / LANGUAGE_PACKS_PRODUCTION_VERIFIED / DAILY_CRON_RECOVERY_VERIFIED / NETWORK_ROUNDOFF_RECOVERY_VERIFIED / CORE_CAUSAL_FIXTURE_RECOVERY_VERIFIED**. Dashboard mặc định Core 10 `core-v0.2.0`, 38.88170443176751 (UI 39/100), đủ 10/10 ngày 2026-10-06; Core/network observation cùng đến 06/10. Dashboard chỉ hiện Core 10; Core 4/ECO 7 giữ trong lịch sử bất biến và baseline kiểm định thu gọn, không còn chế độ/đường điểm cũ. Giữ version/weights/normalizer riêng; bốn release cha được pin. AP Core 10 thăm dò thấp hơn Core 4, không tuyên bố cải thiện dự báo. Chưa hoàn tất sản phẩm realtime/shadow 30 ngày.
 
 Tài liệu chuẩn: [MASTER_PLAN.md](MASTER_PLAN.md). Bằng chứng nghiên cứu: [RESEARCH.md](RESEARCH.md). Triển khai web: [DEPLOYMENT.md](DEPLOYMENT.md). Quy tắc agent: [AGENTS.md](../AGENTS.md).

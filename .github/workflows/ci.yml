@@ -37,6 +37,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check public/app.js
+          node --check public/calendar.js
+          node --check public/calendar-model.js
+          node --check scripts/verify-calendar-deploy.mjs
           node --check public/core-model.js
           node --check scripts/verify-daily-deploy.mjs
           node --check public/diagnostics.js

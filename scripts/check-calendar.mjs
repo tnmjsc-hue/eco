@@ -1,0 +1,76 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdir } from 'node:fs/promises';
+const require=createRequire(import.meta.url);
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const url=process.argv[2] || 'http://127.0.0.1:8877/';
+await mkdir('test-results',{recursive:true});
+const browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
+try {
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  const errors=[],providerRequests=[];
+  page.on('pageerror', e=>errors.push(e.message));
+  page.on('request',r=>{if (/bls\.gov|bea\.gov|federalreserve\.gov|r2\.cloudflarestorage/.test(r.url())) providerRequests.push(r.url());});
+  await page.addInitScript(()=>localStorage.setItem('eco-language','vi'));
+  await page.goto(`${url.split('#')[0]}#calendar`,{waitUntil:'networkidle'});
+  await page.locator('#cal-content').waitFor({state:'visible'});
+  assert.equal(await page.locator('#cal-error').isVisible(),false);
+  assert.equal(await page.locator('#cal-indicators article').count(),5);
+  await page.locator('[data-cal-range="month"]').click();
+  assert.ok(await page.locator('#cal-rows tr').count()>=4);
+  await page.locator('#cal-search').fill('FOMC');
+  assert.equal(await page.locator('#cal-rows tr').count(),1);
+  assert.match(await page.locator('#cal-rows time').innerText(),/^29\b/);
+  await page.locator('#cal-zone').selectOption('America/New_York');
+  assert.match(await page.locator('#cal-rows time').innerText(),/^28\b/);
+  assert.ok((await page.locator('#cal-scenarios').innerText()).toLowerCase().includes('cứng rắn'));
+  await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
+  await page.locator('#cal-search').fill('CPI');
+  assert.equal(await page.locator('#cal-scenarios tr').count(),2);
+  assert.ok((await page.locator('#cal-scenarios').innerText()).includes('lợi suất thực'));
+  await page.locator('#cal-impact').selectOption('medium');
+  assert.equal(await page.locator('#cal-empty').isVisible(),true);
+  await page.locator('#cal-impact').selectOption('all');
+  await page.locator('#cal-search').fill('');
+  await page.locator('#language-picker').selectOption('en');
+  assert.equal(await page.locator('#view-calendar h1').innerText(),'Economic calendar');
+  assert.ok((await page.locator('#cal-scenarios').innerText()).toLowerCase().includes('expectations'));
+  for (const width of [1440,768,390,360]) {
+    await page.setViewportSize({width,height:1000});
+    await page.screenshot({path:`test-results/calendar-${width}.png`,fullPage:true});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`overflow at ${width}`);
+  }
+  const before=await page.locator('#cal-indicators').innerText();
+  await page.route('**/data/calendar/latest.json',r=>r.abort());
+  await page.locator('#cal-refresh').click();
+  await page.locator('#cal-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#cal-indicators').innerText(),before);
+  await page.unroute('**/data/calendar/latest.json');
+  await page.locator('#cal-retry').click();
+  await page.locator('#cal-error').waitFor({state:'hidden'});
+  await page.route('**/data/calendar/latest.json',async r=>{const res=await r.fetch();const data=await res.json();data.sha256='0'.repeat(64);await r.fulfill({json:data});});
+  await page.locator('#cal-refresh').click();
+  await page.locator('#cal-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#cal-indicators').innerText(),before);
+  await page.unroute('**/data/calendar/latest.json');
+  await page.locator('#cal-retry').click();
+  await page.locator('#cal-error').waitFor({state:'hidden'});
+  await page.locator('#language-picker').selectOption('vi');
+  await page.locator('[data-view="dashboard"]').click();
+  await page.locator('#score-value').waitFor({state:'visible'});
+  assert.ok(Number((await page.locator('#score-value').innerText()).replace(',','.'))>0);
+  const chart=await page.evaluate(()=>{const c=echarts.getInstanceByDom(document.getElementById('history-chart'));return c.getOption().series.map(s=>s.name);});
+  assert.deepEqual(chart,['Core 10','Giá ETH']);
+  await page.locator('[data-view="calendar"]').click();
+  assert.equal(await page.locator('#cal-content').isVisible(),true);
+  await page.locator('#cal-start').fill('2026-10-30');await page.locator('#cal-start').dispatchEvent('change');
+  await page.locator('#cal-end').fill('2026-10-01');await page.locator('#cal-end').dispatchEvent('change');
+  assert.equal(await page.locator('#cal-range-error').isVisible(),true);
+  await page.locator('[data-cal-range="month"]').click();
+  for (const language of ['ko','ru','hi','tr','pt-BR','en-NG','vi']) {
+    await page.locator('#language-picker').selectOption(language);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  }
+  assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
+  console.log(JSON.stringify({calendar_browser_verified:true,url,viewports:[1440,768,390,360],languages:8,source_requests:0,error_preservation:true,checksum_guard:true,dashboard_regression:true}));
+} finally {await browser.close();}

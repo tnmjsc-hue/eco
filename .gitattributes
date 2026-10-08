@@ -4,4 +4,5 @@ public/data/network-proxies/** -text
 public/data/extended/** -text
 public/data/diagnostics/** -text
 public/data/core-v2/** -text
+public/data/calendar/** -text
 public/vendor/** -text

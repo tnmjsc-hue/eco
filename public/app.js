@@ -1,8 +1,9 @@
 import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
-import { initProxies, resizeProxies } from './proxies.js?v=i18n-20261004';
-import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=i18n-20261004';
+import { initProxies, resizeProxies } from './proxies.js?v=calendar-20261008';
+import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=calendar-20261008';
 import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
-import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=i18n-20261004';
+import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=calendar-20261008';
+import { initCalendar, openCalendar } from './calendar.js?v=calendar-20261008';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString(numberLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -202,12 +203,14 @@ function view(name) {
   document.querySelectorAll('.view').forEach(node => { node.hidden = node.id !== `view-${name}`; });
   document.querySelectorAll('[data-view]').forEach(node => { node.classList.toggle('active', node.dataset.view === name); if (node.dataset.view === name) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current'); });
   history.replaceState(null, '', name === 'dashboard' ? location.pathname : `#${name}`);
+  if (name === 'calendar') { $('workspace').hidden = false; $('loading').hidden = true; openCalendar(); }
   if (state.rows.length) requestAnimationFrame(() => { if (name === 'dashboard') historyChart.resize(); if (name === 'extended') resizeProxies(); if (name === 'diagnostics') resizeDiagnostics(); });
 }
 function start() {
   icons();
   initProxies();
   initDiagnostics();
+  initCalendar();
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => view(button.dataset.view)));
   document.querySelectorAll('[data-range]').forEach(button => button.addEventListener('click', () => {
     state.range = button.dataset.range;
@@ -234,7 +237,7 @@ function start() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   new ResizeObserver(() => { historyChart?.resize(); }).observe(document.querySelector('main'));
-  if (['#research', '#methodology', '#extended', '#diagnostics'].includes(location.hash)) view(location.hash.slice(1));
+  if (['#research', '#methodology', '#extended', '#diagnostics', '#calendar'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
   initLanguage();
