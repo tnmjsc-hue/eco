@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with verifiable data and methodology.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=calendar-20261008b">
+  <link rel="stylesheet" href="/styles.css?v=calendar-20261008c">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=calendar-20261008b"></script>
+  <script type="module" src="/app.js?v=calendar-20261008c"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -58,7 +58,7 @@
       <section id="view-calendar" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">USD · GOLD · CRYPTO</p><h1>Lịch kinh tế</h1><p class="small muted">Các sự kiện vĩ mô Mỹ từ BLS, BEA, Fed và DOL</p></div><button id="cal-refresh" class="icon-button" aria-label="Cập nhật lịch kinh tế"><i data-lucide="refresh-cw"></i></button></div>
         <div class="notice research-notice">Lịch chính thức, giờ Việt Nam mặc định. Mức ảnh hưởng do ECO phân loại. Đánh giá là kịch bản có điều kiện; chưa có dự báo đồng thuận hoặc mô hình xác suất.</div>
-        <details id="cal-mql5" class="cal-external"><summary>Lịch mở rộng MQL5 · nhiều thị trường, thực tế và dự báo</summary><p class="small muted">Widget chính thức của MetaQuotes; dữ liệu và bộ lọc do MQL5 cung cấp trực tiếp khi bạn mở mục này. Bảng ECO bên dưới được cập nhật theo batch và dùng nguồn cơ quan công bố.</p><iframe id="cal-mql5-frame" title="Lịch kinh tế MetaQuotes MQL5" loading="lazy" sandbox="allow-scripts allow-popups allow-forms"></iframe><p class="small"><a href="https://www.mql5.com/en/economic-calendar" target="_blank" rel="noreferrer">Mở lịch đầy đủ tại MQL5 ↗</a></p></details>
+        <details id="cal-mql5" class="cal-external"><summary>Lịch mở rộng MQL5 · nhiều thị trường, thực tế và dự báo</summary><p class="small muted">MQL5 hạn chế hiển thị lịch trong khung nhúng ở một số trình duyệt. Mở trang chính thức trong tab mới để xem dữ liệu toàn cầu, thực tế, dự báo và kỳ trước.</p><p><a class="text-button" href="https://www.mql5.com/en/economic-calendar" target="_blank" rel="noopener noreferrer">Mở lịch đầy đủ tại MQL5 ↗</a></p></details>
         <div id="cal-loading" class="loading" role="status">Đang xác minh lịch kinh tế…</div>
         <div id="cal-error" class="notice error" role="alert" hidden><span id="cal-error-text"></span><button id="cal-retry" class="text-button">Thử lại</button></div>
         <div id="cal-content" hidden>
@@ -72,6 +72,7 @@
           </div>
           <p id="cal-range-error" class="negative small" role="alert" hidden>Khoảng ngày không hợp lệ</p>
           <p id="cal-count" class="small muted" aria-live="polite"></p>
+          <div class="cal-bias-legend small"><b class="usd-bullish">Xanh · USD bull</b><b class="usd-bearish">Đỏ · USD bear</b><span class="muted">Hướng so với kỳ trước; không phải bất ngờ so với dự báo.</span></div>
           <div class="table-wrap cal-table-wrap"><table class="cal-table"><thead><tr><th>Ngày / giờ</th><th>Tiền tệ</th><th>Ảnh hưởng</th><th>Sự kiện</th><th>Thực tế</th><th>Dự báo</th><th>Kỳ trước</th><th>Trạng thái</th></tr></thead><tbody id="cal-rows"></tbody></table></div>
           <p id="cal-empty" class="notice" hidden>Không có sự kiện trong bộ lọc này</p>
           <p class="small muted">Ô — là dữ liệu chưa xác minh. Số BLS gắn với kỳ mới nhất, có thể đã điều chỉnh; số BEA trích từ bản tin chính thức. Chưa có nguồn dự báo đồng thuận được cấp quyền. ≈ FOMC dùng giờ thông lệ 14:00 ET; xác minh lại với Fed.</p>

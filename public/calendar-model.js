@@ -18,6 +18,22 @@ export const SCENARIOS = {
   ],
 };
 
+const USD_DIRECTION_BY_KIND = new Map([
+  ['gdp', 'higher'], ['jobs', 'higher'], ['jolts', 'higher'], ['industrial_production', 'higher'],
+  ['cpi', 'higher'], ['pce', 'higher'], ['ppi', 'higher'], ['trade', 'higher'],
+  ['claims', 'lower'],
+]);
+
+export function usdReferenceBias(event) {
+  const direction = USD_DIRECTION_BY_KIND.get(event.kind);
+  if (event.currency !== 'USD' || !direction || !Number.isFinite(event.actual)
+    || !Number.isFinite(event.previous) || event.actual === event.previous) return null;
+  const actualMovedInSupportiveDirection = direction === 'higher'
+    ? event.actual > event.previous
+    : event.actual < event.previous;
+  return actualMovedInSupportiveDirection ? 'bullish' : 'bearish';
+}
+
 export function dayInZone(iso, zone = 'Asia/Ho_Chi_Minh') {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(iso));
   const get = key => parts.find(p => p.type === key).value;

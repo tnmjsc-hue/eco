@@ -1,6 +1,6 @@
 # ECO — Ethereum Core 10 Experimental
 
-**Tab Lịch kinh tế:** bảng ECO lấy lịch BLS/BEA/Fed/DOL Mỹ và số liệu đúng kỳ đã xác minh cho một số sự kiện; kèm widget MQL5 chính thức tải theo yêu cầu để xem lịch toàn cầu, actual/forecast/previous. Kịch bản USD/vàng/crypto giữ riêng với dữ liệu nguồn. Batch ECO có cache, snapshot R2/hash và JSON tĩnh; chạy 07:37 hằng ngày, kiểm số liệu 20:37/01:37 hôm sau ngày làm việc Mỹ (giờ Việt Nam). Bảng ECO chưa có consensus; số BLS là vintage mới nhất, không phải số tại thời điểm công bố cũ. [Nguồn và runbook](docs/ECONOMIC_CALENDAR.md).
+**Tab Lịch kinh tế:** bảng ECO lấy lịch BLS/BEA/Fed/DOL Mỹ và số liệu đúng kỳ đã xác minh cho một số sự kiện; liên kết mở lịch MQL5 chính thức trong tab mới để xem lịch toàn cầu, actual/forecast/previous. Màu xanh/đỏ Actual biểu thị hướng USD theo so sánh với kỳ trước cho các chỉ số đã ánh xạ; không phải bất ngờ so với dự báo. Kịch bản USD/vàng/crypto giữ riêng với dữ liệu nguồn. Batch ECO có cache, snapshot R2/hash và JSON tĩnh; chạy 07:37 hằng ngày, kiểm số liệu 20:37/01:37 hôm sau ngày làm việc Mỹ (giờ Việt Nam). Bảng ECO chưa có consensus; số BLS là vintage mới nhất, không phải số tại thời điểm công bố cũ. [Nguồn và runbook](docs/ECONOMIC_CALENDAR.md).
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 

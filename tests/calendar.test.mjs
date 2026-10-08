@@ -2,7 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { dayInZone, selectEvents, validateCalendar } from '../public/calendar-model.js';
+import { dayInZone, selectEvents, validateCalendar, usdReferenceBias } from '../public/calendar-model.js';
+
+test('Actual color uses an indicator-specific USD direction versus the previous period',()=>{
+  assert.equal(usdReferenceBias({currency:'USD',kind:'cpi',actual:0.4,previous:0.1}),'bullish');
+  assert.equal(usdReferenceBias({currency:'USD',kind:'gdp',actual:1.5,previous:2.1}),'bearish');
+  assert.equal(usdReferenceBias({currency:'USD',kind:'claims',actual:196,previous:206}),'bullish');
+  assert.equal(usdReferenceBias({currency:'USD',kind:'trade',actual:-88.6,previous:-71.2}),'bearish');
+  assert.equal(usdReferenceBias({currency:'USD',kind:'fomc',actual:4,previous:3}),null);
+  assert.equal(usdReferenceBias({currency:'USD',kind:'cpi',actual:0.1,previous:0.1}),null);
+  assert.equal(usdReferenceBias({currency:'USD',kind:'cpi',actual:0.4,previous:null}),null);
+  assert.equal(usdReferenceBias({currency:'EUR',kind:'cpi',actual:0.4,previous:0.1}),null);
+});
 
 test('calendar timezone dates cover Vietnam rollover and New York DST',()=>{
   assert.equal(dayInZone('2026-10-28T18:00:00Z','Asia/Ho_Chi_Minh'),'2026-10-29');

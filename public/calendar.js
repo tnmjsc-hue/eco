@@ -1,5 +1,5 @@
-import { translate as t, numberLocale } from './i18n.js?v=calendar-20261008b';
-import { dayInZone, selectEvents, validateCalendar, SCENARIOS } from './calendar-model.js?v=calendar-20261008b';
+import { translate as t, numberLocale } from './i18n.js?v=calendar-20261008c';
+import { dayInZone, selectEvents, validateCalendar, SCENARIOS, usdReferenceBias } from './calendar-model.js?v=calendar-20261008c';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };
@@ -11,6 +11,13 @@ function value(v, unit) {
   if (v === null) return '—';
   const number = v.toLocaleString(numberLocale(), {minimumFractionDigits:['thousand_jobs','thousand_claims'].includes(unit)?0:1,maximumFractionDigits:1});
   return `${number}${unit === 'percent' || unit === 'percent_saar' ? '%' : ['thousand_jobs','thousand_claims'].includes(unit) ? 'k' : unit === 'billion_usd' ? ` ${t('tỷ USD')}` : ''}`;
+}
+function actualPresentation(event) {
+  const bias = usdReferenceBias(event);
+  return {
+    className: event.actual === null ? 'muted' : `cal-value${bias ? ` usd-${bias}` : ''}`,
+    title: bias ? ` title="${txt(bias === 'bullish' ? 'USD có xu hướng được hỗ trợ so với kỳ trước; đây là kịch bản có điều kiện.' : 'USD có xu hướng chịu áp lực so với kỳ trước; đây là kịch bản có điều kiện.')}"` : '',
+  };
 }
 
 function setRange(kind) {
@@ -49,11 +56,12 @@ function render() {
     const elapsed = Date.parse(e.scheduled_at) < Date.now();
     const status = e.actual !== null ? (e.data_status === 'official_release' ? 'Đã có số liệu chính thức' : 'Số liệu kỳ mới nhất')
       : elapsed ? 'Chưa xác minh số liệu' : 'Sắp diễn ra';
+    const actual = actualPresentation(e);
     tr.innerHTML = `<td data-label="${txt('Ngày / giờ')}"><time datetime="${esc(e.scheduled_at)}">${esc(dateLabel(e.scheduled_at))}<b>${esc(time)}${e.time_basis ? ' ≈' : ''}</b></time></td>
       <td data-label="${txt('Tiền tệ')}"><span class="badge">USD</span></td>
       <td data-label="${txt('Ảnh hưởng')}"><span class="cal-impact ${e.impact}">${txt(e.impact === 'high' ? 'Cao' : 'Vừa')}</span></td>
       <td class="cal-event"><button class="cal-event-button" data-cal-event="${esc(e.id)}" aria-pressed="${e.id === state.selected}">${txt(e.title)}</button><small>${esc(e.source_title)}</small><a href="${esc(e.source_url)}" target="_blank" rel="noreferrer">${e.provider.toUpperCase()} ↗</a></td>
-      <td data-label="${txt('Thực tế')}" class="${e.actual === null ? 'muted' : 'cal-value'}">${esc(value(e.actual,e.unit))}</td><td data-label="${txt('Dự báo')}" class="muted">—</td><td data-label="${txt('Kỳ trước')}" class="${e.previous === null ? 'muted' : 'cal-value'}">${esc(value(e.previous,e.unit))}</td>
+      <td data-label="${txt('Thực tế')}" class="${actual.className}"${actual.title}>${esc(value(e.actual,e.unit))}</td><td data-label="${txt('Dự báo')}" class="muted">—</td><td data-label="${txt('Kỳ trước')}" class="${e.previous === null ? 'muted' : 'cal-value'}">${esc(value(e.previous,e.unit))}</td>
       <td data-label="${txt('Trạng thái')}"><span class="small">${txt(status)}</span></td>`;
     tr.querySelector('button').addEventListener('click', () => { state.selected = e.id; render(); });
     $('cal-rows').append(tr);
@@ -61,10 +69,11 @@ function render() {
   const selected = rows.find(e => e.id === state.selected);
   $('cal-assessment').hidden = !selected;
   if (selected) {
+    const actual = actualPresentation(selected);
     $('cal-selected-title').textContent = t(selected.title);
     const source = `<a href="${esc(selected.data_source_url || selected.source_url)}" target="_blank" rel="noreferrer">${txt('Xem nguồn chính thức')} ↗</a>`;
     $('cal-release-detail').innerHTML = selected.actual !== null
-      ? `<div class="cal-result-head"><div><p class="eyebrow">${txt('Kết quả theo kỳ')}</p><strong>${esc(value(selected.actual,selected.unit))}</strong><span class="small muted">${txt('Kỳ trước')}: ${esc(value(selected.previous,selected.unit))}</span></div><div class="small"><p>${txt('Kỳ tham chiếu')}: <b>${esc(selected.reference_period)}</b></p><p>${txt('Dữ liệu tải lúc')}: ${esc(dateLabel(selected.data_vintage_at,true))}</p>${source}</div></div>${selected.details.length ? `<ul>${selected.details.map(d=>`<li>${txt(d.label)}: <b>${esc(value(d.actual,d.unit))}</b> · ${txt('Kỳ trước')}: ${esc(value(d.previous,d.unit))}</li>`).join('')}</ul>` : ''}<p class="small muted">${txt(selected.data_status === 'official_release' ? 'Số liệu từ bản tin công bố chính thức.' : 'Số liệu BLS thuộc kỳ mới nhất, có thể đã được điều chỉnh sau công bố; không phải vintage tại thời điểm sự kiện.')}</p>`
+      ? `<div class="cal-result-head"><div><p class="eyebrow">${txt('Kết quả theo kỳ')}</p><strong class="${actual.className}"${actual.title}>${esc(value(selected.actual,selected.unit))}</strong><span class="small muted">${txt('Kỳ trước')}: ${esc(value(selected.previous,selected.unit))}</span></div><div class="small"><p>${txt('Kỳ tham chiếu')}: <b>${esc(selected.reference_period)}</b></p><p>${txt('Dữ liệu tải lúc')}: ${esc(dateLabel(selected.data_vintage_at,true))}</p>${source}</div></div>${selected.details.length ? `<ul>${selected.details.map(d=>`<li>${txt(d.label)}: <b>${esc(value(d.actual,d.unit))}</b> · ${txt('Kỳ trước')}: ${esc(value(d.previous,d.unit))}</li>`).join('')}</ul>` : ''}<p class="small muted">${txt(selected.data_status === 'official_release' ? 'Số liệu từ bản tin công bố chính thức.' : 'Số liệu BLS thuộc kỳ mới nhất, có thể đã được điều chỉnh sau công bố; không phải vintage tại thời điểm sự kiện.')}</p>`
       : `<p class="small muted">${txt(Date.parse(selected.scheduled_at) < Date.now() ? 'Đã qua giờ dự kiến; chưa đối chiếu được số liệu của đúng kỳ công bố.' : 'Chưa đến giờ công bố; số thực tế chưa có.')}</p>${source}`;
     $('cal-scenarios').innerHTML = SCENARIOS[selected.category].map(r => `<tr>${r.map((cell,i) => `<${i===0?'th':'td'}>${txt(cell)}</${i===0?'th':'td'}>`).join('')}</tr>`).join('');
   }
@@ -109,7 +118,6 @@ async function load(force = false) {
 export function openCalendar() { load(); }
 export function initCalendar() {
   setRange('week');
-  $('cal-mql5').addEventListener('toggle',()=>{if ($('cal-mql5').open && !$('cal-mql5-frame').getAttribute('src')) $('cal-mql5-frame').src='/mql5-calendar.html';});
   document.querySelectorAll('[data-cal-range]').forEach(b => b.addEventListener('click',()=>setRange(b.dataset.calRange)));
   for (const id of ['cal-start','cal-end','cal-zone','cal-impact']) $(id).addEventListener('change',render);
   $('cal-search').addEventListener('input',render);
