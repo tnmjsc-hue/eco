@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {loadAssessment,verifiedAsset,METRICS} from '../public/macro-model.js';
+import {loadAssessment,verifiedAsset,validateAssessment,METRICS} from '../public/macro-model.js';
 const fetchLocal=async url=>new Response(await readFile(`public${url}`),{status:200});
 
 test('published macro verifies assessment, manifest, parent and all input hashes',async()=>{
@@ -26,4 +26,13 @@ test('actual table stays neutral and hypothetical consensus templates are absent
   const html=await readFile('public/index.html','utf8'),js=await readFile('public/calendar.js','utf8');
   assert.ok(!js.includes('usdReferenceBias'));assert.ok(!html.includes('cal-scenarios'));assert.ok(!html.includes('USD bull'));
   for(const id of ['macro-latest-rows','macro-peers','macro-axes','macro-assets','macro-manifest'])assert.ok(html.includes(`id="${id}"`));
+});
+test('unknown regime/state/transition enum rejects instead of using a fallback label',async()=>{
+  const good=await loadAssessment(fetchLocal);
+  for(const field of ['regime_id','assessment_state','context_transition','evidence_grade','change_reason']){
+    const bad=structuredClone(good.assessment);bad[field]='unsupported';
+    assert.throws(()=>validateAssessment(bad,good.calendar,good.pointer,good.manifest));
+  }
+  const utc=structuredClone(good.assessment);utc.as_of=utc.as_of.replace('Z','+00:00');
+  assert.equal(validateAssessment(utc,good.calendar,good.pointer,good.manifest).assessment_id,good.assessment.assessment_id);
 });

@@ -18,6 +18,8 @@ PCE chỉ nhận bảng **Personal Income and Related Measures** với phép đ�
 
 GDP phải chứng minh previous thuộc quý liền trước, không phải estimate cùng quý. Các bản legacy có usable_at trùng nhau nhưng khác số và chưa có lineage bị loại `ambiguous_vintage`; không chọn theo event date để giả lập lúc đã biết revision. Một vintage mới có first-seen ledger thật có thể giải quyết ambiguity. Trade chỉ là bối cảnh, không bỏ phiếu USD.
 
+Adapter `official-macro-observations-v1.0.1` sửa metadata lineage sau lượt chạy thật: hash phản hồi BLS có thể đổi trong khi actual/previous giữ nguyên. Thay body/hash/parser được ghi như thay snapshot; chỉ cặp số thay đổi cùng kỳ mới là numeric revision. Migration parser patch với số/hash pin giống nhau giữ thời điểm đã biết, không kế thừa lineage chưa được chứng minh từ v1.0.0. GDP ambiguous dùng placeholder null, giữ mọi candidate ID trong exclusions; không hiển thị một cặp số được chọn theo thứ tự ID. Bản công bố trước sửa lỗi vẫn nguyên bytes, correction tạo assessment mới.
+
 Legacy initial inputs dùng calendar.generated_at làm usable_at; không khẳng định biết số vào giờ công bố lịch sử. Giá trị/source/parser mới có observation ID mới và first_seen_at mới; giá trị giữ nguyên không bị reset tuổi kỳ. Khi source outage và parent immutable giữ nguyên, có thể dùng lại normalized bundle đã xác minh trong manifest trước; pipeline freshness vẫn là cổng độc lập.
 
 ## Chạy và kiểm tra

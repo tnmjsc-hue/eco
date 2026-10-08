@@ -1,6 +1,6 @@
-import { translate as t, numberLocale } from './i18n.js?v=macro-20261009a';
-import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=macro-20261009a';
-import {refreshMacro,renderMacro} from './macro.js?v=macro-20261009a';
+import { translate as t, numberLocale } from './i18n.js?v=macro-20261009b';
+import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=macro-20261009b';
+import {refreshMacro,renderMacro} from './macro.js?v=macro-20261009b';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };

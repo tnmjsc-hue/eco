@@ -623,7 +623,9 @@
     "Vintage hiện tại, có thể đã sửa đổi": "Current vintage, potentially revised",
     "Số từ bản tin chính thức": "Official release values",
     "Chỉ là bối cảnh thương mại; không bỏ phiếu tài sản": "Trade context only; no asset vote",
-    "Đã biết trong snapshot từ": "Known in snapshot since"
+    "Đã biết trong snapshot từ": "Known in snapshot since",
+    "Sự kiện mới nhất chưa đủ điều kiện đánh giá chéo; số từ bản tin chỉ để đối chiếu.": "The latest event is not eligible for cross-indicator assessment; official release values are shown for reference.",
+    "Chưa đủ metadata hoặc chưa hỗ trợ; không suy ra hướng tài sản": "Metadata incomplete or unsupported; no asset direction inferred"
   },
   "ko": {
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "차트는 각 릴리스의 빈티지에 따라 재구성됩니다. 릴리스는 변경할 수 없습니다. 수정에는 자체 수정 사항과 이유가 있습니다. 새 날짜의 첫 번째 게시 기록은 백필 기록을 게시된 상태로 만들지 않고 달력이 활성화된 시점과 별도로 저장됩니다. 아직은 실험적 연구로, 아직 30일간의 그림자가 완료되지 않았습니다.",

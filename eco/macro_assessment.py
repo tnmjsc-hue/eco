@@ -222,13 +222,14 @@ def select_observations(observations, calendar, as_of, registry):
         values = {(o.get("actual"),o.get("previous")) for o in tied}
         referenced={o.get("revision_of") for o in tied}
         children = [o for o in tied if o.get("revision_of") in {c["observation_id"] for c in tied} and o["observation_id"] not in referenced]
-        chosen = children[0] if len(children)==1 else min(tied,key=lambda o:o["observation_id"])
+        chosen = deepcopy(children[0] if len(children)==1 else min(tied,key=lambda o:o["observation_id"]))
         if len(values)>1 and len(children)!=1:
-            chosen["excluded_reason"] = "ambiguous_vintage"
+            chosen.update(excluded_reason="ambiguous_vintage",observation_id=None,event_id=None,actual=None,previous=None,source_url=None,source_sha256=None,revision_of=None,
+                          ambiguous_observation_ids=sorted(o["observation_id"] for o in tied))
         selected[metric] = chosen
         for o in candidates:
             if o["observation_id"] != chosen["observation_id"]:
-                excluded.append({"observation_id":o["observation_id"],"reason":"superseded_period_or_vintage"})
+                excluded.append({"observation_id":o["observation_id"],"reason":"ambiguous_vintage" if o["observation_id"] in chosen.get("ambiguous_observation_ids",[]) else "superseded_period_or_vintage"})
         age = (cutoff.date()-period_end(chosen["reference_period"])).days
         if age > registry[metric]["max_age_days"]:
             chosen["excluded_reason"] = "stale_observation"
@@ -250,6 +251,7 @@ def signals_from(selected, registry):
              "delta":None,"signed_delta":None,"epsilon":r["epsilon"],"unit":r["unit"],
              "direction":"unknown","level_context":None,"excluded_reason":o.get("excluded_reason") if o else "missing_metric",
              "quality_flags":list(o.get("quality_flags",[])) if o else [],
+             "ambiguous_observation_ids":o.get("ambiguous_observation_ids",[]) if o else [],
              "source_url":o.get("source_url") if o else None,"source_sha256":o.get("source_sha256") if o else None}
         if o and not s["excluded_reason"]:
             actual = decimal(o["actual"])
@@ -279,7 +281,7 @@ def axis(children, expected=None, flags=()):
             "same_direction_slots":values.count(d) if d in DIRECTIONS[:3] else 0,
             "direction_counts":{v:values.count(v) for v in DIRECTIONS},
             "input_observation_ids":[i for c in children for i in c.get("input_observation_ids",[c.get("observation_id")]) if i and c["direction"]!="unknown"],
-            "excluded_observation_ids":[i for c in children for i in c.get("excluded_observation_ids",[c.get("observation_id")]) if i and c["direction"]=="unknown"],
+            "excluded_observation_ids":[i for c in children for i in c.get("excluded_observation_ids",c.get("ambiguous_observation_ids") or [c.get("observation_id")]) if i and c["direction"]=="unknown"],
             "quality_flags":sorted(set(flags)|({"partial"} if 0<available<expected else set())|{f for c in children for f in c.get("quality_flags",[])})}
 
 
@@ -457,7 +459,9 @@ def assess(bundle, calendar, batch_status, as_of, previous_assessment, ruleset):
     reasons=set()
     if previous:
         for c in changes:
-            if c["before_observation_id"] and c["after_observation_id"] and old[c["metric_id"]]["reference_period"]==new[c["metric_id"]]["reference_period"]:reasons.add("source_revision")
+            if c["before_observation_id"] and c["after_observation_id"] and old[c["metric_id"]]["reference_period"]==new[c["metric_id"]]["reference_period"]:
+                before,after=old[c["metric_id"]],new[c["metric_id"]]
+                reasons.add("source_revision" if not before["excluded_reason"] and not after["excluded_reason"] and (before["actual"],before["previous"])!=(after["actual"],after["previous"]) else "source_snapshot_changed")
             else:reasons.add("new_observation")
         if any(s["excluded_reason"]=="stale_observation" and old.get(s["metric_id"],{}).get("excluded_reason")!="stale_observation" for s in signals.values()):reasons.add("freshness_expired")
         if (pipeline,pipeline_reason)!=(previous["pipeline_state"],previous["pipeline_reason"]):reasons.add("pipeline_status_changed")

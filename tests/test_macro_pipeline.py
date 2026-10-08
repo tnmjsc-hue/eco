@@ -124,5 +124,18 @@ class MacroAdapterTests(unittest.TestCase):
         core=next(o for o in newer['observations'] if o['metric_id']==CORE);old=next(o for o in b['observations'] if o['metric_id']==CORE)
         self.assertEqual(core['first_seen_at'],c2['generated_at']);self.assertEqual(core['revision_of'],old['observation_id']);self.assertNotEqual(core['observation_id'],old['observation_id'])
 
+    def test_source_body_change_with_same_values_is_not_numeric_revision(self):
+        c,s=self.pce_fixture();b=adapter.normalize(c,cal.digest(cal.encode(c)),s,RULES,NOW)
+        key='bea_report_bea_pce_2026_09_30';s[key]['body']+=' <footer>updated presentation</footer>';s[key]['sha256']=cal.digest(s[key]['body'].encode());c['sources'][key]=s[key]
+        c['release_id']='calendar-'+'b'*20;c['generated_at']='2026-10-08T16:00:00Z'
+        newer=adapter.normalize(c,cal.digest(cal.encode(c)),s,RULES,c['generated_at'],b)
+        self.assertTrue(all(o['revision_of'] is None for o in newer['observations']))
+
+    def test_parser_patch_migration_keeps_known_time_without_old_false_lineage(self):
+        c,s=self.pce_fixture();b=adapter.normalize(c,cal.digest(cal.encode(c)),s,RULES,NOW)
+        for o in b['observations']:o['parser_version']='official-macro-observations-v1.0.0';o['revision_of']='obs-'+'f'*20;o['observation_id']='obs-'+m.digest({'old':o['metric_id']})[:20]
+        newer=adapter.normalize(c,b['calendar_sha256'],s,RULES,'2026-10-08T16:00:00Z',b)
+        self.assertTrue(all(o['usable_at']==NOW and o['revision_of'] is None for o in newer['observations']))
+
 
 if __name__=='__main__':unittest.main()

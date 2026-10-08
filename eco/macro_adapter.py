@@ -9,7 +9,7 @@ import re
 from . import calendar as cal
 from . import macro_assessment as engine
 
-PARSER_VERSION = "official-macro-observations-v1.0.0"
+PARSER_VERSION = "official-macro-observations-v1.0.1"
 PIO_DEFINITION_URL = "https://www.bea.gov/news/pio-release-additional-information"
 BLS_METRICS = {"cpi":"cpi_headline_mom_sa", "payrolls":"nfp_change_k_sa",
                "unemployment":"unemployment_rate_sa", "ppi":"ppi_final_demand_mom_sa",
@@ -36,7 +36,7 @@ def normalize(calendar, calendar_sha256, sources, ruleset, now, prior_bundle=Non
     """Legacy initial snapshot is available only from generated_at; new vintages use ledger time."""
     registry=ruleset["registry"]; observations=[]; rejected=[]
     previous={o["observation_id"]:o for o in (prior_bundle or {}).get("observations",[])}
-    prior_periods={(o["metric_id"],o["reference_period"]):o for o in previous.values()}
+    prior_periods={(o["metric_id"],o["reference_period"],o["event_id"]):o for o in previous.values()}
     def add(e, metric, actual, prior, source_key, period=None, proof=True, semantics="prior_period_same_measure", flags=()):
         r=registry[metric]; p=period or e["reference_period"]
         expected=calendar["sources"][source_key]
@@ -45,10 +45,14 @@ def normalize(calendar, calendar_sha256, sources, ruleset, now, prior_bundle=Non
                   "source_sha256":expected["sha256"],"parser_version":PARSER_VERSION}
         oid="obs-"+engine.digest(identity)[:20]
         old=previous.get(oid)
+        prior_observation=prior_periods.get((metric,p,e["id"]))
+        # Parser patch migration with identical pinned values keeps the time
+        # those values were already known. It does not assert numeric revision.
+        if not old and prior_observation and all(prior_observation.get(k)==v for k,v in (("actual",a),("previous",b),("source_sha256",expected["sha256"]))):old=prior_observation
         same_parent=old and old["calendar_release_id"]==calendar["release_id"]
         first = old.get("first_seen_at") if same_parent else (old.get("first_seen_at") or old["usable_at"]) if old else now if prior_bundle else None
         usable=old["usable_at"] if same_parent else first or calendar["generated_at"]
-        prior_observation=prior_periods.get((metric,p))
+        value_revision=prior_observation and (prior_observation["actual"],prior_observation["previous"])!=(a,b)
         observations.append({"observation_id":oid,"event_id":e["id"],
           "release_family_id":"employment_report" if metric in {"nfp_change_k_sa","unemployment_rate_sa"} else e["kind"],
           "metric_id":metric,"provider":r["provider"],"series_id":r["series_id"],"actual":a,"previous":b,
@@ -58,7 +62,7 @@ def normalize(calendar, calendar_sha256, sources, ruleset, now, prior_bundle=Non
           "source_published_at":None,"source_retrieved_at":expected["retrieved_at"],"first_seen_at":first,"usable_at":usable,
           "knowledge_basis":"first_seen_ledger" if first else "legacy_snapshot_generated_at",
           "data_status":e["data_status"],"source_url":expected["source_url"],"source_sha256":expected["sha256"],
-          "calendar_release_id":calendar["release_id"],"revision_of":old.get("revision_of") if old else prior_observation["observation_id"] if prior_observation and prior_observation["observation_id"]!=oid else None,
+          "calendar_release_id":calendar["release_id"],"revision_of":old.get("revision_of") if old and old.get("parser_version")==PARSER_VERSION else prior_observation["observation_id"] if value_revision else None,
           "quality_flags":sorted(set(flags)|({"missing_semantics"} if not proof or semantics is None else set())),"parser_version":PARSER_VERSION,
           "definition_source_url":PIO_DEFINITION_URL if metric.startswith("pce_") else None})
     bls=None

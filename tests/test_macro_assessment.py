@@ -218,6 +218,7 @@ class MacroEngineTests(unittest.TestCase):
         def conflicting(b,c):
             o=deepcopy(b['observations'][0]);o.update(observation_id='obs-'+'f'*20,actual='0');b['observations'].append(o)
         a=evaluate({CPI:('0.4','0.1')},conflicting);self.assertEqual(signal(a,CPI)['excluded_reason'],'ambiguous_vintage')
+        self.assertIsNone(signal(a,CPI)['actual']);self.assertIsNone(signal(a,CPI)['observation_id']);self.assertEqual(len(a['axes']['inflation']['excluded_observation_ids']),2)
         def lineage(b,c):conflicting(b,c);b['observations'][-1]['revision_of']=b['observations'][0]['observation_id']
         a=evaluate({CPI:('0.4','0.1')},lineage);self.assertEqual(signal(a,CPI)['actual'],'0')
 
@@ -228,6 +229,12 @@ class MacroEngineTests(unittest.TestCase):
         self.assertEqual(signal(expired,CLAIMS)['excluded_reason'],'stale_observation')
         self.assertEqual(expired['change_reason'],'freshness_expired');self.assertEqual(expired['context_transition'],'context_only')
         self.assertNotEqual(expired['assessment_id'],a['assessment_id']);self.assertEqual(expired['changed_observation_ids'],[])
+
+    def test_same_value_new_source_snapshot_is_not_source_revision(self):
+        b,c=fixture({CPI:('0.4','0.1'),NFP:('29','133')});a=m.assess(b,c,status(),NOW,None,RULES)
+        b['observations'][0]['observation_id']='obs-'+'f'*20
+        other=m.assess(b,c,status(),NOW,a,RULES)
+        self.assertEqual(other['change_reason'],'source_snapshot_changed');self.assertNotIn(m.RULE_IDS[8],[r['rule_id'] for r in other['triggered_rules']])
 
     def test_nonconsensus_and_unobserved_conditions_always_explicit(self):
         a=evaluate({CPI:('0.4','0.1'),NFP:('29','133')})

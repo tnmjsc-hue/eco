@@ -1,5 +1,5 @@
 import { PROXIES, validateProxyPointer, validateProxyRelease, exportProxyCSV } from './proxy-model.js?v=proxies-1';
-import { numberLocale, translate } from './i18n.js?v=macro-20261009a';
+import { numberLocale, translate } from './i18n.js?v=macro-20261009b';
 const $ = id => document.getElementById(id);
 const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
 const fmt = (v, n=2) => v === null ? '—' : v.toLocaleString(numberLocale(),{maximumFractionDigits:n,minimumFractionDigits:n});
