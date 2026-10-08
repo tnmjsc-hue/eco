@@ -55,7 +55,7 @@ Chạy live probe D05 không cần API key bằng `node scripts/audit-d05-feasib
 
 ## Đọc theo thứ tự
 
-**Đặc tả đánh giá chéo sự kiện kinh tế:** [MACRO_CROSS_INDICATOR_RULES.md](docs/MACRO_CROSS_INDICATOR_RULES.md) quy định metric, vintage, quy tắc đối chiếu USD/vàng/crypto và fixtures cho code agent. Engine/UI tích hợp còn TODO.
+**Đặc tả đánh giá chéo sự kiện kinh tế:** [MACRO_CROSS_INDICATOR_RULES.md](docs/MACRO_CROSS_INDICATOR_RULES.md), `macro-cross-v1.0.1`, quy định metric, vintage, quy tắc đối chiếu USD/vàng/crypto và fixtures cho code agent. Kiểm đặc tả/oracle 125 trạng thái bằng `python -m unittest discover -s tests -p test_macro_cross_spec.py -v`; [review và bản sửa](docs/MACRO_CROSS_INDICATOR_REVIEW.md). Engine/UI tích hợp còn TODO.
 
 E9 NVT proxy có adapter có key/licence, engine và harness nghiên cứu riêng; nguồn adjusted transfer ETH hiện vẫn bị chặn, chưa có backfill/backtest E9 thật. Hướng chạy và điều kiện tiếp tục ở [E9_RUNBOOK.md](docs/E9_RUNBOOK.md). `pnpm audit:e9` chỉ kiểm truy cập, không phát hành E9 hoặc thay Core.
 

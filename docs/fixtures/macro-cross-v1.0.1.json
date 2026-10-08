@@ -1,0 +1,82 @@
+{
+  "ruleset_version": "macro-cross-v1.0.1",
+  "schema_version": "macro-assessment-v1.0.1",
+  "states": ["positive", "negative", "flat", "mixed", "unknown"],
+  "grid_axes": "key=I, row=L, column=G; pipeline fresh; no negative-level override",
+  "regime_grid": {
+    "positive": [
+      ["R01", "R_CONFLICT", "R01", "R_CONFLICT", "R01"],
+      ["R_CONFLICT", "R03", "R03", "R_CONFLICT", "R03"],
+      ["R01", "R03", "R02", "R_CONFLICT", "R02"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R01", "R03", "R02", "R_CONFLICT", "R_INSUFFICIENT"]
+    ],
+    "negative": [
+      ["R04", "R_CONFLICT", "R04", "R_CONFLICT", "R04"],
+      ["R_CONFLICT", "R06", "R06", "R_CONFLICT", "R06"],
+      ["R04", "R06", "R05", "R_CONFLICT", "R05"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R04", "R06", "R05", "R_CONFLICT", "R_INSUFFICIENT"]
+    ],
+    "flat": [
+      ["R07", "R_CONFLICT", "R07", "R_CONFLICT", "R07"],
+      ["R_CONFLICT", "R09", "R09", "R_CONFLICT", "R09"],
+      ["R07", "R09", "R08", "R_CONFLICT", "R08"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R07", "R09", "R08", "R_CONFLICT", "R_INSUFFICIENT"]
+    ],
+    "mixed": [
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_INSUFFICIENT"]
+    ],
+    "unknown": [
+      ["R_ACTIVITY_ONLY", "R_CONFLICT", "R_ACTIVITY_ONLY", "R_CONFLICT", "R_INSUFFICIENT"],
+      ["R_CONFLICT", "R_ACTIVITY_ONLY", "R_ACTIVITY_ONLY", "R_CONFLICT", "R_INSUFFICIENT"],
+      ["R_ACTIVITY_ONLY", "R_ACTIVITY_ONLY", "R_ACTIVITY_ONLY", "R_CONFLICT", "R_INSUFFICIENT"],
+      ["R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_CONFLICT", "R_INSUFFICIENT"],
+      ["R_INSUFFICIENT", "R_INSUFFICIENT", "R_INSUFFICIENT", "R_INSUFFICIENT", "R_INSUFFICIENT"]
+    ]
+  },
+  "asset_order": ["usd", "gold", "crypto_risk_assets"],
+  "regime_assets": {
+    "R01": ["supportive", "adverse", "adverse"],
+    "R02": ["supportive", "adverse", "adverse"],
+    "R03": ["mixed", "mixed", "adverse"],
+    "R04": ["adverse", "supportive", "supportive"],
+    "R05": ["adverse", "supportive", "supportive"],
+    "R06": ["mixed", "supportive", "mixed"],
+    "R07": ["supportive", "adverse", "mixed"],
+    "R08": ["neutral", "neutral", "neutral"],
+    "R09": ["mixed", "supportive", "mixed"],
+    "R_CONFLICT": ["mixed", "mixed", "mixed"],
+    "R_ACTIVITY_ONLY": ["mixed", "mixed", "mixed"],
+    "R_INSUFFICIENT": ["insufficient_evidence", "insufficient_evidence", "insufficient_evidence"],
+    "R_STALE": ["insufficient_evidence", "insufficient_evidence", "insufficient_evidence"]
+  },
+  "routing_regressions": [
+    {"id": "T15", "I": "unknown", "L": "positive", "G": "flat", "regime": "R_ACTIVITY_ONLY"},
+    {"id": "T43", "I": "unknown", "L": "positive", "G": "negative", "regime": "R_CONFLICT"}
+  ],
+  "transition_regressions": [
+    {"id": "T38", "changed_event_ids": ["jobs", "cpi"], "latest_event_ids": ["jobs"], "has_previous": true, "expected": "multiple_inputs_changed"},
+    {"id": "T44", "changed_event_ids": ["jobs", "jobs"], "latest_event_ids": ["jobs"], "has_previous": true, "expected": "latest_batch_only"},
+    {"id": "T44", "changed_event_ids": ["cpi", "pce"], "latest_event_ids": ["cpi", "pce"], "has_previous": true, "expected": "latest_batch_only"},
+    {"id": "T37", "changed_event_ids": ["jobs"], "latest_event_ids": ["jobs"], "has_previous": false, "expected": "not_computable"},
+    {"id": "T45", "changed_event_ids": [], "latest_event_ids": ["jobs"], "has_previous": true, "expected": "context_only"},
+    {"id": "T38", "changed_event_ids": ["jobs"], "latest_event_ids": [], "has_previous": true, "expected": "multiple_inputs_changed"}
+  ],
+  "pipeline_regressions": [
+    {"name": "zero_age", "known_at": "2026-10-09T00:00:00Z", "check_at": "2026-10-09T00:00:00Z", "state": "fresh", "reason": null},
+    {"name": "exact_48h", "known_at": "2026-10-09T00:00:00Z", "check_at": "2026-10-07T00:00:00Z", "state": "fresh", "reason": null},
+    {"name": "past_48h", "known_at": "2026-10-09T00:00:00Z", "check_at": "2026-10-06T23:59:59.999999Z", "state": "stale", "reason": "source_check_expired"},
+    {"name": "future_check", "known_at": "2026-10-09T00:00:00Z", "check_at": "2026-10-10T00:00:00Z", "state": "unknown", "reason": "future_pipeline_status"},
+    {"name": "future_status_with_past_check", "known_at": "2026-10-10T00:00:00Z", "check_at": "2026-10-08T00:00:00Z", "state": "unknown", "reason": "future_pipeline_status"},
+    {"name": "check_after_known", "known_at": "2026-10-07T00:00:00Z", "check_at": "2026-10-08T00:00:00Z", "state": "unknown", "reason": "invalid_pipeline_chronology"},
+    {"name": "missing_check", "known_at": "2026-10-09T00:00:00Z", "check_at": null, "state": "unknown", "reason": "pipeline_status_unknown"},
+    {"name": "missing_known", "known_at": null, "check_at": "2026-10-08T00:00:00Z", "state": "unknown", "reason": "pipeline_status_unknown"},
+    {"name": "naive_timestamp", "known_at": "2026-10-09T00:00:00", "check_at": "2026-10-08T00:00:00Z", "state": "unknown", "reason": "pipeline_status_unknown"}
+  ]
+}

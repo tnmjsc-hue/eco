@@ -20,6 +20,7 @@ If `.codegraph/` exists, use it before grep/find:
 - Khi người dùng yêu cầu triển khai tiếp, thực hiện các task sẵn sàng; không hỏi lại về lựa chọn kỹ thuật thường lệ đã có mặc định trong kế hoạch.
 - Viết giải thích và tài liệu sản phẩm bằng tiếng Việt; tên biến, metric ID và schema bằng tiếng Anh.
 - Khi triển khai đánh giá chéo sự kiện kinh tế, đọc và tuân thủ `docs/MACRO_CROSS_INDICATOR_RULES.md`: contract thời gian/metric, ngưỡng, reducer, bảng kết luận và fixtures là đặc tả chuẩn; không tự biến so sánh kỳ trước thành surprise hoặc sửa quy tắc dưới cùng version.
+- Đặc tả macro hiện là `macro-cross-v1.0.1`; trước khi sửa/triển khai phải chạy `python -m unittest discover -s tests -p test_macro_cross_spec.py -v` và dùng oracle cố định trong `docs/fixtures/macro-cross-v1.0.1.json`. Bộ kiểm đặc tả không thay nghiệm thu engine/adapter/UI/publication.
 - Không thay ETH bằng dữ liệu BTC, không suy diễn metric chưa có thành số 0 hoặc số 50.
 - Không gắn nhãn xác suất cho điểm 0–100 nếu chưa có mô hình xác suất và kiểm định calibration riêng.
 - Mọi feature/normalizer tại ngày t chỉ được dùng dữ liệu có thể biết tại thời điểm tính. Ngày quan sát, ngày dữ liệu sẵn có và ngày tải dữ liệu là ba khái niệm riêng.

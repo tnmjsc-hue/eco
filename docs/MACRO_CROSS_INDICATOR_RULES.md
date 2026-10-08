@@ -4,14 +4,16 @@ Ngày soạn: **08/10/2026**; rà soát hoàn tất **09/10/2026**, giờ Việt
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Ruleset đề xuất | `macro-cross-v1.0.0` |
-| Schema đầu ra đề xuất | `macro-assessment-v1.0.0` |
+| Ruleset đề xuất | `macro-cross-v1.0.1` |
+| Schema đầu ra đề xuất | `macro-assessment-v1.0.1` |
 | Trạng thái | `SPEC_READY_IMPLEMENTATION_TODO` — đặc tả, chưa phải engine đang chạy |
 | Nguồn đầu vào đã đối chiếu | Calendar `us-macro-calendar-v1.1.0`, schema `1.1.0`, remote commit `d1aeac2509e1f1d7ff9dba42fd38a5a5fb8f055b` |
 | Sản phẩm | Nhận định có điều kiện về dữ liệu kinh tế mới nhất và bối cảnh liên chỉ số |
 | Ngôn ngữ | Giải thích tiếng Việt; ID, enum và field tiếng Anh |
 
 Đây là đặc tả chuẩn cho agent triển khai. **BẮT BUỘC**, **KHÔNG ĐƯỢC** và **CHỈ KHI** là yêu cầu kiểm thử được. Các ngưỡng và bảng quyết định dưới đây là lựa chọn thiết kế nghiên cứu của ECO, chưa được hiệu chỉnh theo khả năng dự báo giá. Agent không tự đổi chúng để có kết luận đẹp hơn.
+
+Bản `v1.0.1` sửa bốn finding của review: ID phục hồi pipeline, cutoff của batch status, fixture T15 và T38. Bản `v1.0.0` tại commit `137511f` được giữ trong Git làm bằng chứng; chưa có assessment macro production cần migration. Ngưỡng, reducer và bảng tài sản không đổi. Bộ kiểm đặc tả ở §14.1 chỉ nghiệm thu các hợp đồng được nêu, không thay nghiệm thu engine/adapter/UI.
 
 ## 1. Ý đồ sản phẩm
 
@@ -117,7 +119,11 @@ Hàm nhận `as_of` UTC từ caller; không gọi đồng hồ hệ thống bên
 
 Tại đúng biên vẫn hợp lệ; thêm một ngày là `stale_observation`. Ngưỡng này là policy kỹ thuật v1, không bảo đảm thông tin kinh tế chưa bị thay thế. Nếu lịch có một sự kiện mới hơn đã qua giờ nhưng chưa có actual, giữ bản hợp lệ cũ với `newer_scheduled_result_pending`; không tự xác nhận nguồn đã công bố hoặc số cũ là số mới.
 
-`pipeline_stale = as_of - last_successful_source_check_at > 48 giờ`. Field này phải từ batch status đáng tin, không lấy thời gian render; thiếu timestamp → `pipeline_status_unknown`. Cả hai trường hợp làm assessment `stale_context`, các asset conclusion thành `insufficient_evidence`; bản tốt cũ vẫn hiển thị dưới nhãn ngày gốc. Mốc đúng 48 giờ chưa stale. Observation vẫn phải qua freshness riêng dù nguồn vừa được kiểm.
+Batch status phải là snapshot bất biến đã verify hash, pin `batch_status_id`, `batch_status_sha256`, `known_at` và `last_successful_source_check_at`. `known_at` là lần hệ thống ghi nhận đúng vintage status; với legacy chỉ được dùng `status.generated_at` có provenance, không gán thời gian render. Adapter chọn status có `known_at` lớn nhất không vượt `as_of`; các status tương lai không được thay status đã biết. Đồng timestamp khác nội dung mà không có lineage → không chọn tùy ý, trả `pipeline_status_unknown`. Không có snapshot khả dụng → unknown.
+
+Trước phép trừ, bắt buộc `last_successful_source_check_at <= known_at <= as_of`, cả ba timestamp UTC hợp lệ. Missing/malformed timestamp → `pipeline_status_unknown`; `known_at > as_of` hoặc source check > as_of → unknown, reason `future_pipeline_status`; source check > known_at → unknown, reason `invalid_pipeline_chronology`. Không clamp timestamp tương lai thành as_of. Sai hash/schema cấp snapshot vẫn là lỗi input toàn release ở §9.1, không hợp thức hóa thành status fresh.
+
+Chỉ sau kiểm trên, `pipeline_stale = as_of - last_successful_source_check_at > 48 giờ`; tuổi 0 và đúng 48 giờ đều fresh. Pipeline stale hoặc unknown làm assessment `stale_context`, các asset conclusion thành `insufficient_evidence`; bản tốt cũ vẫn hiển thị dưới nhãn ngày gốc. Observation vẫn phải qua freshness riêng dù nguồn vừa được kiểm. Replay tại cutoff cũ phải dùng status vintage đã biết tại cutoff đó; không lấy status mới nhất hôm nay.
 
 ### 5.3 Chọn mới nhất và revision
 
@@ -229,7 +235,7 @@ X01–X04/X08/X09/X11 là explanation/quality rules; thay direction chỉ đúng
 2. Pipeline stale/unknown timestamp → `assessment_state=stale_context`, cả ba tài sản `insufficient_evidence` cho context hiện tại. Không sửa bản immutable cũ.
 3. `usable_axis_count < 2` → `insufficient_context`, cả ba tài sản `insufficient_evidence`. Vẫn hiển thị direct signal của sự kiện với nhãn “chưa đủ đối chiếu”.
 4. I hoặc A là mixed → `regime_id=R_CONFLICT`, ba tài sản `mixed`.
-5. I unknown nhưng L/G đủ ít nhất hai axis → `regime_id=R_ACTIVITY_ONLY`, ba tài sản `mixed` do thiếu trục lạm phát.
+5. I unknown, L/G đều dùng được và A không mixed (positive/negative/flat) → `regime_id=R_ACTIVITY_ONLY`, ba tài sản `mixed` do thiếu trục lạm phát. Nếu A mixed thì bước 4 đã chọn R_CONFLICT; thiếu I không che mâu thuẫn L/G.
 6. Nếu I và A đều thuộc positive/negative/flat → tra đúng một dòng sau. Mọi tổ hợp còn lại → `R_INSUFFICIENT`, `insufficient_evidence`.
 
 ### 9.2 Bảng quyết định đầy đủ khi I/A có hướng
@@ -286,7 +292,9 @@ Block sự kiện gồm direct signals của batch và `event_context_relation`:
 - Direct flat → `small_change`; direct có hướng bằng peer → `aligned`; ngược peer → `divergent`; peer mixed → `mixed_peers`; không có peer hoặc direct unknown → `not_assessable`.
 - Với batch nhiều metric: ưu tiên tổng hợp `divergent` > `mixed_peers` > `aligned` > `small_change` > `not_assessable`; vẫn giữ relation từng metric để không mất thông tin.
 
-`context_transition` chỉ so với assessment immutable ngay trước đó của cùng ruleset, cùng chế độ current context, có `previous.as_of <= as_of` hiện tại. Chỉ mô tả nhãn thay đổi, không quy kết nhân quả cho sự kiện. Nếu không có bản trước → `not_computable`. Nếu chỉ input của latest batch đổi → `latest_batch_only`, kể cả batch có nhiều metric. Nếu có bất kỳ input đổi ngoài latest batch → `multiple_inputs_changed`; nếu không observation nào đổi → `context_only`. Phải xuất danh sách ID thêm/bỏ/thay dưới `changed_observation_ids` và `previous_assessment_id`; việc loại batch để tạo peer không thay thế bản before thật.
+`context_transition` chỉ so với assessment immutable ngay trước đó của cùng ruleset, cùng chế độ current context, có `previous.as_of <= as_of` hiện tại. Chỉ mô tả nhãn thay đổi, không quy kết nhân quả cho sự kiện. Nếu không có bản trước → `not_computable`. Nếu không observation nào đổi → `context_only`. Nếu tất cả input đổi thuộc latest batch → `latest_batch_only`, kể cả batch có nhiều metric hoặc nhiều event cùng giờ. Nếu có ít nhất một input đổi ngoài latest batch → `multiple_inputs_changed`; số lượng input lớn hơn một tự nó không đủ để chọn nhãn này.
+
+Xuất `changed_observations[]` theo metric, mỗi phần tử có `metric_id`, `before_observation_id`, `after_observation_id`, `trigger_event_id`; phía không tồn tại dùng null. Khi thay observation của một metric (kỳ mới hoặc revision), ghép before/after thành một change và lấy event_id của after; khi chỉ bị loại mà không có after, lấy event_id của before. `changed_observation_ids` là hợp ID before/after khác null, sort và bỏ trùng. Đối chiếu `trigger_event_id` với `latest_event_batch.event_ids`, không so ID observation cũ trực tiếp với ID event. `previous_assessment_id` luôn là predecessor thật theo §11.3; việc loại batch để tạo peer không thay thế bản before thật.
 
 Mọi thay đổi ngày, trạng thái freshness hoặc source revision có thể làm context đổi dù sự kiện mới nhất không đổi. `change_reason` phải là một trong `new_observation`, `source_revision`, `freshness_expired`, `pipeline_status_changed`, `source_snapshot_changed`, `multiple_changes`, `initial_assessment`. Không có predecessor → initial_assessment. Còn lại đánh dấu các loại thay đổi quan sát/kỳ mới, revision cùng kỳ, freshness, pipeline; nếu có từ hai loại trở lên → multiple_changes, đúng một loại → mã đó. Nếu không loại nào đổi nhưng hash parent đổi → source_snapshot_changed. Không dựng tin mới từ cache hit.
 
@@ -295,8 +303,9 @@ Mọi thay đổi ngày, trạng thái freshness hoặc source revision có th�
 ### 11.1 Output bắt buộc
 
 ```text
-assessment_id, schema_version, ruleset_version, ruleset_sha256
+assessment_id, state_id, previous_assessment_id, schema_version, ruleset_version, ruleset_sha256
 calendar_release_id, calendar_sha256, observation_bundle_sha256
+batch_status_id, batch_status_sha256, pipeline_state, pipeline_reason
 as_of, generated_at, history_mode, comparison_basis
 latest_event_batch: event_ids[], scheduled_at, usable_at_max,
   signal_ids[], event_context_relation, per_metric_relations[]
@@ -315,12 +324,15 @@ surprise: {status: unavailable, reason: no_licensed_consensus}
 policy_observation: {status: unavailable}
 market_confirmation: {status: not_measured}
 triggered_rules[]: rule_id, observation_ids[], numeric_evidence, template_id
-context_transition, change_reason, excluded_inputs[], warnings[]
+context_transition, change_reason, changed_observations[], changed_observation_ids[],
+excluded_inputs[], warnings[]
 ```
 
 Không có latest event đủ điều kiện → `latest_event_batch=null`, reason `no_verified_event`. Có thể vẫn có background snapshot nhưng không dùng template “tin mới nhất cho thấy”.
 
 `assessment_state` gồm `assessed`, `insufficient_context`, `stale_context`; `evidence_grade` gồm `coherent`, `partial`, `conflicted`, `insufficient`, `stale`. Stale/insufficient ưu tiên trước chất lượng nhóm. Hướng unknown dùng enum, số thiếu dùng null; không ép thành 0. `regime_id` ở stale/insufficient là `R_STALE`/`R_INSUFFICIENT`.
+
+`pipeline_state` gồm `fresh`, `stale`, `unknown`; `pipeline_reason` là null khi fresh, `source_check_expired` khi stale, hoặc một reason unknown ở §5.2. Khi không chọn được status snapshot, `batch_status_id`/`batch_status_sha256` là null; không bịa proof. `context_transition` là enum §10; các ID và changes là field riêng ở cấp assessment.
 
 V1 dùng `history_mode=latest_vintage_context` cho mọi assessment. Ledger của những output thực đã công bố có published_at riêng; không đổi history_mode chỉ vì output đã được lưu. Toàn bộ enum nêu trong tài liệu là contract; unknown enum phải bị validator từ chối thay vì map sang neutral.
 
@@ -329,6 +341,7 @@ V1 dùng `history_mode=latest_vintage_context` cho mọi assessment. Ledger củ
 ```text
 assess(bundle, calendar, batch_status, as_of, previous_assessment, ruleset):
     verify_release_hashes_and_ruleset_or_fail()
+    verify_supplied_predecessor_or_fail()
     observations, rejected = normalize_and_validate_with_provenance()
     visible = filter_by_usable_at_and_cutoff(observations, as_of)
     latest_event_batch = select_latest_actual_event_batch(calendar.events, provenance, as_of)
@@ -342,15 +355,42 @@ assess(bundle, calendar, batch_status, as_of, previous_assessment, ruleset):
     peer_relations = assess_latest_batch_against_other_slots()
     evidence_grade = grade_by_fixed_rules()
     explanations = templates_from_rules_and_numeric_evidence()
+    state_id = hash_canonical_state_without_publication_metadata()
+    if previous_assessment exists and previous_assessment.state_id == state_id:
+        verify_full_state_equal_or_fail_on_prefix_collision()
+        return previous_assessment_unchanged()
+    assessment_id = hash_state_id_and_real_previous_assessment_id()
     transition = compare_real_previous_assessment_if_available()
-    return canonical_assessment_with_hashes_and_exclusions()
+    return candidate_with_state_id_and_predecessor()
 ```
+
+Hàm assess là thuần, chỉ dùng các object đã được caller tải và truyền vào. Publisher riêng thực hiện lookup artifact/replay, khóa/compare-and-swap và IO theo §11.3; engine không tự đọc store hoặc đồng hồ để xử lý cache.
 
 ### 11.3 Bất biến và idempotency
 
-`assessment_id = macro-<first20(sha256(canonical_identity))>`. `canonical_identity` gồm ruleset hash, calendar release/hash, observation bundle hash, selected/excluded observation IDs và reasons, freshness flags, pipeline stale/unknown flags, history mode, directions/regime/asset labels. Key object sort; mảng ID/reason sort và de-duplicate; UTF-8, JSON compact không khoảng trắng, ensure_ascii=false, không newline khi hash. Decimal dạng chuỗi fixed-point, bỏ trailing zeros và dấu chấm dư, chuẩn hóa -0 thành 0. Không hash thời gian chạy hoặc bản previous vào ID. Hash parent mới tạo identity mới dù conclusion giống; ghi source_snapshot_changed nếu chỉ provenance thay đổi.
+Tách hai identity; không dùng riêng ID trạng thái làm tên artifact đã công bố:
 
-Nếu identity không đổi, giữ toàn bộ artifact và timestamp gốc. `checked_at` thuộc status revalidate riêng. So với previous để ghi transition chỉ khi tạo identity mới; cache/refresh giống input không tạo ledger entry mới. Nếu identity đổi do hết freshness hoặc trạng thái pipeline thì ghi đúng reason. Pipeline đã lỗi trước chuẩn hóa không tạo assessment giả rồi tự ghi đè pointer tốt.
+```text
+state_id = "macro-state-" + first20(sha256(canonical(state_identity)))
+assessment_id = "macro-" + first20(sha256(canonical({
+    "state_id": state_id,
+    "previous_assessment_id": previous_assessment.assessment_id hoặc null
+})))
+```
+
+`state_identity` gồm toàn bộ output ngữ nghĩa §11.1, trừ `assessment_id`, `state_id`, `previous_assessment_id`, `as_of`, `generated_at`, `batch_status_id`, `batch_status_sha256`, `context_transition`, `change_reason`, `changed_observations`, `changed_observation_ids`. Nó giữ ruleset/schema/hash, calendar parent/hash, bundle hash, latest batch, signals/axes/coverage, state/grade/regime/assets, pipeline state/reason, explanations/flags/exclusions. Freshness dùng trạng thái hợp lệ/hết hạn và reason, không đưa tuổi tăng mỗi ngày hoặc giờ chạy vào warning/template để vô tình đổi state. Source check mới còn fresh không tự tạo state mới. Proof status của lần tạo artifact được pin ở hai field batch_status; refresh proof tương đương chỉ thuộc revalidate status bên ngoài.
+
+Canonical: object key sort; array có semantics tập ID/reason/flags sort và de-duplicate; array record sort theo khóa định danh (signals theo metric_id/observation_id, triggered_rules theo rule_id, changes theo metric_id). UTF-8, JSON compact không khoảng trắng, ensure_ascii=false, không newline khi hash. Decimal là chuỗi fixed-point, bỏ trailing zeros/chấm dư, chuẩn hóa -0 thành 0; không nhận float làm Decimal. Hash parent mới tạo state mới dù conclusion giống; ghi source_snapshot_changed nếu chỉ provenance thay đổi.
+
+Thứ tự publication bắt buộc:
+
+1. Xác minh predecessor hiện hành cùng ruleset/history mode, hash và `previous.as_of <= as_of`; sai thì từ chối, không tự xóa predecessor để tạo nhánh mới.
+2. Nếu state_id bằng **bản hiện hành** và full state hash/nội dung canonical khớp thì trả nguyên artifact đó, không thêm ledger, không sửa timestamp/transition/batch-status proof. Prefix ID trùng nhưng nội dung khác phải fail. Không tìm state_id trong toàn lịch sử để bỏ qua một lần chuyển trạng thái.
+3. Nếu state đổi, tạo assessment_id từ state_id và ID predecessor hiện hành. A → B → A giữ state_id của A nhưng lần A sau có assessment_id mới vì predecessor là B. `change_reason=pipeline_status_changed` khi chỉ pipeline đổi; context_transition=context_only nếu observation không đổi.
+4. Replay cùng state/predecessor cho cùng assessment_id. Nếu artifact đã tồn tại, verify state/predecessor/hash và `stored.as_of <= requested.as_of` rồi trả nguyên bytes/timestamp lần tạo đầu; không ghi đè để cập nhật as_of. Nếu artifact có as_of sau cutoff yêu cầu thì từ chối dùng nó, không đổi bytes hoặc đẩy pointer production về quá khứ. Lưu cả SHA-256 đầy đủ trong manifest, từ chối collision prefix/hash khác thay vì overwrite.
+5. Publisher tạo artifact và ledger bất biến, rồi đổi pointer nguyên tử với điều kiện predecessor chưa đổi (lock hoặc compare-and-swap). Nếu đã đổi, đọc lại predecessor và tính lại; không publish transition dựa trên bản cũ. `checked_at` thuộc revalidate status riêng. Pipeline lỗi trước chuẩn hóa không tạo assessment giả để ghi đè pointer tốt.
+
+V1.0.1 giữ generated_at/as_of của lần tạo artifact đầu tiên cho replay. Ledger `published_at` là thời gian thật lúc công bố; không dùng as_of cũ để giả lập publication lịch sử.
 
 Output publish theo allowlist mới, ví dụ `/data/macro-assessment/`; manifest pin calendar parent và observation bundle. Raw/PDF/credential ở private store. Snapshot, source hash, parser version và ruleset hash phải đủ tái lập. Quyền nguồn áp dụng trước publish, không được suy rộng từ việc có link lịch bên thứ ba.
 
@@ -412,7 +452,7 @@ Fixtures độc lập với `latest.json` đang thay đổi; đóng băng input 
 | `T12` | CPI/PCE thiếu, PPI positive | I unknown; PPI không thay thế consumer |
 | `T13` | Chỉ claims có số | Cả ba tài sản insufficient_evidence |
 | `T14` | Toàn bộ 9 tổ hợp I/A ở §9.2 | Đúng 9 dòng, không thiếu default |
-| `T15` | I unknown, L/G dùng được | R_ACTIVITY_ONLY, cả ba mixed |
+| `T15` | `I=unknown; L=positive; G=flat` (A không mixed) | R_ACTIVITY_ONLY, cả ba mixed; không áp dụng nếu A mixed |
 | `T16` | GDP +2.5 → +2.2 so quý trước | G negative; GDP còn tăng trưởng dương |
 | `T17` | GDP estimate 2.1 → 2.2 cùng quý | Không dùng làm delta q/q; same_period_revision_not_growth |
 | `T18` | NFP -150 → -100; I negative, A positive | Base R04 nhưng crypto mixed vì level âm |
@@ -432,21 +472,33 @@ Fixtures độc lập với `latest.json` đang thay đổi; đóng băng input 
 | `T32` | Latest gồm CPI và PCE cùng giờ | Giữ cả batch; không phụ thuộc thứ tự input |
 | `T33` | Mọi slot hợp lệ đều flat | R08/neutral; khác unknown/insufficient |
 | `T34` | Bad source hash / truncated JSON | Không đổi pointer tốt, ghi status error |
-| `T35` | Cache hit và cùng identity | Không thêm release/ledger, giữ generated_at |
+| `T35` | Cache hit, state_id bằng bản hiện hành | Không thêm release/ledger, giữ toàn bộ artifact và timestamp |
 | `T36` | Revision hoặc freshness làm identity đổi | Tạo artifact mới và reason, không ghi đè bản cũ |
 | `T37` | Không có previous assessment | transition not_computable, không dựng before từ previous_period |
-| `T38` | Nhiều input cùng đổi | transition multiple_inputs_changed, không gán một event |
+| `T38` | NFP và CPI cùng đổi, latest batch chỉ có employment event | transition multiple_inputs_changed vì CPI đổi ngoài batch; không gán một event |
 | `T39` | Hai vintage cùng usable_at khác số, không lineage | ambiguous_vintage; không chọn theo ID |
 | `T40` | Snapshot ví dụ §13, G excluded | I+, L-, G unknown, A-, R03, partial, USD/Gold mixed/Crypto adverse |
 | `T41` | UI locale/timezone, lọc lịch, sort và viewport | Không đổi assessment, cutoff hoặc các input vào engine |
 | `T42` | Copy template/tooltip/export | Không surprise/probability khi thiếu consensus/calibration; provenance đủ |
+| `T43` | `I=unknown; L=positive; G=negative` | A mixed, R_CONFLICT ưu tiên hơn R_ACTIVITY_ONLY |
+| `T44` | NFP và unemployment cùng đổi trong latest employment batch; hoặc nhiều event đổi cùng latest batch | transition latest_batch_only; giữ ID before/after cho từng metric |
+| `T45` | Pipeline fresh → stale → fresh, bundle không đổi | State lần cuối bằng lần đầu, assessment_id khác; predecessor là bản stale; context_only/pipeline_status_changed |
+| `T46` | Replay cùng state/predecessor; refresh cùng state hiện hành | Replay cùng assessment_id và bytes; refresh không thêm artifact/ledger |
+| `T47` | Source check hoặc status known_at sau as_of; check sau known_at | Unknown/stale_context; reason future_pipeline_status hoặc invalid_pipeline_chronology; không lấy status tương lai để làm fresh |
+| `T48` | Source check tuổi 0, đúng 48h, 48h+1 microsecond | Fresh, fresh, stale; không dùng đồng hồ hệ thống |
 
 Thêm property checks reducer permutation invariance, không mutation input, null không biến thành zero, thêm future data không đổi prefix và duplicate không tăng slot. Kiểm canonical IDs ổn định khi đổi thứ tự source map. Không bỏ gate engine/publication để làm test xanh.
+
+### 14.1 Oracle 125 trạng thái và kiểm tra đặc tả thực thi
+
+Đọc thêm [oracle cố định](fixtures/macro-cross-v1.0.1.json) và chạy `python -m unittest discover -s tests -p test_macro_cross_spec.py -v`. CI discovery chạy cùng bộ test. [Bộ kiểm đặc tả](../scripts/check_macro_cross_spec.py) đọc bảng 9 regime trực tiếp từ Markdown, so routing với 125 expected entries cố định trong fixture (không tạo expected bằng chính router), kiểm hai cổng stale/insufficient, cutoff status, T15/T38/T43–T48, ID phục hồi/replay và cache. Các phép kiểm chỉ bao phủ hợp đồng đã nêu; adapter, normalization, 48 tình huống engine/UI đầy đủ và publication IO còn phải nghiệm thu ở CAL-XRULE-02.
+
+Oracle dùng thứ tự positive/negative/flat/mixed/unknown cho I, hàng L và cột G. G=mixed nằm trong không gian 5³ trừu tượng để kiểm router phòng vệ; một GDP signal hợp lệ đơn lẻ không sinh mixed. Tất cả 125 trường hợp mặc định pipeline fresh, không có negative-level override; kiểm riêng gate pipeline và override để không nhầm coverage tổ hợp với toàn bộ đầu vào.
 
 ## 15. Hướng triển khai cho code agent kế tiếp
 
 1. Đọc AGENTS/README/HANDOFF/DEPLOYMENT/STORAGE và tài liệu này. Kiểm Git thật: workspace nghiên cứu có commit chưa phát hành; bắt đầu implementation từ production base đã xác minh, không push toàn bộ local main theo quán tính.
-2. Đánh dấu `CAL-XRULE-02 IN_PROGRESS`. Tạo registry cấu hình khóa `macro-cross-v1.0.0` và hash trước engine; chốt canonical serialization bằng fixtures. Không sửa protocol Core 10.
+2. Đánh dấu `CAL-XRULE-02 IN_PROGRESS`. Tạo registry cấu hình khóa `macro-cross-v1.0.1` và hash trước engine; chốt canonical serialization bằng fixtures, dùng oracle §14.1 làm golden acceptance độc lập cho production module. Không import bộ kiểm đặc tả như engine production. Không sửa protocol Core 10.
 3. Bổ sung normalized observation contract ở adapter calendar; chứng minh metric ID, period, SA, previous semantics, source hash và usable_at. Bản nguồn nào thiếu thì giữ unknown. Với raw cần restore, chỉ dùng bucket riêng/quyền hiện có.
 4. Viết module thuần `eco/macro_assessment.py` theo pseudocode; không IO/provider/clock bên trong. Publisher/ledger là module riêng, xử lý fail/atomic pointer và snapshots.
 5. Viết fixtures §14, public contract validation và templates. CI unit test không bắt buộc cài PDF parser chỉ để mock; integration parser thật có dependency được pin và fixture riêng khi phù hợp.
@@ -468,7 +520,7 @@ File layout trên là đích đề xuất; agent phải kiểm tra tồn tại t
 | Nhãn conditional, không đo phản ứng giá | Chưa có market/expectation adapter | Gọi inference là điều thị trường đã làm | Không tạo backtest hoặc performance claim |
 | Dữ liệu cũ chỉ latest-vintage context | Không có vintage point-in-time đầy đủ | Tái dựng lịch sử biết trước từ API tải hôm nay | Ledger mới chỉ bắt đầu từ lúc thực phát hành |
 
-Điều kiện mở v2: có nguồn consensus và lịch sử snapshot hợp lệ trước công bố, hoặc thêm market confirmation/metric chính sách. Phải chốt protocol mới về nguồn, quyền, units, timing, normalization, horizon và evaluation trước code; không bật một nhánh v2 ẩn trong `macro-cross-v1.0.0`.
+Điều kiện mở v2: có nguồn consensus và lịch sử snapshot hợp lệ trước công bố, hoặc thêm market confirmation/metric chính sách. Phải chốt protocol mới về nguồn, quyền, units, timing, normalization, horizon và evaluation trước code; không bật một nhánh v2 ẩn trong `macro-cross-v1.0.1`.
 
 ## 17. Cơ sở tham khảo và giới hạn của bằng chứng
 
