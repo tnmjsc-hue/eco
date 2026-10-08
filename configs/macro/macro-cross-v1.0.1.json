@@ -1,0 +1,294 @@
+{
+  "ruleset_version": "macro-cross-v1.0.1",
+  "schema_version": "macro-assessment-v1.0.1",
+  "registry": {
+    "cpi_headline_mom_sa": {
+      "provider": "bls",
+      "series_id": "CUSR0000SA0",
+      "unit": "percent",
+      "transform": "percent_change_mom",
+      "orientation": 1,
+      "epsilon": "0.1",
+      "group": "inflation",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "pce_headline_mom_sa": {
+      "provider": "bea",
+      "series_id": null,
+      "unit": "percent",
+      "transform": "percent_change_mom",
+      "orientation": 1,
+      "epsilon": "0.1",
+      "group": "inflation",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "pce_core_mom_sa": {
+      "provider": "bea",
+      "series_id": null,
+      "unit": "percent",
+      "transform": "percent_change_mom",
+      "orientation": 1,
+      "epsilon": "0.1",
+      "group": "inflation",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "ppi_final_demand_mom_sa": {
+      "provider": "bls",
+      "series_id": "WPSFD4",
+      "unit": "percent",
+      "transform": "percent_change_mom",
+      "orientation": 1,
+      "epsilon": "0.1",
+      "group": "inflation",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "nfp_change_k_sa": {
+      "provider": "bls",
+      "series_id": "CES0000000001",
+      "unit": "thousand_jobs",
+      "transform": "first_difference_monthly_level",
+      "orientation": 1,
+      "epsilon": "25",
+      "group": "labor",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "unemployment_rate_sa": {
+      "provider": "bls",
+      "series_id": "LNS14000000",
+      "unit": "percent",
+      "transform": "level",
+      "orientation": -1,
+      "epsilon": "0.1",
+      "group": "labor",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "jolts_openings_k_sa": {
+      "provider": "bls",
+      "series_id": "JTS000000000000000JOL",
+      "unit": "thousand_jobs",
+      "transform": "level",
+      "orientation": 1,
+      "epsilon": "100",
+      "group": "labor",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    },
+    "initial_claims_k_sa": {
+      "provider": "dol",
+      "series_id": null,
+      "unit": "thousand_claims",
+      "transform": "level",
+      "orientation": -1,
+      "epsilon": "10",
+      "group": "labor",
+      "max_age_days": 21,
+      "seasonal_adjustment": "SA"
+    },
+    "real_gdp_qoq_saar": {
+      "provider": "bea",
+      "series_id": null,
+      "unit": "percent_saar",
+      "transform": "percent_change_qoq_saar",
+      "orientation": 1,
+      "epsilon": "0.2",
+      "group": "growth",
+      "max_age_days": 180,
+      "seasonal_adjustment": "SA"
+    },
+    "trade_balance_bn_sa": {
+      "provider": "bea",
+      "series_id": null,
+      "unit": "billion_usd",
+      "transform": "level",
+      "orientation": null,
+      "epsilon": null,
+      "group": "context",
+      "max_age_days": 75,
+      "seasonal_adjustment": "SA"
+    }
+  },
+  "matrix": {
+    "positive": {
+      "positive": "R01",
+      "flat": "R02",
+      "negative": "R03"
+    },
+    "negative": {
+      "positive": "R04",
+      "flat": "R05",
+      "negative": "R06"
+    },
+    "flat": {
+      "positive": "R07",
+      "flat": "R08",
+      "negative": "R09"
+    }
+  },
+  "regime_assets": {
+    "R01": [
+      "supportive",
+      "adverse",
+      "adverse"
+    ],
+    "R02": [
+      "supportive",
+      "adverse",
+      "adverse"
+    ],
+    "R03": [
+      "mixed",
+      "mixed",
+      "adverse"
+    ],
+    "R04": [
+      "adverse",
+      "supportive",
+      "supportive"
+    ],
+    "R05": [
+      "adverse",
+      "supportive",
+      "supportive"
+    ],
+    "R06": [
+      "mixed",
+      "supportive",
+      "mixed"
+    ],
+    "R07": [
+      "supportive",
+      "adverse",
+      "mixed"
+    ],
+    "R08": [
+      "neutral",
+      "neutral",
+      "neutral"
+    ],
+    "R09": [
+      "mixed",
+      "supportive",
+      "mixed"
+    ],
+    "R_CONFLICT": [
+      "mixed",
+      "mixed",
+      "mixed"
+    ],
+    "R_ACTIVITY_ONLY": [
+      "mixed",
+      "mixed",
+      "mixed"
+    ],
+    "R_INSUFFICIENT": [
+      "insufficient_evidence",
+      "insufficient_evidence",
+      "insufficient_evidence"
+    ],
+    "R_STALE": [
+      "insufficient_evidence",
+      "insufficient_evidence",
+      "insufficient_evidence"
+    ]
+  },
+  "mechanisms": {
+    "R01": [
+      "RATE_PRESSURE_UP",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "CRYPTO_DISCOUNT_LIQUIDITY"
+    ],
+    "R02": [
+      "RATE_PRESSURE_UP",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "CRYPTO_DISCOUNT_LIQUIDITY"
+    ],
+    "R03": [
+      "RATE_PRESSURE_UP",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "CRYPTO_DISCOUNT_LIQUIDITY",
+      "GROWTH_RISK",
+      "USD_DEFENSIVE_DEMAND",
+      "GOLD_HEDGE_DEMAND"
+    ],
+    "R04": [
+      "RATE_PRESSURE_DOWN",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "CRYPTO_DISCOUNT_LIQUIDITY",
+      "DEMAND_SUPPORT"
+    ],
+    "R05": [
+      "RATE_PRESSURE_DOWN",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "CRYPTO_DISCOUNT_LIQUIDITY",
+      "DEMAND_SUPPORT"
+    ],
+    "R06": [
+      "RATE_PRESSURE_DOWN",
+      "GROWTH_RISK",
+      "USD_DEFENSIVE_DEMAND",
+      "GOLD_OPPORTUNITY_COST",
+      "GOLD_HEDGE_DEMAND",
+      "CRYPTO_DISCOUNT_LIQUIDITY"
+    ],
+    "R07": [
+      "RATE_PRESSURE_UP",
+      "USD_RELATIVE_RATES",
+      "GOLD_OPPORTUNITY_COST",
+      "DEMAND_SUPPORT",
+      "CRYPTO_DISCOUNT_LIQUIDITY"
+    ],
+    "R08": [
+      "NO_MATERIAL_CHANGE"
+    ],
+    "R09": [
+      "RATE_PRESSURE_DOWN",
+      "GROWTH_RISK",
+      "USD_DEFENSIVE_DEMAND",
+      "GOLD_OPPORTUNITY_COST",
+      "GOLD_HEDGE_DEMAND",
+      "CRYPTO_DISCOUNT_LIQUIDITY"
+    ]
+  },
+  "asset_prefixes": {
+    "usd": [
+      "RATE_",
+      "USD_"
+    ],
+    "gold": [
+      "RATE_",
+      "GOLD_"
+    ],
+    "crypto_risk_assets": [
+      "RATE_",
+      "CRYPTO_",
+      "DEMAND_"
+    ]
+  },
+  "unobserved_conditions": {
+    "usd": [
+      "relative_rate_expectations",
+      "defensive_usd_demand"
+    ],
+    "gold": [
+      "real_yields",
+      "usd_path",
+      "hedging_and_liquidity_demand"
+    ],
+    "crypto_risk_assets": [
+      "financial_conditions",
+      "risk_appetite",
+      "asset_specific_flows"
+    ]
+  }
+}

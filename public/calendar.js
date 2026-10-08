@@ -1,5 +1,6 @@
-import { translate as t, numberLocale } from './i18n.js?v=calendar-20261008c';
-import { dayInZone, selectEvents, validateCalendar, SCENARIOS, usdReferenceBias } from './calendar-model.js?v=calendar-20261008c';
+import { translate as t, numberLocale } from './i18n.js?v=macro-20261009a';
+import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=macro-20261009a';
+import {refreshMacro,renderMacro} from './macro.js?v=macro-20261009a';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };
@@ -13,10 +14,9 @@ function value(v, unit) {
   return `${number}${unit === 'percent' || unit === 'percent_saar' ? '%' : ['thousand_jobs','thousand_claims'].includes(unit) ? 'k' : unit === 'billion_usd' ? ` ${t('tỷ USD')}` : ''}`;
 }
 function actualPresentation(event) {
-  const bias = usdReferenceBias(event);
   return {
-    className: event.actual === null ? 'muted' : `cal-value${bias ? ` usd-${bias}` : ''}`,
-    title: bias ? ` title="${txt(bias === 'bullish' ? 'USD có xu hướng được hỗ trợ so với kỳ trước; đây là kịch bản có điều kiện.' : 'USD có xu hướng chịu áp lực so với kỳ trước; đây là kịch bản có điều kiện.')}"` : '',
+    className: event.actual === null ? 'muted' : 'cal-value',
+    title: '',
   };
 }
 
@@ -35,6 +35,7 @@ function setRange(kind) {
   render();
 }
 function render() {
+  renderMacro();
   if (!state.data) return;
   for (const id of ['cal-zone','cal-impact']) for (const option of $(id).options) {
     option.dataset.sourceLabel ??= option.textContent;
@@ -75,7 +76,6 @@ function render() {
     $('cal-release-detail').innerHTML = selected.actual !== null
       ? `<div class="cal-result-head"><div><p class="eyebrow">${txt('Kết quả theo kỳ')}</p><strong class="${actual.className}"${actual.title}>${esc(value(selected.actual,selected.unit))}</strong><span class="small muted">${txt('Kỳ trước')}: ${esc(value(selected.previous,selected.unit))}</span></div><div class="small"><p>${txt('Kỳ tham chiếu')}: <b>${esc(selected.reference_period)}</b></p><p>${txt('Dữ liệu tải lúc')}: ${esc(dateLabel(selected.data_vintage_at,true))}</p>${source}</div></div>${selected.details.length ? `<ul>${selected.details.map(d=>`<li>${txt(d.label)}: <b>${esc(value(d.actual,d.unit))}</b> · ${txt('Kỳ trước')}: ${esc(value(d.previous,d.unit))}</li>`).join('')}</ul>` : ''}<p class="small muted">${txt(selected.data_status === 'official_release' ? 'Số liệu từ bản tin công bố chính thức.' : 'Số liệu BLS thuộc kỳ mới nhất, có thể đã được điều chỉnh sau công bố; không phải vintage tại thời điểm sự kiện.')}</p>`
       : `<p class="small muted">${txt(Date.parse(selected.scheduled_at) < Date.now() ? 'Đã qua giờ dự kiến; chưa đối chiếu được số liệu của đúng kỳ công bố.' : 'Chưa đến giờ công bố; số thực tế chưa có.')}</p>${source}`;
-    $('cal-scenarios').innerHTML = SCENARIOS[selected.category].map(r => `<tr>${r.map((cell,i) => `<${i===0?'th':'td'}>${txt(cell)}</${i===0?'th':'td'}>`).join('')}</tr>`).join('');
   }
   $('cal-indicators').innerHTML = data.indicators.map(i => {
     const value = v => v === null ? '—' : `${v.toLocaleString(numberLocale(), {minimumFractionDigits: i.unit==='percent'?1:0,maximumFractionDigits:1})}${i.unit==='percent'?'%':'k'}`;
@@ -113,6 +113,7 @@ async function load(force = false) {
     $('cal-error').hidden = false; $('cal-error-text').textContent = t(e.message);
   } finally {
     $('cal-loading').hidden = true; $('cal-refresh').disabled = false; state.busy = false;
+    await refreshMacro(state.release);
   }
 }
 export function openCalendar() { load(); }

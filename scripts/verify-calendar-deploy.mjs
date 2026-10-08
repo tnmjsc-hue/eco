@@ -4,6 +4,15 @@ const hash = b => createHash('sha256').update(b).digest('hex');
 const pointer = await readFile('public/data/calendar/latest.json');
 const status = await readFile('public/data/calendar/status.json');
 const data = JSON.parse(pointer);
+const macroPointer=await readFile('public/data/macro-assessment/latest.json');
+const macroStatus=await readFile('public/data/macro-assessment/status.json');
+const macro=JSON.parse(macroPointer);
+const manifestBytes=await readFile(`public${macro.manifest.url}`);
+if(hash(manifestBytes)!==macro.manifest.sha256)throw Error('Invalid macro manifest');
+const manifest=JSON.parse(manifestBytes);
+const macroAssets=[macro,macro.manifest,...['calendar','observations','batch_status','ruleset'].map(k=>manifest[k])];
+const currentMacroStatus=JSON.parse(macroStatus);if(currentMacroStatus.batch_status)macroAssets.push(currentMacroStatus.batch_status);
+for(const asset of macroAssets){if(!/^\/data\/(calendar|macro-assessment)\/[a-zA-Z0-9/.-]+\.json$/.test(asset.url)||hash(await readFile(`public${asset.url}`))!==asset.sha256)throw Error('Invalid macro asset');}
 if (!/^calendar-[a-f0-9]{20}$/.test(data.release_id) || data.url !== `/data/calendar/releases/${data.release_id}/calendar.json`) throw Error('Invalid calendar pointer');
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
 if (!hook || new URL(hook).hostname !== 'api.cloudflare.com') throw Error('Missing approved Pages deployment hook');
@@ -14,7 +23,9 @@ for (let attempt = 0; attempt < 40; attempt++) {
   try {
     const bytes = async path => { const r=await fetch(`https://eco.tnmp.cloud${path}`,{cache:'no-store',signal:AbortSignal.timeout(15000)}); if (!r.ok) throw Error(); return Buffer.from(await r.arrayBuffer()); };
     if (hash(await bytes('/data/calendar/latest.json')) !== hash(pointer) || hash(await bytes('/data/calendar/status.json')) !== hash(status) || hash(await bytes(data.url)) !== data.sha256) continue;
-    console.log(JSON.stringify({production_verified:true,release_id:data.release_id})); process.exit(0);
+    if(hash(await bytes('/data/macro-assessment/latest.json'))!==hash(macroPointer)||hash(await bytes('/data/macro-assessment/status.json'))!==hash(macroStatus))continue;
+    const checks=await Promise.all(macroAssets.map(async a=>hash(await bytes(a.url))===a.sha256));if(!checks.every(Boolean))continue;
+    console.log(JSON.stringify({production_verified:true,release_id:data.release_id,assessment_id:macro.assessment_id,macro_assets_verified:macroAssets.length})); process.exit(0);
   } catch { /* CDN may still serve the previous release. */ }
 }
 throw Error('Production calendar did not match the verified artifacts');

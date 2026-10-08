@@ -1,38 +1,5 @@
 export const CALENDAR_VERSION = 'us-macro-calendar-v1.1.0';
-export const SCENARIOS = {
-  inflation: [
-    ['Lạm phát cao hơn kỳ vọng', 'Có thể được hỗ trợ', 'Có thể chịu áp lực', 'Có thể chịu áp lực', 'Nếu thị trường nâng kỳ vọng lãi suất và lợi suất thực. Vàng cũng có thể tăng khi nhu cầu phòng hộ lạm phát chiếm ưu thế.'],
-    ['Lạm phát thấp hơn kỳ vọng', 'Có thể chịu áp lực', 'Có thể được hỗ trợ', 'Có thể được hỗ trợ', 'Nếu lợi suất giảm và kỳ vọng nới lỏng tăng; phản ứng còn phụ thuộc tăng trưởng và vị thế trước tin.'],
-  ],
-  labor: [
-    ['Lao động mạnh hơn kỳ vọng', 'Có thể được hỗ trợ', 'Có thể chịu áp lực', 'Hai chiều', 'Việc làm mạnh có thể giữ lãi suất cao, nhưng cũng hỗ trợ khẩu vị rủi ro. Đọc cùng thất nghiệp, tiền lương và revision.'],
-    ['Lao động yếu hơn kỳ vọng', 'Hai chiều', 'Có thể được hỗ trợ', 'Hai chiều', 'Kỳ vọng hạ lãi suất có thể hỗ trợ tài sản rủi ro; lo ngại suy thoái có thể kéo crypto giảm và thúc đẩy nhu cầu USD.'],
-  ],
-  growth: [
-    ['Tăng trưởng mạnh hơn kỳ vọng', 'Có thể được hỗ trợ', 'Có thể chịu áp lực', 'Hai chiều', 'Tăng trưởng tốt hỗ trợ khẩu vị rủi ro, nhưng lợi suất tăng có thể gây áp lực. Kiểm tra cấu phần và revision.'],
-    ['Tăng trưởng yếu hơn kỳ vọng', 'Hai chiều', 'Có thể được hỗ trợ', 'Hai chiều', 'Phản ứng phụ thuộc mức độ lo suy thoái so với kỳ vọng hạ lãi suất; vàng cũng có thể bị bán để lấy thanh khoản.'],
-  ],
-  policy: [
-    ['Fed cứng rắn hơn kỳ vọng', 'Có thể được hỗ trợ', 'Có thể chịu áp lực', 'Có thể chịu áp lực', 'Đánh giá mức lãi suất, thông điệp, dự báo và họp báo cùng nhau; quyết định đã được định giá có thể tạo phản ứng ngược.'],
-    ['Fed mềm mỏng hơn kỳ vọng', 'Có thể chịu áp lực', 'Có thể được hỗ trợ', 'Có thể được hỗ trợ', 'Thanh khoản kỳ vọng cải thiện có thể hỗ trợ crypto; cắt lãi suất vì khủng hoảng vẫn có thể đi cùng bán tháo.'],
-  ],
-};
-
-const USD_DIRECTION_BY_KIND = new Map([
-  ['gdp', 'higher'], ['jobs', 'higher'], ['jolts', 'higher'], ['industrial_production', 'higher'],
-  ['cpi', 'higher'], ['pce', 'higher'], ['ppi', 'higher'], ['trade', 'higher'],
-  ['claims', 'lower'],
-]);
-
-export function usdReferenceBias(event) {
-  const direction = USD_DIRECTION_BY_KIND.get(event.kind);
-  if (event.currency !== 'USD' || !direction || !Number.isFinite(event.actual)
-    || !Number.isFinite(event.previous) || event.actual === event.previous) return null;
-  const actualMovedInSupportiveDirection = direction === 'higher'
-    ? event.actual > event.previous
-    : event.actual < event.previous;
-  return actualMovedInSupportiveDirection ? 'bullish' : 'bearish';
-}
+const CATEGORIES=['inflation','labor','growth','policy'];
 
 export function dayInZone(iso, zone = 'Asia/Ho_Chi_Minh') {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(iso));
@@ -70,7 +37,7 @@ export function validateCalendar(data) {
   for (const e of data.events) {
     const host = new URL(e.source_url).hostname;
     if (typeof e.id !== 'string' || typeof e.title !== 'string' || typeof e.source_title !== 'string' || ids.has(e.id) || !['bls','bea','fed','dol'].includes(e.provider) || e.currency !== 'USD'
-      || !['high','medium'].includes(e.impact) || !SCENARIOS[e.category] || !Number.isFinite(Date.parse(e.scheduled_at))
+      || !['high','medium'].includes(e.impact) || !CATEGORIES.includes(e.category) || !Number.isFinite(Date.parse(e.scheduled_at))
       || !['www.bls.gov','www.bea.gov','www.federalreserve.gov','oui.doleta.gov'].includes(host)
       || !e.source_url.startsWith('https://') || e.forecast !== null
       || !['scheduled','current_vintage_period_match','official_release'].includes(e.data_status)
