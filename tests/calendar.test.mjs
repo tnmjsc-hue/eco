@@ -13,19 +13,26 @@ test('calendar timezone dates cover Vietnam rollover and New York DST',()=>{
   assert.equal(selectEvents(events,{start:'2026-10-29',end:'2026-10-29',zone:'Asia/Ho_Chi_Minh',impact:'medium'}).length,0);
 });
 
-test('public calendar hash, provenance and missing consensus contract',async()=>{
+test('public calendar hash, expanded official coverage and period-matched results',async()=>{
   const pointer=JSON.parse(await readFile('public/data/calendar/latest.json'));
   const bytes=await readFile(`public${pointer.url}`);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),pointer.sha256);
   const data=validateCalendar(JSON.parse(bytes));
   assert.equal(data.release_id,pointer.release_id);
   assert.ok(data.private_backup.objects.every(o=>o.readback_verified));
-  assert.deepEqual(new Set(data.events.map(e=>e.provider)),new Set(['bls','bea','fed']));
-  assert.ok(data.events.every(e=>e.forecast===null&&e.actual===null));
+  assert.deepEqual(new Set(data.events.map(e=>e.provider)),new Set(['bls','bea','fed','dol']));
+  assert.ok(data.events.length>=100);
+  assert.ok(data.events.every(e=>e.forecast===null));
+  assert.ok(data.events.filter(e=>e.actual!==null).length>=15);
+  const claims=data.events.find(e=>e.id==='dol-claims-2026-09-17');
+  assert.deepEqual([claims.actual,claims.previous,claims.reference_period],[196,206,'2026-09-12']);
+  const pce=data.events.find(e=>e.id==='bea-pce-2026-09-30');
+  assert.deepEqual([pce.actual,pce.previous,pce.reference_period],[0.3,0.1,'2026-08']);
   const bad=structuredClone(data);bad.events[0].source_url='https://evil.example/';
   assert.throws(()=>validateCalendar(bad));
   const duplicate=structuredClone(data);duplicate.events.push(duplicate.events[0]);assert.throws(()=>validateCalendar(duplicate));
   const fake=structuredClone(data);fake.events[0].forecast=50;assert.throws(()=>validateCalendar(fake));
+  const fakeResult=structuredClone(data);fakeResult.events.find(e=>e.actual===null).actual=50;assert.throws(()=>validateCalendar(fakeResult));
   const noSource=structuredClone(data);delete noSource.sources;assert.throws(()=>validateCalendar(noSource));
   const noBackup=structuredClone(data);noBackup.private_backup.objects[0].readback_verified=false;assert.throws(()=>validateCalendar(noBackup));
 });

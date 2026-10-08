@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Install PDF text reader for official DOL releases
+        run: python -m pip install --disable-pip-version-check pypdf==6.10.0
       - name: Restore only public official feed cache (no secrets)
         uses: actions/cache@v4
         with:

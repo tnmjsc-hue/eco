@@ -1,4 +1,4 @@
-import dictionaries from './translations.json?v=calendar-20261008' with { type: 'json' };
+import dictionaries from './translations.json?v=calendar-20261008b' with { type: 'json' };
 
 const languageCodes = ['en', 'vi', 'ko', 'ru', 'hi', 'tr', 'pt-BR', 'en-NG'];
 const localeCodes = { en: 'en-US', vi: 'vi-VN', ko: 'ko-KR', ru: 'ru-RU', hi: 'hi-IN', tr: 'tr-TR', 'pt-BR': 'pt-BR', 'en-NG': 'en-NG' };
@@ -23,6 +23,7 @@ function localize(source) {
   if (!source) return source;
   const dictionary = dictionaries[packLanguage(activeLanguage)] ?? dictionaries.en;
   if (dictionary[source] !== undefined) return dictionary[source];
+  if (dictionaries.en[source] !== undefined) return dictionaries.en[source];
   const phrases = Object.keys(dictionary).filter(phrase => phrase.length >= 3 && source.includes(phrase)).sort((a, b) => b.length - a.length);
   let result = source;
   for (const phrase of phrases) {

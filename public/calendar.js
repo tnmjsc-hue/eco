@@ -1,5 +1,5 @@
-import { translate as t, numberLocale } from './i18n.js?v=calendar-20261008';
-import { dayInZone, selectEvents, validateCalendar, SCENARIOS } from './calendar-model.js?v=calendar-20261008';
+import { translate as t, numberLocale } from './i18n.js?v=calendar-20261008b';
+import { dayInZone, selectEvents, validateCalendar, SCENARIOS } from './calendar-model.js?v=calendar-20261008b';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };
@@ -7,6 +7,11 @@ const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<
 const txt = source => esc(t(source));
 const dateLabel = (iso, time = false) => new Intl.DateTimeFormat(numberLocale(), {timeZone: $('cal-zone').value, dateStyle: 'medium', ...(time ? {timeStyle:'short'} : {})}).format(new Date(iso));
 const addDays = (day, count) => new Date(Date.parse(`${day}T12:00:00Z`) + count * 86400000).toISOString().slice(0,10);
+function value(v, unit) {
+  if (v === null) return '—';
+  const number = v.toLocaleString(numberLocale(), {minimumFractionDigits:['thousand_jobs','thousand_claims'].includes(unit)?0:1,maximumFractionDigits:1});
+  return `${number}${unit === 'percent' || unit === 'percent_saar' ? '%' : ['thousand_jobs','thousand_claims'].includes(unit) ? 'k' : unit === 'billion_usd' ? ` ${t('tỷ USD')}` : ''}`;
+}
 
 function setRange(kind) {
   const today = dayInZone(new Date().toISOString(), $('cal-zone').value);
@@ -17,6 +22,7 @@ function setRange(kind) {
     end = addDays(start, 6);
   }
   if (kind === 'month') end = addDays(today, 30);
+  if (kind === 'past') start = addDays(today, -30);
   $('cal-start').value = start; $('cal-end').value = end;
   document.querySelectorAll('[data-cal-range]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.calRange === kind)));
   render();
@@ -41,12 +47,14 @@ function render() {
     tr.classList.toggle('cal-selected', e.id === state.selected);
     const time = new Intl.DateTimeFormat(numberLocale(), {timeZone:zone, hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(e.scheduled_at));
     const elapsed = Date.parse(e.scheduled_at) < Date.now();
+    const status = e.actual !== null ? (e.data_status === 'official_release' ? 'Đã có số liệu chính thức' : 'Số liệu kỳ mới nhất')
+      : elapsed ? 'Chưa xác minh số liệu' : 'Sắp diễn ra';
     tr.innerHTML = `<td data-label="${txt('Ngày / giờ')}"><time datetime="${esc(e.scheduled_at)}">${esc(dateLabel(e.scheduled_at))}<b>${esc(time)}${e.time_basis ? ' ≈' : ''}</b></time></td>
       <td data-label="${txt('Tiền tệ')}"><span class="badge">USD</span></td>
       <td data-label="${txt('Ảnh hưởng')}"><span class="cal-impact ${e.impact}">${txt(e.impact === 'high' ? 'Cao' : 'Vừa')}</span></td>
       <td class="cal-event"><button class="cal-event-button" data-cal-event="${esc(e.id)}" aria-pressed="${e.id === state.selected}">${txt(e.title)}</button><small>${esc(e.source_title)}</small><a href="${esc(e.source_url)}" target="_blank" rel="noreferrer">${e.provider.toUpperCase()} ↗</a></td>
-      <td data-label="${txt('Thực tế')}" class="muted">—</td><td data-label="${txt('Dự báo')}" class="muted">—</td><td data-label="${txt('Kỳ trước')}" class="muted">—</td>
-      <td data-label="${txt('Trạng thái')}"><span class="small">${txt(elapsed ? 'Đã qua giờ dự kiến' : 'Sắp diễn ra')}</span></td>`;
+      <td data-label="${txt('Thực tế')}" class="${e.actual === null ? 'muted' : 'cal-value'}">${esc(value(e.actual,e.unit))}</td><td data-label="${txt('Dự báo')}" class="muted">—</td><td data-label="${txt('Kỳ trước')}" class="${e.previous === null ? 'muted' : 'cal-value'}">${esc(value(e.previous,e.unit))}</td>
+      <td data-label="${txt('Trạng thái')}"><span class="small">${txt(status)}</span></td>`;
     tr.querySelector('button').addEventListener('click', () => { state.selected = e.id; render(); });
     $('cal-rows').append(tr);
   }
@@ -54,6 +62,10 @@ function render() {
   $('cal-assessment').hidden = !selected;
   if (selected) {
     $('cal-selected-title').textContent = t(selected.title);
+    const source = `<a href="${esc(selected.data_source_url || selected.source_url)}" target="_blank" rel="noreferrer">${txt('Xem nguồn chính thức')} ↗</a>`;
+    $('cal-release-detail').innerHTML = selected.actual !== null
+      ? `<div class="cal-result-head"><div><p class="eyebrow">${txt('Kết quả theo kỳ')}</p><strong>${esc(value(selected.actual,selected.unit))}</strong><span class="small muted">${txt('Kỳ trước')}: ${esc(value(selected.previous,selected.unit))}</span></div><div class="small"><p>${txt('Kỳ tham chiếu')}: <b>${esc(selected.reference_period)}</b></p><p>${txt('Dữ liệu tải lúc')}: ${esc(dateLabel(selected.data_vintage_at,true))}</p>${source}</div></div>${selected.details.length ? `<ul>${selected.details.map(d=>`<li>${txt(d.label)}: <b>${esc(value(d.actual,d.unit))}</b> · ${txt('Kỳ trước')}: ${esc(value(d.previous,d.unit))}</li>`).join('')}</ul>` : ''}<p class="small muted">${txt(selected.data_status === 'official_release' ? 'Số liệu từ bản tin công bố chính thức.' : 'Số liệu BLS thuộc kỳ mới nhất, có thể đã được điều chỉnh sau công bố; không phải vintage tại thời điểm sự kiện.')}</p>`
+      : `<p class="small muted">${txt(Date.parse(selected.scheduled_at) < Date.now() ? 'Đã qua giờ dự kiến; chưa đối chiếu được số liệu của đúng kỳ công bố.' : 'Chưa đến giờ công bố; số thực tế chưa có.')}</p>${source}`;
     $('cal-scenarios').innerHTML = SCENARIOS[selected.category].map(r => `<tr>${r.map((cell,i) => `<${i===0?'th':'td'}>${txt(cell)}</${i===0?'th':'td'}>`).join('')}</tr>`).join('');
   }
   $('cal-indicators').innerHTML = data.indicators.map(i => {
@@ -97,6 +109,7 @@ async function load(force = false) {
 export function openCalendar() { load(); }
 export function initCalendar() {
   setRange('week');
+  $('cal-mql5').addEventListener('toggle',()=>{if ($('cal-mql5').open && !$('cal-mql5-frame').getAttribute('src')) $('cal-mql5-frame').src='/mql5-calendar.html';});
   document.querySelectorAll('[data-cal-range]').forEach(b => b.addEventListener('click',()=>setRange(b.dataset.calRange)));
   for (const id of ['cal-start','cal-end','cal-zone','cal-impact']) $(id).addEventListener('change',render);
   $('cal-search').addEventListener('input',render);

@@ -11,14 +11,14 @@ try {
   const errors=[],providerRequests=[];
   page.on('pageerror', e=>errors.push(e.message));
   page.on('request',r=>{if (/bls\.gov|bea\.gov|federalreserve\.gov|r2\.cloudflarestorage/.test(r.url())) providerRequests.push(r.url());});
-  await page.addInitScript(()=>localStorage.setItem('eco-language','vi'));
+  await page.addInitScript(()=>{if(window===top) localStorage.setItem('eco-language','vi');});
   await page.goto(`${url.split('#')[0]}#calendar`,{waitUntil:'networkidle'});
   await page.locator('#cal-content').waitFor({state:'visible'});
   assert.equal(await page.locator('#cal-error').isVisible(),false);
   assert.equal(await page.locator('#cal-indicators article').count(),5);
   await page.locator('[data-cal-range="month"]').click();
   assert.ok(await page.locator('#cal-rows tr').count()>=4);
-  await page.locator('#cal-search').fill('FOMC');
+  await page.locator('#cal-search').fill('quyết định lãi suất');
   assert.equal(await page.locator('#cal-rows tr').count(),1);
   assert.match(await page.locator('#cal-rows time').innerText(),/^29\b/);
   await page.locator('#cal-zone').selectOption('America/New_York');

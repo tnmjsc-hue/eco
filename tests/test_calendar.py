@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from eco import calendar as cal
 
@@ -80,6 +81,29 @@ class CalendarTests(unittest.TestCase):
             status = json.loads((pointer.parent/'status.json').read_bytes())
             self.assertEqual(status['outcome'], 'source_error')
 
+    def test_dol_holiday_exception_and_initial_claims_only(self):
+        schedule = b'Publication Schedule: Thursday morning at 8:30am EST. <td>Wednesday, November 25, 2026</td>'
+        rows = cal.parse_dol_schedule(schedule, datetime(2026,11,23,tzinfo=timezone.utc), datetime(2026,11,28,tzinfo=timezone.utc))
+        self.assertEqual([r['id'] for r in rows], ['dol-claims-2026-11-25'])
+        self.assertEqual(rows[0]['scheduled_at'], '2026-11-25T13:30:00Z')
+        row = cal.event('dol','claims','Claims','Unemployment Insurance Weekly Claims',datetime(2026,9,17,12,30,tzinfo=timezone.utc),'medium','labor','https://oui.doleta.gov/unemploy/claims_arch.asp')
+        row['source_url']='https://oui.doleta.gov/press/2026/091726.pdf'
+        body = ('EMBARGOED UNTIL 8:30 A.M. Thursday, September 17, 2026 UNEMPLOYMENT INSURANCE WEEKLY CLAIMS '
+                'SEASONALLY ADJUSTED DATA In the week ending September 12, the advance figure for seasonally adjusted initial claims was 196,000, '
+                "a decrease of 10,000 from the previous week's unrevised level of 206,000. The 4-week moving average was 203,250. "
+                "The advance number for seasonally adjusted insured unemployment was 1,730,000. The previous week's level was revised to 1,769,000.")
+        with patch('pypdf.PdfReader',return_value=SimpleNamespace(pages=[SimpleNamespace(extract_text=lambda: body)])):
+            cal.parse_dol_report(row,b'fixture','2026-09-17T13:00:00Z')
+        self.assertEqual((row['actual'],row['previous'],row['reference_period']), (196,206,'2026-09-12'))
+
+    def test_latest_bls_period_matches_only_last_completed_release(self):
+        now=datetime(2026,10,8,tzinfo=timezone.utc)
+        rows=[cal.event('bls','cpi','CPI','Consumer Price Index',datetime(2026,m,d,tzinfo=timezone.utc),'high','inflation',cal.SOURCES['bls']) for m,d in [(8,12),(9,11),(10,14)]]
+        indicators=[{'id':'cpi','reference_period':'2026-08','value':0.4,'previous':0.1,'unit':'percent','source_url':'https://data.bls.gov/timeseries/CUSR0000SA0'}]
+        cal.attach_bls_results(rows,indicators,now,'2026-10-08T13:00:00Z')
+        self.assertEqual([r['actual'] for r in rows],[None,0.4,None])
+        self.assertEqual(rows[1]['data_status'],'current_vintage_period_match')
+
     def test_cached_body_tampering_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -95,9 +119,9 @@ class CalendarTests(unittest.TestCase):
             cal.write_json(p, {'release_id':'calendar-original','content_sha256':'old'})
             before=p.read_bytes()
             events=[cal.event(provider,'jobs','Jobs','Employment', now, 'high','labor',cal.SOURCES[provider]) for provider in ['bls','bea','fed']]
-            rows=[{**events[i%3], 'id':f'event-{i}'} for i in range(18)]
+            rows=[{**events[i%3], 'id':f'event-{i}', 'provider':['bls','bea','fed','dol'][i%4]} for i in range(36)]
             source={'body':'test', 'sha256':cal.digest(b'test'),'retrieved_at':cal.stamp(now),'checked_at':cal.stamp(now)}
-            with patch.object(cal,'fetch_source',return_value=source), patch.object(cal,'parse_ics',return_value=rows), patch.object(cal,'parse_fed',return_value=[]), patch.object(cal,'parse_indicators',return_value=[]), patch.object(cal,'backup_snapshot',side_effect=ValueError('backup failed')):
+            with patch.object(cal,'fetch_source',return_value=source), patch.object(cal,'fed_month_urls',return_value={}), patch.object(cal,'parse_ics',return_value=rows), patch.object(cal,'parse_fed',return_value=[]), patch.object(cal,'parse_dol_schedule',return_value=[]), patch.object(cal,'parse_bea_schedule',return_value={}), patch.object(cal,'parse_indicators',return_value=[]), patch.object(cal,'attach_bls_results'), patch.object(cal,'backup_snapshot',side_effect=ValueError('backup failed')):
                 with self.assertRaisesRegex(ValueError,'backup failed'):
                     cal.run(root,now)
             self.assertEqual(p.read_bytes(),before)

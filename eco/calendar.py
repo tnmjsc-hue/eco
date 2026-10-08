@@ -1,11 +1,13 @@
 """Official US macro calendar; cached batch, private snapshots, static publication."""
 import argparse
+import base64
 import calendar as month_names
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import hashlib
 import html
 import hmac
+import io
 import json
 import os
 from pathlib import Path
@@ -17,12 +19,15 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 UTC = timezone.utc
-VERSION = "us-macro-calendar-v1.0.0"
+VERSION = "us-macro-calendar-v1.1.0"
 SOURCES = {
     "bls": "https://www.bls.gov/schedule/news_release/bls.ics",
     "bea": "https://www.bea.gov/news/schedule/ics/online-calendar-subscription.ics",
     "fed": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
     "bls_data": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
+    "bea_schedule": "https://www.bea.gov/news/schedule/full",
+    "fed_calendar": "https://www.federalreserve.gov/newsevents/calendar.htm",
+    "dol_schedule": "https://oui.doleta.gov/unemploy/claims_arch.asp",
 }
 SERIES = {
     "cpi": ("CUSR0000SA0", "CPI m/m", "percent", "change_percent"),
@@ -39,10 +44,17 @@ RULES = [
     ("Employment Cost Index", "eci", "ECI · chi phí lao động", "medium", "inflation"),
     ("Productivity and Costs", "productivity", "Năng suất và chi phí lao động", "medium", "growth"),
     ("U.S. Import and Export Price", "trade_prices", "Giá xuất nhập khẩu Mỹ", "medium", "inflation"),
+    ("Real Earnings", "real_earnings", "Thu nhập thực Mỹ", "medium", "labor"),
+    ("Usual Weekly Earnings", "weekly_earnings", "Thu nhập tuần của lao động Mỹ", "medium", "labor"),
+    ("Employer Costs for Employee Compensation", "employer_costs", "Chi phí nhân công", "medium", "inflation"),
+    ("Quarterly Data Series on Business Employment Dynamics", "business_employment", "Biến động việc làm doanh nghiệp", "medium", "labor"),
+    ("Current Employment Statistics Preliminary Benchmark (National)", "jobs_benchmark", "Điều chỉnh chuẩn việc làm", "medium", "labor"),
     ("Personal Income and Outlays", "pce", "PCE · thu nhập và chi tiêu", "high", "inflation"),
     ("Gross Domestic Product,", "gdp", "GDP Mỹ", "high", "growth"),
     ("GDP (", "gdp", "GDP Mỹ", "high", "growth"),
     ("U.S. International Trade in Goods and Services", "trade", "Cán cân thương mại Mỹ", "medium", "growth"),
+    ("U.S. International Transactions", "international_transactions", "Giao dịch quốc tế Mỹ", "medium", "growth"),
+    ("U.S. International Investment Position", "investment_position", "Vị thế đầu tư quốc tế Mỹ", "medium", "growth"),
 ]
 
 def stamp(value):
@@ -98,7 +110,9 @@ def event(provider, kind, label, original, when, impact, category, source):
     return {"id": f"{provider}-{kind}-{when.date()}", "provider": provider, "kind": kind,
             "title": label, "source_title": original, "scheduled_at": stamp(when),
             "currency": "USD", "country": "US", "impact": impact, "category": category,
-            "source_url": source, "actual": None, "forecast": None, "previous": None}
+            "source_url": source, "actual": None, "forecast": None, "previous": None,
+            "unit": None, "reference_period": None, "data_status": "scheduled",
+            "data_source_url": None, "data_vintage_at": None, "details": []}
 
 def plain(text):
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", " ", text))).strip()
@@ -176,11 +190,191 @@ def parse_indicators(body):
                            "source_url": f"https://data.bls.gov/timeseries/{sid}", "seasonally_adjusted": True})
     return indicators
 
-def fetch_source(key, cache, now, max_age):
+
+def attach_bls_results(events, indicators, now, retrieved_at):
+    """Join only the latest completed release of each series to its latest API period.
+
+    This is a current-vintage period match, never an as-published historical value.
+    """
+    by_id = {row["id"]: row for row in indicators}
+    for kind, series_id in [("cpi", "cpi"), ("jobs", "payrolls"), ("ppi", "ppi"), ("jolts", "jolts")]:
+        past = [e for e in events if e["provider"] == "bls" and e["kind"] == kind
+                and datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00")) < now]
+        if not past:
+            continue
+        e = max(past, key=lambda row: row["scheduled_at"])
+        row = by_id[series_id]
+        when = datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00"))
+        period = row["reference_period"]
+        lag = (when.year - int(period[:4])) * 12 + when.month - int(period[5:])
+        if not 0 <= lag <= 3 or row["value"] is None or row["previous"] is None:
+            continue
+        e.update(actual=row["value"], previous=row["previous"], unit=row["unit"],
+                 reference_period=period, data_status="current_vintage_period_match",
+                 data_source_url=row["source_url"], data_vintage_at=retrieved_at)
+        if kind == "jobs":
+            unemployment = by_id["unemployment"]
+            if unemployment["reference_period"] == period:
+                e["details"].append({"label": "Tỷ lệ thất nghiệp", "actual": unemployment["value"],
+                                     "previous": unemployment["previous"], "unit": "percent"})
+
+
+def parse_bea_schedule(body):
+    page = body.decode("utf-8-sig")
+    if "scheduled-releases-type-press" not in page:
+        raise ValueError("BEA release index lost expected rows")
+    releases = {}
+    for block in re.findall(r'<tr class="scheduled-releases-type-press">(.*?)</tr>', page, re.S):
+        title = re.search(r'<td class="release-title[^>]*>(.*?)</td>', block, re.S)
+        link = re.search(r'href="(/news/\d{4}/[a-zA-Z0-9/_-]+)"', block)
+        if title and link:
+            releases[plain(title[1])] = urllib.parse.urljoin("https://www.bea.gov", link[1])
+    if len(releases) < 20:
+        raise ValueError("BEA release index coverage changed")
+    return releases
+
+
+def parse_bea_report(e, body, retrieved_at):
+    report = plain(body.decode("utf-8-sig", errors="replace"))
+    if e["source_title"] not in report or "EMBARGOED UNTIL RELEASE" not in report:
+        raise ValueError("BEA report does not match scheduled title")
+    title = e["source_title"]
+    if e["kind"] == "pce":
+        month = re.search(r'Personal Income and Outlays, (\w+) \d{4}', title)
+        if not month:
+            return
+        headline = re.search(rf'PCE price index for {month[1]} (increased|decreased) ([\d.]+) percent', report)
+        table = re.search(r'PCE price index\s+(-?[\d.]+)\s+(-?[\d.]+)\s+PCE price index excluding food and energy\s+(-?[\d.]+)\s+(-?[\d.]+)', report)
+        if not headline or not table or abs(float(headline[2]) * (1 if headline[1] == "increased" else -1) - float(table[2])) > 0.01:
+            return
+        e.update(actual=float(table[2]), previous=float(table[1]), unit="percent")
+        # The source title supplies the exact observation month, separately from the release date.
+        period = re.search(r'([A-Za-z]+) (\d{4})$', title)
+        e["reference_period"] = f'{period[2]}-{list(month_names.month_name).index(period[1]):02d}'
+        e["details"].append({"label": "Core PCE m/m", "actual": float(table[4]),
+                             "previous": float(table[3]), "unit": "percent"})
+    elif e["kind"] == "trade":
+        match = re.search(r'goods and services deficit was \$([\d.]+) billion in \w+,.*?from \$([\d.]+) billion in \w+', report)
+        period = re.search(r'([A-Za-z]+) (\d{4})$', title)
+        if not match or not period:
+            return
+        e.update(actual=-float(match[1]), previous=-float(match[2]), unit="billion_usd",
+                 reference_period=f'{period[2]}-{list(month_names.month_name).index(period[1]):02d}')
+    elif e["kind"] == "gdp":
+        match = re.search(r'Real gross domestic product \(GDP\) (increased|decreased) at an annual rate of ([\d.]+) percent in the (\w+) quarter of (\d{4}).*?In the (?:first|second|third|fourth) quarter, real GDP (increased|decreased) ([\d.]+) percent', report, re.I)
+        if not match:
+            return
+        quarter = {"first": 1, "second": 2, "third": 3, "fourth": 4}.get(match[3].lower())
+        if quarter is None:
+            return
+        e.update(actual=float(match[2]) * (1 if match[1].lower() == "increased" else -1),
+                 previous=float(match[6]) * (1 if match[5].lower() == "increased" else -1),
+                 unit="percent_saar", reference_period=f'{match[4]}-Q{quarter}')
+    else:
+        return
+    e.update(data_status="official_release", data_source_url=e["source_url"], data_vintage_at=retrieved_at)
+
+
+def parse_fed_month(body, year, month, source_url):
+    page = body.decode("utf-8-sig").replace("\r", "")
+    headings = list(re.finditer(r'<div class="row cal-nojs__rowTitle"[^>]*>\s*<h4[^>]*>(.*?)</h4>', page, re.S))
+    if len(headings) < 3:
+        raise ValueError("Fed monthly calendar structure changed")
+    choices = {"FOMC Minutes": ("minutes", "FOMC · biên bản họp", "medium", "policy"),
+               "Beige Book": ("beige_book", "Fed Beige Book", "medium", "growth"),
+               "G.17 - Industrial Production and Capacity Utilization": ("industrial_production", "Sản lượng công nghiệp Mỹ", "medium", "growth"),
+               "G.19 - Consumer Credit": ("consumer_credit", "Tín dụng tiêu dùng Mỹ", "medium", "growth")}
+    events = []
+    for index, heading in enumerate(headings):
+        section = plain(heading[1])
+        if section not in ["FOMC Meetings", "Beige Book", "Statistical Releases"]:
+            continue
+        segment = page[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(page)]
+        for match in re.finditer(r'<div class="col-xs-2">\s*<p>(.*?)</p>.*?<div class="col-xs-7">\s*<p>(.*?)</p>.*?<div class="col-xs-3">\s*<p>(.*?)</p>', segment, re.S):
+            time_text, title, day_text = (plain(part) for part in match.groups())
+            choice = choices.get(title)
+            clock = re.fullmatch(r'(\d{1,2}):(\d{2}) (a\.m\.|p\.m\.)', time_text)
+            if not choice or not clock or not re.fullmatch(r'\d{1,2}', day_text):
+                continue
+            hour = int(clock[1]) % 12 + (12 if clock[3] == "p.m." else 0)
+            when = datetime(year, month, int(day_text), hour, int(clock[2]), tzinfo=ZoneInfo("America/New_York"))
+            events.append(event("fed", choice[0], choice[1], title, when, choice[2], choice[3], source_url))
+    return events
+
+
+def fed_month_urls(body, start, end):
+    page = body.decode("utf-8-sig")
+    candidates = re.findall(r'href="(/newsevents/(\d{4})-([a-z]+)\.htm)"', page)
+    urls = {}
+    for path, year, month_name in candidates:
+        month = next((i for i, name in enumerate(month_names.month_name) if name.lower() == month_name), None)
+        if month is None:
+            continue
+        first = datetime(int(year), month, 1, tzinfo=UTC)
+        if first.replace(day=28) + timedelta(days=4) >= start and first <= end:
+            urls[f"fed_month_{year}{month:02d}"] = urllib.parse.urljoin("https://www.federalreserve.gov", path)
+    if not urls:
+        raise ValueError("Fed calendar index has no months in requested window")
+    return urls
+
+
+def parse_dol_schedule(body, start, end):
+    page = body.decode("utf-8-sig")
+    if "Publication Schedule" not in page or "Thursday morning at 8:30am" not in page:
+        raise ValueError("DOL weekly claims schedule changed")
+    exceptions = set()
+    for day in re.findall(r'<td[^>]*>(Wednesday|Friday|Tuesday|Monday), ([A-Za-z]+ \d{1,2}, \d{4})</td>', page):
+        exceptions.add(datetime.strptime(day[1], "%B %d, %Y").date())
+    day = start.date()
+    events = []
+    while day <= end.date():
+        if day.weekday() == 3 and not any(abs((other - day).days) <= 2 for other in exceptions):
+            when = datetime(day.year, day.month, day.day, 8, 30, tzinfo=ZoneInfo("America/New_York"))
+            events.append(event("dol", "claims", "Đơn xin trợ cấp thất nghiệp Mỹ", "Unemployment Insurance Weekly Claims",
+                                when, "medium", "labor", SOURCES["dol_schedule"]))
+        if day in exceptions:
+            when = datetime(day.year, day.month, day.day, 8, 30, tzinfo=ZoneInfo("America/New_York"))
+            events.append(event("dol", "claims", "Đơn xin trợ cấp thất nghiệp Mỹ", "Unemployment Insurance Weekly Claims",
+                                when, "medium", "labor", SOURCES["dol_schedule"]))
+        day += timedelta(days=1)
+    return events
+
+
+def parse_dol_report(e, body, retrieved_at):
+    from pypdf import PdfReader
+    report = re.sub(r"\s+", " ", PdfReader(io.BytesIO(body)).pages[0].extract_text())
+    local_day = datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00")).astimezone(ZoneInfo("America/New_York")).date()
+    if f"{local_day.strftime('%B')} {local_day.day}, {local_day.year}" not in report or "UNEMPLOYMENT INSURANCE WEEKLY CLAIMS" not in report:
+        raise ValueError("DOL report release date does not match event")
+    headline = report[report.index("SEASONALLY ADJUSTED DATA"):]
+    average = re.search(r"The 4\s*-\s*week moving average", headline)
+    if not average:
+        raise ValueError("DOL initial claims section changed")
+    headline = headline[:average.start()]
+    match = re.search(r'week ending ([A-Za-z]+ \d{1,2}), the advance figure for seasonally adjusted initial claims was ([\d,]+)', headline)
+    prior = re.search(r"previous week's (?:unrevised|revised) level of ([\d,]+)", headline)
+    if not prior:
+        prior = re.search(r"The previous week's level was revised (?:up|down) by [\d,]+ from [\d,]+ to ([\d,]+)", headline)
+    if not match or not prior:
+        raise ValueError("DOL initial claims headline changed")
+    week_end = datetime.strptime(f"{match[1]}, {local_day.year}", "%B %d, %Y").date()
+    if week_end > local_day:
+        week_end = week_end.replace(year=local_day.year - 1)
+    if (local_day - week_end).days not in {4, 5}:
+        raise ValueError("DOL claims observation week mismatch")
+    e.update(actual=int(match[2].replace(",", "")) / 1000,
+             previous=int(prior[1].replace(",", "")) / 1000,
+             unit="thousand_claims", reference_period=week_end.isoformat(),
+             data_status="official_release", data_source_url=e["source_url"], data_vintage_at=retrieved_at)
+
+def fetch_source(key, cache, now, max_age, url=None):
+    url = url or SOURCES[key]
     file = cache / (key + ".json")
     old = json.loads(file.read_bytes()) if file.exists() else None
-    if old and digest(old['body'].encode()) != old['sha256']:
+    if old and digest(base64.b64decode(old['body']) if old.get('body_encoding') == 'base64' else old['body'].encode()) != old['sha256']:
         raise ValueError('cached source checksum mismatch')
+    if old and old.get("source_url") != url:
+        old = None
     if old and (now - datetime.fromisoformat(old["checked_at"].replace("Z", "+00:00"))).total_seconds() < max_age:
         return old
     headers = {"User-Agent": "ECO-economic-calendar/1.0 (+https://eco.tnmp.cloud/)"}
@@ -193,15 +387,17 @@ def fetch_source(key, cache, now, max_age):
             headers["If-None-Match"] = old["etag"]
         if old.get("last_modified"):
             headers["If-Modified-Since"] = old["last_modified"]
-    request = urllib.request.Request(SOURCES[key], data=body, headers=headers)
+    request = urllib.request.Request(url, data=body, headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=35) as response:
-            if urllib.parse.urlparse(response.url).hostname != urllib.parse.urlparse(SOURCES[key]).hostname:
+            if urllib.parse.urlparse(response.url).hostname != urllib.parse.urlparse(url).hostname:
                 raise ValueError("unexpected official source redirect")
             raw = response.read(2_000_001)
             if len(raw) > 2_000_000:
                 raise ValueError("source body exceeded size limit")
-            old = {"source_url": SOURCES[key], "body": raw.decode("utf-8"), "sha256": digest(raw),
+            binary = key.startswith("dol_report_")
+            old = {"source_url": url, "body": base64.b64encode(raw).decode() if binary else raw.decode("utf-8"),
+                   "body_encoding": "base64" if binary else "utf-8", "sha256": digest(raw),
                    "retrieved_at": stamp(now), "etag": response.headers.get("ETag"),
                    "last_modified": response.headers.get("Last-Modified")}
     except urllib.error.HTTPError as exc:
@@ -273,15 +469,46 @@ def run_batch(root=ROOT, now=None):
                                              "last_attempt_at": stamp(now), "last_good_retained": True})
         raise ValueError("official sources unavailable; retained last good calendar: " + ",".join(errors))
     try:
+        start, end = now - timedelta(days=45), now + timedelta(days=180)
+        month_urls = fed_month_urls(sources["fed_calendar"]["body"].encode(), start, end)
+        for key, url in month_urls.items():
+            sources[key] = fetch_source(key, cache, now, 0 if now.hour == 0 else 20 * 3600, url)
         events = parse_ics(sources["bls"]["body"].encode(), "bls") + parse_ics(sources["bea"]["body"].encode(), "bea") + parse_fed(sources["fed"]["body"].encode())
+        for key, url in month_urls.items():
+            ym = key.removeprefix("fed_month_")
+            events.extend(parse_fed_month(sources[key]["body"].encode(), int(ym[:4]), int(ym[4:]), url))
+        events.extend(parse_dol_schedule(sources["dol_schedule"]["body"].encode(), start, end))
         indicators = parse_indicators(sources["bls_data"]["body"].encode())
+        attach_bls_results(events, indicators, now, sources["bls_data"]["retrieved_at"])
+        bea_releases = parse_bea_schedule(sources["bea_schedule"]["body"].encode())
+        for e in events:
+            when = datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00"))
+            if e["provider"] != "bea" or e["kind"] not in {"pce", "gdp", "trade"} or not start <= when < now:
+                continue
+            url = bea_releases.get(e["source_title"])
+            if not url:
+                continue
+            e["source_url"] = url
+            key = "bea_report_" + re.sub(r"[^a-zA-Z0-9_]", "_", e["id"])
+            sources[key] = fetch_source(key, cache, now, 4 * 3600, url)
+            parse_bea_report(e, sources[key]["body"].encode(), sources[key]["retrieved_at"])
+        for e in events:
+            when = datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00"))
+            if e["provider"] != "dol" or not start <= when < now:
+                continue
+            local_day = when.astimezone(ZoneInfo("America/New_York")).date()
+            url = f"https://oui.doleta.gov/press/{local_day.year}/{local_day.strftime('%m%d%y')}.pdf"
+            e["source_url"] = url
+            key = "dol_report_" + local_day.strftime("%Y%m%d")
+            sources[key] = fetch_source(key, cache, now, 4 * 3600 if (now - when).days < 7 else 180 * 86400, url)
+            parse_dol_report(e, base64.b64decode(sources[key]["body"]), sources[key]["retrieved_at"])
     except Exception:
         write_json(public / "status.json", {"schema_version": "1.0.0", "outcome": "validation_error", "last_attempt_at": stamp(now), "last_good_retained": True})
         raise
-    events = sorted({e["id"]: e for e in events if now - timedelta(days=45) <= datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00")) <= now + timedelta(days=180)}.values(), key=lambda e: (e["scheduled_at"], e["id"]))
-    if len(events) < 15 or not all(any(e["provider"] == s for e in events) for s in ["bls", "bea", "fed"]):
+    events = sorted({e["id"]: e for e in events if start <= datetime.fromisoformat(e["scheduled_at"].replace("Z", "+00:00")) <= end}.values(), key=lambda e: (e["scheduled_at"], e["id"]))
+    if len(events) < 30 or not all(any(e["provider"] == s for e in events) for s in ["bls", "bea", "fed", "dol"]):
         raise ValueError("calendar window lost official coverage")
-    canonical = {"schema_version": "1.0.0", "calendar_version": VERSION, "scope": "US_major_macro",
+    canonical = {"schema_version": "1.1.0", "calendar_version": VERSION, "scope": "US_major_macro",
                  "events": events, "indicators": indicators}
     content_hash = digest(encode(canonical))
     latest = public / "latest.json"
@@ -308,13 +535,13 @@ def run_batch(root=ROOT, now=None):
     data = {**canonical, "release_id": release_id, "generated_at": stamp(now),
             "sources": {key: {field: s.get(field) for field in ["source_url", "sha256", "retrieved_at", "checked_at", "last_modified"]} for key, s in sources.items()},
             "private_backup": {"verified": True, "snapshot_id": snapshot.name, "manifest_sha256": digest((snapshot / "manifest.json").read_bytes()), "objects": receipt},
-            "revision": {"previous_release_id": old["release_id"], "reason": "official_schedule_or_latest_vintage_update"} if old else None}
+            "revision": {"previous_release_id": old["release_id"], "reason": "expanded_official_coverage_and_period_matched_results"} if old else None}
     if (release / "calendar.json").exists():
         body = (release / "calendar.json").read_bytes()
     else:
         write_json(release / "calendar.json", data, immutable=True)
         body = (release / "calendar.json").read_bytes()
-    write_json(latest, {"schema_version": "1.0.0", "release_id": release_id, "content_sha256": content_hash,
+    write_json(latest, {"schema_version": "1.1.0", "release_id": release_id, "content_sha256": content_hash,
                         "url": f"/data/calendar/releases/{release_id}/calendar.json", "sha256": digest(body)})
     write_json(public / "status.json", {"schema_version": "1.0.0", "outcome": "ok", "last_success_at": stamp(now)})
     return {"outcome": "published", "release_id": release_id, "events": len(events), "indicators": len(indicators), "private_objects_verified": len(receipt)}

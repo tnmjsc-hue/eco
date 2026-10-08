@@ -1,52 +1,51 @@
 # Lịch kinh tế và kịch bản USD / vàng / crypto
 
-CAL-01, ngày 08/10/2026; phiên bản `us-macro-calendar-v1.0.0`. Tab `#calendar` độc lập với methodology, điểm và lịch sử Core 10.
+CAL-02, ngày 08/10/2026; `us-macro-calendar-v1.1.0`, schema `1.1.0`. Tab `#calendar` độc lập với methodology, điểm và lịch sử Core 10.
 
-## Nguồn và phạm vi
+## Hai lớp lịch và quyền dữ liệu
 
-| Nguồn | Đường dữ liệu thật | Nội dung |
+Bảng ECO dùng lịch và số liệu của cơ quan công bố Mỹ. Mục **Lịch mở rộng MQL5** tải [widget chính thức của MetaQuotes](https://www.mql5.com/en/economic-calendar/widgets) khi người xem mở mục đó; widget hiển thị nhiều quốc gia, Actual, Forecast và Previous do MetaQuotes vận hành. ECO giữ nguyên mã nhúng mà trình tạo widget cung cấp và có liên kết mở [lịch MQL5 đầy đủ](https://www.mql5.com/en/economic-calendar). Dữ liệu widget không đi vào batch, JSON công khai, kịch bản ECO hay điểm ETH. [Điều khoản MQL5](https://www.mql5.com/en/about/terms) hạn chế truy cập tự động và sao chép/phân phối lại; do đó không scrape MQL5 thành nguồn batch. Sự kiện, múi giờ và số trong widget là của bên thứ ba, có thể khác bảng ECO.
+
+| Nguồn ECO | Đường dữ liệu | Phạm vi |
 |---|---|---|
-| BLS | [iCalendar](https://www.bls.gov/help/hlpiCAL.htm), `https://www.bls.gov/schedule/news_release/bls.ics` | CPI, NFP, PPI, JOLTS, ECI, năng suất, giá xuất nhập khẩu |
-| BEA | [iCalendar](https://www.bea.gov/news/schedule/icalendar), `https://www.bea.gov/news/schedule/ics/online-calendar-subscription.ics` | GDP, Personal Income and Outlays/PCE, thương mại |
-| Fed | [FOMC](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm) | Ngày cuối cuộc họp định kỳ; 14:00 ET là thông lệ, gắn `≈` để xác minh statement |
-| BLS Public Data API | [API v2](https://www.bls.gov/developers/api_signature_v2.htm), POST `https://api.bls.gov/publicAPI/v2/timeseries/data/` | Một request gồm năm series, không API key |
+| BLS | [iCalendar](https://www.bls.gov/help/hlpiCAL.htm), `https://www.bls.gov/schedule/news_release/bls.ics`; [API v2](https://www.bls.gov/developers/api_signature_v2.htm) | CPI, NFP, PPI, JOLTS và các bản tin lao động/giá khác; năm series số liệu mùa vụ |
+| BEA | [iCalendar](https://www.bea.gov/news/schedule/icalendar), [lịch công bố đầy đủ](https://www.bea.gov/news/schedule/full) và từng bản tin | GDP, PCE, cán cân thương mại, giao dịch/vị thế đầu tư quốc tế |
+| Federal Reserve | [FOMC](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm) và [lịch sự kiện theo tháng](https://www.federalreserve.gov/newsevents/calendar.htm) | FOMC, biên bản, Beige Book, sản xuất công nghiệp, tín dụng tiêu dùng |
+| DOL | [lịch và kho weekly claims](https://oui.doleta.gov/unemploy/claims_arch.asp), PDF thông cáo từng ngày | Weekly initial jobless claims; ngoại lệ ngày nghỉ trong lịch nguồn |
 
-Chọn nguồn sơ cấp miễn phí, có thể tái lập, thay cho feed thương mại/consensus của Forex Factory. Lịch có ngày/giờ, USD, mức ảnh hưởng, sự kiện, actual/forecast/previous và trạng thái; mobile chuyển hàng thành card. Phạm vi là các tin Mỹ chủ chốt; chưa bao gồm lịch toàn cầu, PMI tư nhân, weekly claims, phát biểu hoặc sự kiện riêng của crypto.
+Lịch ECO lọc theo USD và các sự kiện Mỹ; không tuyên bố bao phủ PMI tư nhân, sự kiện toàn cầu hoặc toàn bộ diễn văn. Widget MQL5 bù khoảng trống xem lịch toàn cầu nhưng không cấp quyền tái sử dụng dữ liệu. Nội dung cơ quan chính thức được trích theo trường số/lịch cần thiết, dẫn link bản gốc; không sao chép hình ảnh, logo hay bài viết. Attribution không hàm ý cơ quan nguồn bảo chứng ECO. Xem [BLS copyright](https://www.bls.gov/bls/linksite.htm), [BEA FAQ 145](https://www.bea.gov/help/faq/145) và [Fed disclaimer](https://www.federalreserve.gov/disclaimer.htm).
 
-[BLS copyright](https://www.bls.gov/bls/linksite.htm) cho phép tái sử dụng nội dung public domain và yêu cầu ghi nguồn. [BEA FAQ 145](https://www.bea.gov/help/faq/145) và [Fed disclaimer](https://www.federalreserve.gov/disclaimer.htm) cho phép đối với nội dung không có ngoại lệ chỉ rõ. Chỉ chọn lịch/số liệu chính thức, không sao chép hình ảnh, logo, bài viết hoặc nội dung bên thứ ba có quyền riêng. Attribution không hàm ý cơ quan nguồn bảo chứng ECO.
+## Kết quả gắn sự kiện
 
-## Hợp đồng dữ liệu và đánh giá
+Mỗi sự kiện giữ `scheduled_at`, `source_title`, `reference_period`, `data_vintage_at` và `data_status` riêng. Đã qua giờ dự kiến **không** tự động chuyển thành đã công bố. Hàng chưa đối chiếu được đúng kỳ để `actual/previous` null và UI nói rõ chưa xác minh.
 
-Lịch nguồn không có consensus hoặc actual gắn từng event, nên `actual/forecast/previous` của sự kiện đều null, UI hiện `—` và giải thích cạnh bảng. Đã qua giờ dự kiến không xác nhận công bố. Khối **Số liệu BLS mới nhất** giữ kỳ tham chiếu riêng, không tự gán vào hàng lịch.
+- BEA GDP, PCE và trade lấy `actual/previous` từ đúng bản tin có tiêu đề/kỳ tương ứng. PCE có thêm Core PCE; GDP là % annualized; trade là tỷ USD.
+- DOL lấy initial claims đã điều chỉnh mùa vụ từ PDF đúng ngày công bố; kỳ tham chiếu là tuần kết thúc, đơn vị nghìn. Kiểm ngày công bố và chuỗi tuần, không gán continuing claims vào initial claims.
+- BLS chỉ gắn năm series vào **sự kiện gần nhất đã qua** khi kỳ API khớp kỳ suy ra từ ngày công bố. Đây là **vintage mới nhất tại lúc batch tải**, có thể đã được revision; không được coi là số đúng bản tin tại thời điểm lịch sử. Các sự kiện BLS khác vẫn null nếu không có parser nguồn đúng kỳ.
+- `forecast` trong bảng ECO vẫn null vì các nguồn sơ cấp này không cung cấp consensus đã được cấp quyền. `previous` không thay thế `forecast`; không tự tính surprise từ hai cột đó. Widget MQL5 hiển thị dự báo riêng của MetaQuotes.
 
-Năm series đều seasonally adjusted: `CUSR0000SA0` CPI index; `CES0000000001` tổng việc làm phi nông nghiệp, nghìn; `LNS14000000` thất nghiệp %; `WPSFD4` PPI final demand index; `JTS000000000000000JOL` job openings, nghìn. CPI/PPI = `100 × (index_month/index_previous_month − 1)`, một chữ số thập phân. NFP = hiệu mức việc làm hai tháng, nghìn. Hai series còn lại là mức tháng. Kỳ trước dùng cùng phép biến đổi và đúng tháng trước; thiếu tháng → null. Warning catalog vẫn có thể đi cùng data hợp lệ; thiếu series/status lỗi bị chặn. Footnote `P` là sơ bộ. [FAQ API](https://www.bls.gov/developers/api_faqs.htm) nêu độ trễ cập nhật; số liệu có thể được revision.
+Năm series BLS seasonally adjusted: `CUSR0000SA0` CPI index; `CES0000000001` NFP level (nghìn); `LNS14000000` thất nghiệp %; `WPSFD4` PPI final demand index; `JTS000000000000000JOL` job openings (nghìn). CPI/PPI tính `100 × (index_month/index_previous_month − 1)` và làm tròn một chữ số; NFP là chênh lệch hai mức lao động tháng. Thiếu tháng thì null. API warning catalog có thể đi cùng data hợp lệ, lỗi status/thiếu series bị chặn. Footnote `P` là sơ bộ. [FAQ BLS](https://www.bls.gov/developers/api_faqs.htm) nêu độ trễ và revision.
 
-`reference_period` là tháng quan sát; `scheduled_at` là giờ công bố dự kiến; `sources.*.retrieved_at` là lúc thực tải response; `checked_at` là lần HTTP/cache kiểm gần nhất. Thời điểm công bố thực và thời điểm API lần đầu có số liệu không được cung cấp, được coi là không biết. Không dùng vintage này để tuyên bố backtest point-in-time.
+`reference_period` là thời kỳ quan sát; `scheduled_at` là giờ dự kiến; `retrieved_at` là lần tải body; `checked_at` là lần HTTP/cache gần nhất. Thời điểm số liệu thật được đăng lên API có thể không biết. Snapshot hiện tại không tạo vintage lịch sử để backtest point-in-time. Kịch bản USD/vàng/crypto là suy luận có điều kiện từ [cơ chế Fed](https://www.federalreserve.gov/monetarypolicy/monetary-policy-what-are-its-goals-how-does-it-work.htm), [World Gold Council](https://www.gold.org/goldhub/research/the-impact-of-monetary-policy-on-gold) và [IMF WP 2023/163](https://www.imf.org/en/publications/wp/issues/2023/08/04/the-crypto-cycle-and-us-monetary-policy-534834). `high/medium` là mức ECO tự phân loại, không phải xác suất, dự báo giá hay khuyến nghị giao dịch.
 
-Mức `high/medium` là phân loại ECO, không do nguồn cấp và không phải xác suất. Kịch bản theo inflation/labor/growth/policy so với kỳ vọng thị trường, không dùng kỳ trước như forecast hoặc tự kết luận surprise/buy/sell. Diễn giải do ECO tổng hợp từ [cơ chế Fed](https://www.federalreserve.gov/monetarypolicy/monetary-policy-what-are-its-goals-how-does-it-work.htm), [World Gold Council](https://www.gold.org/goldhub/research/the-impact-of-monetary-policy-on-gold) và [IMF WP 2023/163](https://www.imf.org/en/publications/wp/issues/2023/08/04/the-crypto-cycle-and-us-monetary-policy-534834). Đây là suy luận có điều kiện; quan hệ của nhóm tài sản không xác định phản ứng từng sự kiện, coin hoặc stablecoin. Chưa backtest đánh giá từng event.
+## Lịch chạy và tài nguyên
 
-## Lịch cập nhật và tài nguyên
-
-| Cron UTC | Giờ Việt Nam | Mục đích |
+| Cron UTC | Giờ Việt Nam | Vai trò |
 |---|---|---|
-| `37 0 * * *` | 07:37 mỗi ngày | Ba lịch và một POST BLS |
-| `37 13,18 * * 1-5` | 20:37 và 01:37 hôm sau, thứ Hai–Sáu UTC | Kết quả sau khung công bố Mỹ 08:30/10:00/14:00 ET |
+| `37 0 * * *` | 07:37 hằng ngày | Rà lại lịch BLS, BEA, Fed, DOL và BLS API |
+| `37 13,18 * * 1-5` | 20:37 và 01:37 hôm sau, thứ Hai–Sáu UTC | Bắt kết quả sau các khung giờ công bố Mỹ |
 
-GitHub có thể trễ hoặc chờ concurrency `daily-eth-publication`. Job chia sẻ khóa với hai batch ETH để không tranh commit. Đây là batch; chưa xác nhận đã quan sát cron tương lai chỉ bằng việc tạo workflow.
-
-Actions Cache chỉ giữ response official công khai dưới `data/raw/calendar/cache`, không credential, Coin Metrics hoặc Arkham. Cache repo public không phải kho bí mật. Cache SHA-256 được kiểm trước khi dùng. Lịch có TTL 20 giờ giữa các run, refresh lúc 00h UTC, conditional ETag/Last-Modified; BLS API TTL 4 giờ, tối đa ba POST tự động/ngày, cuối tuần một. Job không cài NumPy hoặc tải lịch sử ETH.
-
-Canonical content hash bỏ timestamp attempt. Dữ liệu không đổi giữ release/pointer; một status heartbeat/ngày hoặc failure/recovery có thể tạo commit. Trình duyệt lazy-load khi vào tab, revalidate hai JSON nhỏ mỗi 15 phút khi mở/visible, giữ release immutable. Không gọi API nguồn từ browser.
+GitHub có thể chạy trễ; job dùng concurrency chung với batch ETH. Lịch nguồn được cache 20 giờ giữa các lần quét, ép refresh ở 00 UTC; BLS API cache 4 giờ. BEA/DOL bản tin vừa công bố cache 4 giờ; DOL PDF cũ cache 180 ngày. GET có ETag/Last-Modified khi nguồn hỗ trợ; cache nội bộ có hash. Lịch Fed tháng chỉ tải các tháng trong cửa sổ 45 ngày trước và 180 ngày sau. Browser chỉ tải JSON release bất biến của ECO khi mở tab, revalidate pointer/status mỗi 15 phút khi đang xem; widget MQL5 chỉ tải khi người xem mở mục tương ứng.
 
 ## Snapshot, phát hành và lỗi
 
-`python -m eco.calendar` tạo snapshot private gồm bốn source records, canonical JSON và manifest dưới `data/raw/calendar/<run-id>`. UTF-8 response được bảo toàn qua chuỗi JSON và hash riêng; nguồn cached giữ timestamp tải ban đầu. Dùng lại token bucket-limited qua environment, SigV4 PUT/GET tại `raw/calendar/<run-id>/` trong `eco-eth-private`. Kiểm bất biến object, upload manifest cuối và readback tất cả trước publication. Không cấp credential mới hoặc bind raw vào frontend. Cache công khai và snapshot R2 private có vai trò khác nhau.
+`python -m eco.calendar` lưu toàn bộ response nguồn, canonical JSON và manifest dưới `data/raw/calendar/<run-id>` (Git ignored). Body PDF DOL được mã hóa base64 trong snapshot JSON để giữ bytes/hash. SigV4 PUT/GET từng object vào prefix riêng `raw/calendar/<run-id>/` của bucket private `eco-eth-private`; manifest upload cuối và mọi object phải readback đúng hash trước khi đổi pointer. Không bind raw/R2 vào frontend; secret chỉ qua môi trường/DPAPI hoặc Actions Secrets.
 
-Public `releases/calendar-<20hex>/calendar.json` bất biến; `latest.json` pin hash/path/schema; `status.json` ghi trạng thái. Release mới có ID cha/lý do `official_schedule_or_latest_vintage_update`; không sửa release cũ. Pointer đổi atomic; client kiểm SHA-256, version, allowed host, schema, null consensus và receipt backup. Status heartbeat không chứng minh snapshot số liệu có vintage mới.
+Release `public/data/calendar/releases/calendar-<20hex>/calendar.json` là bất biến; `latest.json` pin path/hash/schema. CAL-01 `calendar-66b4e31ed958b40e784f` được giữ nguyên; CAL-02 thêm release con với `revision.reason=expanded_official_coverage_and_period_matched_results`. `status.json` ghi heartbeat/lỗi. Nội dung không đổi không sinh release mới. Fetch/parse/coverage/R2 fail thì giữ pointer tốt; UI fail mạng/hash giữ bản đã xác minh. Hơn 48 giờ từ batch success thì cảnh báo lịch cũ. Không biến lỗi thành số 0 và không phát hành dữ liệu raw có bản quyền.
 
-Nguồn/parse/coverage/cache/R2 lỗi giữ pointer tốt và status error; workflow chỉ stage allowlist calendar, không stage release khi batch fail. UI lỗi mạng/hash giữ nội dung tốt và retry. Hơn 48 giờ batch success thì cảnh báo cũ. Raw, credential và snapshot chưa được phép không commit. Chưa diễn tập rollback production.
+Tại lần kiểm CAL-02 ngày 08/10/2026: 111 sự kiện trong cửa sổ, 17 có `actual/previous`, 25 response nguồn và 27 object private readback. Đây là số đếm snapshot, có thể thay đổi ở batch sau; không phải cam kết mọi sự kiện đã qua đều có actual.
 
-## Kiểm tra và tiếp tục
+## Kiểm tra và bước tiếp
 
 ```text
 python -m unittest discover -s tests -p test_calendar.py -v
@@ -54,8 +53,6 @@ node --test tests/calendar.test.mjs
 node scripts/check-calendar.mjs http://127.0.0.1:8877/
 ```
 
-Browser QA dùng Playwright/Chrome có sẵn hoặc `PLAYWRIGHT_MODULE`/`CHROME_EXECUTABLE`. Kiểm filter, ngày FOMC Việt Nam/ET, 1440/768/390/360, locale, lỗi mạng/hash, không gọi provider và regression chart Core 10. Kết quả thực, Actions/Pages/domain được ghi HANDOFF.
+Browser QA kiểm ngày VN/ET, bốn viewport, tám locale, filter, hash/network fallback và Core 10. Widget cần kiểm trong browser tương tác có hỗ trợ bên thứ ba; đầu nối headless có thể nhận HTTP 404 từ Tradays dù trình duyệt ứng dụng hiển thị. Các kiểm chứng thực tế và deploy ghi `HANDOFF.md`.
 
-Tab mới có English/Tiếng Việt. Calendar ở các lựa chọn ngôn ngữ khác tạm fallback English, ngày/số vẫn theo locale; các tab trước giữ translation packs hiện hữu.
-
-Muốn thêm global coverage, consensus hoặc actual gắn từng release: mở adapter/version mới sau kiểm coverage, đơn vị, availability và quyền public. Không tự thay provider hoặc đoán giá trị dưới version hiện hành.
+Bước kế nếu muốn đưa consensus/global event **vào JSON ECO**: chọn provider có quyền backend/cache/public derived rõ ràng, timestamp availability và lịch revision, rồi tạo adapter/version khác. Không đổi nguồn, đơn vị hoặc phân loại dưới `us-macro-calendar-v1.1.0`.
