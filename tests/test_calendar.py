@@ -2,10 +2,11 @@ import copy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
-from types import SimpleNamespace
 
 from eco import calendar as cal
 
@@ -92,7 +93,8 @@ class CalendarTests(unittest.TestCase):
                 'SEASONALLY ADJUSTED DATA In the week ending September 12, the advance figure for seasonally adjusted initial claims was 196,000, '
                 "a decrease of 10,000 from the previous week's unrevised level of 206,000. The 4-week moving average was 203,250. "
                 "The advance number for seasonally adjusted insured unemployment was 1,730,000. The previous week's level was revised to 1,769,000.")
-        with patch('pypdf.PdfReader',return_value=SimpleNamespace(pages=[SimpleNamespace(extract_text=lambda: body)])):
+        reader = SimpleNamespace(PdfReader=lambda _: SimpleNamespace(pages=[SimpleNamespace(extract_text=lambda: body)]))
+        with patch.dict(sys.modules, {'pypdf': reader}):
             cal.parse_dol_report(row,b'fixture','2026-09-17T13:00:00Z')
         self.assertEqual((row['actual'],row['previous'],row['reference_period']), (196,206,'2026-09-12'))
 
