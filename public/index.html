@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with verifiable data and methodology.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=macro-20261009b">
+  <link rel="stylesheet" href="/styles.css?v=market-20261009a">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=macro-20261009b"></script>
+  <script type="module" src="/app.js?v=market-20261009a"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -74,8 +74,20 @@
               <details class="macro-peers"><summary>2. Đối chiếu các chỉ số khác · cùng hướng, mâu thuẫn và thiếu</summary><div class="table-wrap"><table class="macro-table"><tbody id="macro-peers"></tbody></table></div></details>
               <h3>3. Bối cảnh chung</h3><p id="macro-regime" class="macro-regime"></p><div id="macro-axes" class="macro-axes"></div><p id="macro-context-note" class="small"></p>
               <h3>4. Tác động tài sản có điều kiện</h3><div id="macro-assets" class="macro-assets"></div>
-              <p class="small muted">Chưa có consensus được cấp quyền; chưa đo phản ứng lợi suất, USD hoặc giá tài sản. Đây không phải xác suất hay khuyến nghị giao dịch.</p>
+              <p class="small muted">Đánh giá này so với kỳ trước. Số đo thị trường, consensus và phạm vi phản ứng được trình bày riêng bên dưới.</p>
               <details class="macro-details"><summary>Quy tắc, vintage và bằng chứng</summary><ul id="macro-rules"></ul><p id="macro-provenance" class="small"></p><p id="macro-exclusions" class="small muted"></p><div class="proxy-links"><a id="macro-download" target="_blank" rel="noreferrer">Tải đánh giá JSON</a><a id="macro-manifest" target="_blank" rel="noreferrer">Manifest và input đã xác minh</a></div><p class="small muted">Snapshot hiện tại có thể chứa số liệu đã sửa đổi. Ngày lịch, kỳ quan sát, thời điểm biết dữ liệu và thời điểm xuất đánh giá khác nhau. Không dùng snapshot này để suy ra hệ thống đã biết số vào thời điểm công bố lịch sử.</p></details>
+            </div>
+          </section>
+          <section class="macro-panel" aria-labelledby="market-heading">
+            <h2 id="market-heading">5. Số đo thị trường và dữ liệu còn thiếu</h2>
+            <p id="market-error" class="notice" role="status">Đang xác minh số đo thị trường…</p>
+            <div id="market-content" hidden><p id="market-date" class="small muted"></p>
+              <div class="table-wrap"><table class="macro-table"><thead><tr><th>Thước đo</th><th>Giá trị / ngày</th><th>Thay đổi giữa hai ngày</th></tr></thead><tbody id="market-rows"></tbody></table></div>
+              <p class="small muted">Lợi suất: 1 bps = 0,01 điểm phần trăm. USD broad là chỉ số Fed, khác DXY; H.10 công bố trễ. ETH là giá đóng ngày UTC. Các thước đo có thể khác ngày; xem từng cặp ngày.</p>
+              <p class="small"><strong>Consensus trước tin: chưa khả dụng.</strong> Chưa có nguồn được phép hiển thị và snapshot dự báo được ghi nhận trước công bố. Không dùng kỳ trước làm dự báo.</p>
+              <p class="small"><strong>Phản ứng quanh giờ công bố: chưa đo được.</strong> Chưa có cửa sổ giá intraday trước/sau thời điểm công bố thực. Biến động theo ngày bên trên không chứng minh do sự kiện gây ra.</p>
+              <div class="proxy-links"><a id="market-download" target="_blank" rel="noreferrer">Tải số đo JSON</a><a id="market-manifest" target="_blank" rel="noreferrer">Nguồn và hash số đo</a></div>
+              <p class="small muted">Nguồn: Federal Reserve Board, US Treasury và Coin Metrics Community (CC BY-NC 4.0). Nghiên cứu phi thương mại; không phải xác suất hay khuyến nghị giao dịch.</p>
             </div>
           </section>
           <div class="cal-toolbar">

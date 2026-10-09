@@ -1,5 +1,5 @@
-import {translate as t,numberLocale} from './i18n.js?v=macro-20261009b';
-import {loadAssessment,METRICS} from './macro-model.js?v=macro-20261009b';
+import {translate as t,numberLocale} from './i18n.js?v=market-20261009a';
+import {loadAssessment,METRICS} from './macro-model.js?v=market-20261009a';
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const txt=v=>esc(t(v));

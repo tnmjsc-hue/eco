@@ -407,8 +407,10 @@ def fetch_source(key, cache, now, max_age, url=None):
     write_json(file, old)
     return old
 
-def backup_snapshot(folder):
+def backup_snapshot(folder, prefix="calendar"):
     """Bucket-limited SigV4 PUT/GET. No credentials, raw bodies or signed URLs in logs."""
+    if prefix not in {"calendar", "macro-market"}:
+        raise ValueError("invalid private snapshot prefix")
     account = os.environ.get("R2_ACCOUNT_ID", "")
     bucket = os.environ.get("R2_BUCKET", "eco-eth-private")
     access = os.environ.get("R2_ACCESS_KEY_ID", "")
@@ -439,7 +441,7 @@ def backup_snapshot(folder):
             raise ValueError(f"R2 {method}: HTTP {exc.code}") from None
     results = []
     for file in sorted(folder.iterdir(), key=lambda p: (p.name == "manifest.json", p.name)):
-        key = f"raw/calendar/{folder.name}/{file.name}"
+        key = f"raw/{prefix}/{folder.name}/{file.name}"
         body = file.read_bytes()
         existing = request("GET", key)
         if existing is None:

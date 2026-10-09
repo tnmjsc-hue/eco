@@ -12,6 +12,14 @@ if(hash(manifestBytes)!==macro.manifest.sha256)throw Error('Invalid macro manife
 const manifest=JSON.parse(manifestBytes);
 const macroAssets=[macro,macro.manifest,...['calendar','observations','batch_status','ruleset'].map(k=>manifest[k])];
 const currentMacroStatus=JSON.parse(macroStatus);if(currentMacroStatus.batch_status)macroAssets.push(currentMacroStatus.batch_status);
+const marketPointer=await readFile('public/data/macro-market/latest.json');
+const marketStatus=await readFile('public/data/macro-market/status.json');
+const market=JSON.parse(marketPointer);
+const marketManifestBytes=await readFile(`public${market.manifest.url}`);
+if(hash(marketManifestBytes)!==market.manifest.sha256)throw Error('Invalid market manifest');
+const marketManifest=JSON.parse(marketManifestBytes);
+const marketAssets=[market,market.manifest,marketManifest.inputs,marketManifest.protocol,marketManifest.eth_parent.manifest,marketManifest.eth_parent.history];
+for(const a of marketAssets){if(!/^\/data\/(?:macro-market\/releases\/market-[a-f0-9]{20}\/(?:market|manifest|inputs|protocol)|core-v2\/releases\/core10-[a-f0-9]{20}\/(?:manifest|history))\.json$/.test(a.url)||hash(await readFile(`public${a.url}`))!==a.sha256)throw Error('Invalid market asset');}
 for(const asset of macroAssets){if(!/^\/data\/(calendar|macro-assessment)\/[a-zA-Z0-9/.-]+\.json$/.test(asset.url)||hash(await readFile(`public${asset.url}`))!==asset.sha256)throw Error('Invalid macro asset');}
 if (!/^calendar-[a-f0-9]{20}$/.test(data.release_id) || data.url !== `/data/calendar/releases/${data.release_id}/calendar.json`) throw Error('Invalid calendar pointer');
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
@@ -25,7 +33,9 @@ for (let attempt = 0; attempt < 40; attempt++) {
     if (hash(await bytes('/data/calendar/latest.json')) !== hash(pointer) || hash(await bytes('/data/calendar/status.json')) !== hash(status) || hash(await bytes(data.url)) !== data.sha256) continue;
     if(hash(await bytes('/data/macro-assessment/latest.json'))!==hash(macroPointer)||hash(await bytes('/data/macro-assessment/status.json'))!==hash(macroStatus))continue;
     const checks=await Promise.all(macroAssets.map(async a=>hash(await bytes(a.url))===a.sha256));if(!checks.every(Boolean))continue;
-    console.log(JSON.stringify({production_verified:true,release_id:data.release_id,assessment_id:macro.assessment_id,macro_assets_verified:macroAssets.length})); process.exit(0);
+    if(hash(await bytes('/data/macro-market/latest.json'))!==hash(marketPointer)||hash(await bytes('/data/macro-market/status.json'))!==hash(marketStatus))continue;
+    if(!(await Promise.all(marketAssets.map(async a=>hash(await bytes(a.url))===a.sha256))).every(Boolean))continue;
+    console.log(JSON.stringify({production_verified:true,release_id:data.release_id,assessment_id:macro.assessment_id,macro_assets_verified:macroAssets.length,market_release_id:market.release_id,market_assets_verified:marketAssets.length})); process.exit(0);
   } catch { /* CDN may still serve the previous release. */ }
 }
 throw Error('Production calendar did not match the verified artifacts');

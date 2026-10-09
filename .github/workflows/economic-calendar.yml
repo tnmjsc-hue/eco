@@ -52,6 +52,23 @@ jobs:
           python -m unittest discover -s tests -p 'test_macro*.py' -v
           node --test tests/macro.test.mjs
           git diff --check
+      - name: Measure daily markets and verify private snapshot
+        id: market
+        if: always()
+        continue-on-error: true
+        env:
+          R2_ACCOUNT_ID: '3ebcb7a2f66c7ae9b5804ff91e6ec702'
+          R2_BUCKET: eco-eth-private
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: python -m eco.macro_market
+      - name: Validate daily market publication
+        id: market_verify
+        if: always() && steps.market.outcome == 'success'
+        run: |
+          python -m unittest discover -s tests -p test_macro_market.py -v
+          node --test tests/macro-market.test.mjs
+          git diff --check
       - name: Validate calendar contracts
         id: verify
         if: steps.batch.outcome == 'success'
@@ -61,11 +78,13 @@ jobs:
           git diff --check
       - name: Commit calendar allowlist
         id: commit
-        if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure')
+        if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure' || steps.market_verify.outcome == 'success')
         env:
           BATCH_OUTCOME: ${{ steps.batch.outcome }}
           MACRO_OUTCOME: ${{ steps.macro.outcome }}
           MACRO_VERIFY: ${{ steps.macro_verify.outcome }}
+          MARKET_OUTCOME: ${{ steps.market.outcome }}
+          MARKET_VERIFY: ${{ steps.market_verify.outcome }}
         run: |
           git config user.name 'eco-daily[bot]'
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
@@ -76,6 +95,11 @@ jobs:
           fi
           if [ "$MACRO_OUTCOME" = 'success' ] && [ "$MACRO_VERIFY" = 'success' ]; then
             git add -- public/data/macro-assessment/latest.json public/data/macro-assessment/releases public/data/macro-assessment/inputs public/data/macro-assessment/records
+          fi
+          if [ "$MARKET_VERIFY" = 'success' ]; then
+            git add -- public/data/macro-market/latest.json public/data/macro-market/status.json public/data/macro-market/releases
+          elif [ "$MARKET_OUTCOME" = 'failure' ]; then
+            git add -- public/data/macro-market/status.json
           fi
           if ! git diff --cached --quiet; then
             git diff --cached --check
@@ -89,5 +113,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-calendar-deploy.mjs
       - name: Surface data failure
-        if: always() && (steps.batch.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure')
+        if: always() && (steps.batch.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure' || steps.market.outcome == 'failure' || steps.market_verify.outcome == 'failure')
         run: exit 1

@@ -1,5 +1,5 @@
 // The browser verifies published engine output; it never recomputes the regime.
-import {validateCalendar} from './calendar-model.js?v=macro-20261009b';
+import {validateCalendar} from './calendar-model.js?v=market-20261009a';
 export const MACRO_VERSION='macro-cross-v1.0.1';
 export const RULESET_HASH='7a8f1e8fb29a70978588a4ec320ddb0d96437c6a319600592e3cf0622a20f86a';
 export const METRICS={cpi_headline_mom_sa:'CPI m/m',pce_core_mom_sa:'PCE core m/m',pce_headline_mom_sa:'PCE headline m/m',ppi_final_demand_mom_sa:'PPI m/m',nfp_change_k_sa:'NFP',unemployment_rate_sa:'Tỷ lệ thất nghiệp',jolts_openings_k_sa:'JOLTS',initial_claims_k_sa:'Trợ cấp thất nghiệp ban đầu',real_gdp_qoq_saar:'GDP thực q/q SAAR',trade_balance_bn_sa:'Cán cân thương mại'};

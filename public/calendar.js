@@ -1,6 +1,7 @@
-import { translate as t, numberLocale } from './i18n.js?v=macro-20261009b';
-import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=macro-20261009b';
-import {refreshMacro,renderMacro} from './macro.js?v=macro-20261009b';
+import { translate as t, numberLocale } from './i18n.js?v=market-20261009a';
+import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=market-20261009a';
+import {refreshMacro,renderMacro} from './macro.js?v=market-20261009a';
+import {refreshMarket,renderMarket} from './macro-market.js?v=market-20261009a';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };
@@ -36,6 +37,7 @@ function setRange(kind) {
 }
 function render() {
   renderMacro();
+  renderMarket();
   if (!state.data) return;
   for (const id of ['cal-zone','cal-impact']) for (const option of $(id).options) {
     option.dataset.sourceLabel ??= option.textContent;
@@ -113,7 +115,7 @@ async function load(force = false) {
     $('cal-error').hidden = false; $('cal-error-text').textContent = t(e.message);
   } finally {
     $('cal-loading').hidden = true; $('cal-refresh').disabled = false; state.busy = false;
-    await refreshMacro(state.release);
+    await Promise.all([refreshMacro(state.release),refreshMarket()]);
   }
 }
 export function openCalendar() { load(); }

@@ -10,10 +10,14 @@ try{
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   const errors=[],providerRequests=[];
   page.on('pageerror',e=>errors.push(e.message));
-  page.on('request',r=>{if(/bls\.gov|bea\.gov|federalreserve\.gov|r2\.cloudflarestorage/.test(r.url()))providerRequests.push(r.url());});
+  page.on('request',r=>{if(/bls\.gov|bea\.gov|federalreserve\.gov|home\.treasury\.gov|coinmetrics\.io|r2\.cloudflarestorage/.test(r.url()))providerRequests.push(r.url());});
   await page.addInitScript(()=>{if(window===top)localStorage.setItem('eco-language','vi');});
   await page.goto(`${url.split('#')[0]}#calendar`,{waitUntil:'networkidle'});
   await page.locator('#macro-content').waitFor({state:'visible'});
+  await page.locator('#market-content').waitFor({state:'visible'});
+  assert.equal(await page.locator('#market-error').isVisible(),false);
+  assert.equal(await page.locator('#market-rows tr').count(),6);
+  const marketIdentity=await page.locator('#market-content').getAttribute('data-release-id');
   assert.equal(await page.locator('#macro-error').isVisible(),false,await page.locator('#macro-error').textContent());
   assert.equal(await page.locator('#cal-error').isVisible(),false);
   assert.equal(await page.locator('#cal-indicators article').count(),5);
@@ -29,6 +33,7 @@ try{
   assert.equal(await page.locator('.usd-bullish,.usd-bearish').count(),0);
   await page.locator('#cal-zone').selectOption('America/New_York');
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
+  assert.equal(await page.locator('#market-content').getAttribute('data-release-id'),marketIdentity);
   await page.locator('#cal-search').fill('');
   await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
   await page.locator('.macro-peers>summary').click();
@@ -46,6 +51,9 @@ try{
     if(language==='en'){
       const text=await page.locator('#macro-content').innerText();
       assert.ok(text.includes('Compared with the previous period'));assert.ok(!/[ăđơư]/i.test(text),text);
+      const marketText=await page.locator('#market-content').innerText();
+      assert.ok(marketText.includes('Pre-release consensus: unavailable.'));
+      assert.ok(!/[ăđơư]/i.test(marketText),marketText);
     }
   }
   for(const width of [1440,768,390,360]){
@@ -54,6 +62,19 @@ try{
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`width ${width}`);
   }
   const preserved=await page.locator('#macro-date').innerText();
+  const marketDate=await page.locator('#market-date').innerText();
+  await page.route('**/data/macro-market/latest.json',r=>r.abort());
+  await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#market-date').innerText(),marketDate);
+  assert.equal(await page.locator('#market-content').getAttribute('data-release-id'),marketIdentity);
+  assert.ok((await page.locator('#market-rows').innerText()).includes('Bản giữ tại ngày gốc'),await page.locator('#market-rows').innerText());
+  await page.unroute('**/data/macro-market/latest.json');
+  await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'hidden'});
+  await page.route('**/data/macro-market/releases/*/market.json',async r=>{const res=await r.fetch();const data=await res.json();data.metrics[0].change='9999';await r.fulfill({json:data});});
+  await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#market-date').innerText(),marketDate);
+  await page.unroute('**/data/macro-market/releases/*/market.json');
+  await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-assessment/latest.json',r=>r.abort());
   await page.locator('#cal-refresh').click();await page.locator('#macro-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#macro-date').innerText(),preserved);
@@ -78,5 +99,5 @@ try{
   await page.locator('[data-view="calendar"]').click();
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
-  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,viewports:[1440,768,390,360],languages:8,source_requests:0,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
+  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
 }finally{await browser.close();}

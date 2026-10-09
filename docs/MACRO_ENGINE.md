@@ -1,5 +1,7 @@
 # Engine và UI đánh giá chéo vĩ mô
 
+Sidecar [MACRO_MARKET.md](MACRO_MARKET.md) thêm số đo thị trường theo ngày bằng protocol riêng `macro-market-v1.0.0`. Khối này xác minh input/parent/snapshot độc lập, không sửa fields `surprise` hoặc `market_confirmation` của assessment v1 và không dùng daily changes để xác nhận phản ứng do sự kiện.
+
 Engine dùng đặc tả chuẩn [MACRO_CROSS_INDICATOR_RULES.md](MACRO_CROSS_INDICATOR_RULES.md), `macro-cross-v1.0.1` / `macro-assessment-v1.0.1`. Ngưỡng, reducer, bảng tài sản và thứ tự ưu tiên được đóng băng ở `configs/macro/macro-cross-v1.0.1.json`; SHA-256 canonical `7a8f1e8fb29a70978588a4ec320ddb0d96437c6a319600592e3cf0622a20f86a`. Không sửa ý nghĩa dưới cùng version.
 
 ## Luồng thực thi

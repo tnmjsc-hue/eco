@@ -1,5 +1,5 @@
 import { DIAGNOSTICS, validateDiagnosticPointer, validateDiagnosticRelease, diagnosticRange, exportDiagnosticCSV } from './diagnostic-model.js?v=diagnostics-1';
-import { numberLocale, translate } from './i18n.js?v=macro-20261009b';
+import { numberLocale, translate } from './i18n.js?v=market-20261009a';
 const $ = id => document.getElementById(id);
 const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
 const fmt = (v,n=3) => v===null?'—':v.toLocaleString(numberLocale(),{minimumFractionDigits:n,maximumFractionDigits:n});
