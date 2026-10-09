@@ -56,6 +56,18 @@ jobs:
           python -m unittest discover -s tests -p 'test_macro*.py' -v
           node --test tests/macro.test.mjs
           git diff --check
+      - name: Record prospective ETH cases and evaluate probability gates
+        id: probability
+        if: always()
+        continue-on-error: true
+        run: python -m eco.macro_probability
+      - name: Validate probability model and publication
+        id: probability_verify
+        if: always() && steps.probability.outcome == 'success'
+        run: |
+          python -m unittest discover -s tests -p test_macro_probability.py -v
+          node --test tests/macro-probability.test.mjs
+          git diff --check
       - name: Measure daily markets and verify private snapshot
         id: market
         if: always()
@@ -89,6 +101,8 @@ jobs:
           MACRO_VERIFY: ${{ steps.macro_verify.outcome }}
           MARKET_OUTCOME: ${{ steps.market.outcome }}
           MARKET_VERIFY: ${{ steps.market_verify.outcome }}
+          PROBABILITY_OUTCOME: ${{ steps.probability.outcome }}
+          PROBABILITY_VERIFY: ${{ steps.probability_verify.outcome }}
         run: |
           git config user.name 'eco-daily[bot]'
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
@@ -105,6 +119,15 @@ jobs:
           elif [ "$MARKET_OUTCOME" = 'failure' ]; then
             git add -- public/data/macro-market/status.json
           fi
+          if [ "$PROBABILITY_VERIFY" = 'success' ] && [ "$MACRO_VERIFY" = 'success' ]; then
+            for task_path in latest.json status.json releases records outcomes; do
+              if [ -e "public/data/macro-probability/$task_path" ]; then
+                git add -- "public/data/macro-probability/$task_path"
+              fi
+            done
+          elif [ "$PROBABILITY_OUTCOME" = 'failure' ]; then
+            git add -- public/data/macro-probability/status.json
+          fi
           if ! git diff --cached --quiet; then
             git diff --cached --check
             git commit -m "Update official calendar and macro assessment ($(date -u +%F))"
@@ -117,5 +140,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-calendar-deploy.mjs
       - name: Surface data failure
-        if: always() && (steps.batch.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure' || steps.market.outcome == 'failure' || steps.market_verify.outcome == 'failure')
+        if: always() && (steps.batch.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure' || steps.market.outcome == 'failure' || steps.market_verify.outcome == 'failure' || steps.probability.outcome == 'failure' || steps.probability_verify.outcome == 'failure')
         run: exit 1

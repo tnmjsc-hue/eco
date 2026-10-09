@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with verifiable data and methodology.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=market-20261009a">
+  <link rel="stylesheet" href="/styles.css?v=prob-20261009a">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=market-20261009a"></script>
+  <script type="module" src="/app.js?v=prob-20261009a"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -88,6 +88,21 @@
               <p class="small"><strong>Phản ứng quanh giờ công bố: chưa đo được.</strong> Chưa có cửa sổ giá intraday trước/sau thời điểm công bố thực. Biến động theo ngày bên trên không chứng minh do sự kiện gây ra.</p>
               <div class="proxy-links"><a id="market-download" target="_blank" rel="noreferrer">Tải số đo JSON</a><a id="market-manifest" target="_blank" rel="noreferrer">Nguồn và hash số đo</a></div>
               <p class="small muted">Nguồn: Federal Reserve Board, US Treasury và Coin Metrics Community (CC BY-NC 4.0). Nghiên cứu phi thương mại; không phải xác suất hay khuyến nghị giao dịch.</p>
+            </div>
+          </section>
+          <section class="macro-panel" aria-labelledby="prob-heading">
+            <h2 id="prob-heading">6. Mô hình xác suất ECO · ETH 7 ngày</h2>
+            <p id="prob-error" class="notice" role="status">Đang xác minh mô hình xác suất…</p>
+            <div id="prob-content" hidden>
+              <p><strong id="prob-state"></strong> · <span id="prob-context"></span></p>
+              <p id="prob-window" class="small muted"></p>
+              <div class="macro-assets"><article class="macro-asset"><h3>Giảm hơn 1%</h3><strong id="prob-down">—</strong></article><article class="macro-asset"><h3>Đi ngang trong ±1%</h3><strong id="prob-flat">—</strong></article><article class="macro-asset"><h3>Tăng hơn 1%</h3><strong id="prob-up">—</strong></article></div>
+              <p id="prob-note" class="notice"></p>
+              <div class="table-wrap"><table class="macro-table"><thead><tr><th>Huấn luyện</th><th>Hiệu chỉnh</th><th>Kiểm tra ngoài mẫu</th></tr></thead><tbody><tr><td id="prob-train"></td><td id="prob-calibration"></td><td id="prob-test"></td></tr></tbody></table></div>
+              <p id="prob-regime-samples" class="small muted"></p><p id="prob-validation" class="small"></p>
+              <p class="small muted">Mô hình riêng của ECO, chưa phải đồng thuận thị trường. Mỗi case dùng bối cảnh đã biết trước cửa sổ giá; không backfill lịch sử vĩ mô. 180 cửa sổ 7 ngày không chồng nhau cần tối thiểu khoảng 3,5 năm, chưa tính thời gian chờ và dữ liệu thiếu.</p>
+              <div class="proxy-links"><a id="prob-download" target="_blank" rel="noreferrer">Tải mô hình JSON</a><a id="prob-manifest" target="_blank" rel="noreferrer">Bằng chứng mô hình</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/MACRO_PROBABILITY.md" target="_blank" rel="noreferrer">Phương pháp xác suất</a></div>
+              <p id="prob-version" class="small muted"></p>
             </div>
           </section>
           <div class="cal-toolbar">

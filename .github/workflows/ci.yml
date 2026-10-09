@@ -43,6 +43,8 @@ jobs:
           node --check public/macro-model.js
           node --check public/macro-market.js
           node --check public/macro-market-model.js
+          node --check public/macro-probability.js
+          node --check public/macro-probability-model.js
           node --check scripts/verify-calendar-deploy.mjs
           node --check public/core-model.js
           node --check scripts/verify-daily-deploy.mjs

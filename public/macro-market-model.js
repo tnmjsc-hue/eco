@@ -1,4 +1,4 @@
-import {hashBytes,canonical} from './macro-model.js?v=market-20261009a';
+import {hashBytes,canonical} from './macro-model.js?v=prob-20261009a';
 export const VERSION='macro-market-v1.0.0';
 export const PROTOCOL_SHA='2f1920b845406637f13087778d6999af6065a70c3f6ce9a18b8a5c061e008a4d';
 export const SPEC={treasury_2y:['fed','RIFLGFCY02_N.B','percent','bps',7],treasury_10y:['fed','RIFLGFCY10_N.B','percent','bps',7],real_yield_10y:['treasury','TC_10YEAR','percent','bps',7],usd_broad:['fed','JRXWTFB_N.B','index','percent',14],eth_usd:['coinmetrics','PriceUSD','USD','percent',4],gold_usd:[null,null,'USD','percent',null]};

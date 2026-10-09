@@ -1,4 +1,4 @@
-import dictionaries from './translations.json?v=market-20261009a' with { type: 'json' };
+import dictionaries from './translations.json?v=prob-20261009a' with { type: 'json' };
 
 const languageCodes = ['en', 'vi', 'ko', 'ru', 'hi', 'tr', 'pt-BR', 'en-NG'];
 const localeCodes = { en: 'en-US', vi: 'vi-VN', ko: 'ko-KR', ru: 'ru-RU', hi: 'hi-IN', tr: 'tr-TR', 'pt-BR': 'pt-BR', 'en-NG': 'en-NG' };

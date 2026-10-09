@@ -7,4 +7,5 @@ public/data/core-v2/** -text
 public/data/calendar/** -text
 public/data/macro-assessment/** -text
 public/data/macro-market/** -text
+public/data/macro-probability/** -text
 public/vendor/** -text

@@ -8,6 +8,10 @@ await mkdir('test-results',{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
 try{
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  const clearRoutes=async()=>{
+    await page.waitForFunction(()=>!document.getElementById('cal-refresh').disabled);
+    await page.unrouteAll({behavior:'wait'});
+  };
   const errors=[],providerRequests=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('request',r=>{if(/bls\.gov|bea\.gov|federalreserve\.gov|home\.treasury\.gov|coinmetrics\.io|r2\.cloudflarestorage/.test(r.url()))providerRequests.push(r.url());});
@@ -15,6 +19,13 @@ try{
   await page.goto(`${url.split('#')[0]}#calendar`,{waitUntil:'networkidle'});
   await page.locator('#macro-content').waitFor({state:'visible'});
   await page.locator('#market-content').waitFor({state:'visible'});
+  await page.locator('#prob-content').waitFor({state:'visible'});
+  assert.equal(await page.locator('#prob-error').isVisible(),false,await page.locator('#prob-error').textContent());
+  const probabilityState=await page.locator('#prob-state').innerText();
+  if(probabilityState!=='Đã vượt kiểm tra ngoài mẫu nội bộ'){
+    for(const key of ['down','flat','up'])assert.equal(await page.locator(`#prob-${key}`).innerText(),'—');
+  }
+  const probabilityIdentity=await page.locator('#prob-content').getAttribute('data-release-id');
   assert.equal(await page.locator('#market-error').isVisible(),false);
   assert.equal(await page.locator('#market-rows tr').count(),6);
   const marketIdentity=await page.locator('#market-content').getAttribute('data-release-id');
@@ -63,34 +74,47 @@ try{
   }
   const preserved=await page.locator('#macro-date').innerText();
   const marketDate=await page.locator('#market-date').innerText();
+  const probabilityWindow=await page.locator('#prob-window').innerText();
+  await page.route('**/data/macro-probability/latest.json',r=>r.abort());
+  await page.locator('#cal-refresh').click();await page.locator('#prob-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#prob-window').innerText(),probabilityWindow);
+  assert.equal(await page.locator('#prob-content').getAttribute('data-release-id'),probabilityIdentity);
+  await clearRoutes();
+  await page.locator('#cal-refresh').click();await page.locator('#prob-error').waitFor({state:'hidden'});
+  await page.route('**/data/macro-probability/releases/*/report.json',async r=>{const res=await r.fetch();const data=await res.json();data.evaluation.probabilities={down:'0.9',flat:'0.05',up:'0.05'};await r.fulfill({json:data});});
+  await page.locator('#cal-refresh').click();await page.locator('#prob-error').waitFor({state:'visible'});
+  assert.equal(await page.locator('#prob-down').innerText(),'—');
+  assert.equal(await page.locator('#prob-window').innerText(),probabilityWindow);
+  await clearRoutes();
+  await page.locator('#cal-refresh').click();await page.locator('#prob-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-market/latest.json',r=>r.abort());
   await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#market-date').innerText(),marketDate);
   assert.equal(await page.locator('#market-content').getAttribute('data-release-id'),marketIdentity);
   assert.ok((await page.locator('#market-rows').innerText()).includes('Bản giữ tại ngày gốc'),await page.locator('#market-rows').innerText());
-  await page.unroute('**/data/macro-market/latest.json');
+  await clearRoutes();
   await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-market/releases/*/market.json',async r=>{const res=await r.fetch();const data=await res.json();data.metrics[0].change='9999';await r.fulfill({json:data});});
   await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#market-date').innerText(),marketDate);
-  await page.unroute('**/data/macro-market/releases/*/market.json');
+  await clearRoutes();
   await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-assessment/latest.json',r=>r.abort());
   await page.locator('#cal-refresh').click();await page.locator('#macro-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#macro-date').innerText(),preserved);
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.equal(await page.locator('#macro-assets .insufficient_evidence').count(),3);
-  await page.unroute('**/data/macro-assessment/latest.json');
+  await clearRoutes();
   await page.locator('#cal-refresh').click();await page.locator('#macro-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-assessment/releases/*/assessment.json',async r=>{const res=await r.fetch();const data=await res.json();data.assets.usd.conclusion='supportive';await r.fulfill({json:data});});
   await page.locator('#cal-refresh').click();await page.locator('#macro-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
-  await page.unroute('**/data/macro-assessment/releases/*/assessment.json');
+  await clearRoutes();
   await page.locator('#cal-refresh').click();await page.locator('#macro-error').waitFor({state:'hidden'});
   await page.route('**/data/calendar/latest.json',r=>r.abort());
   await page.locator('#cal-refresh').click();await page.locator('#cal-error').waitFor({state:'visible'});
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
-  await page.unroute('**/data/calendar/latest.json');
+  await clearRoutes();
   await page.locator('#cal-retry').click();await page.locator('#cal-error').waitFor({state:'hidden'});
   await page.locator('[data-view="dashboard"]').click();await page.locator('#score-value').waitFor({state:'visible'});
   assert.ok(Number((await page.locator('#score-value').innerText()).replace(',','.'))>0);
@@ -99,5 +123,5 @@ try{
   await page.locator('[data-view="calendar"]').click();
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
-  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
+  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
 }finally{await browser.close();}

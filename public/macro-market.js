@@ -1,5 +1,5 @@
-import {loadMarket} from './macro-market-model.js?v=market-20261009a';
-import {translate as t,numberLocale} from './i18n.js?v=market-20261009a';
+import {loadMarket} from './macro-market-model.js?v=prob-20261009a';
+import {translate as t,numberLocale} from './i18n.js?v=prob-20261009a';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=s=>esc(t(s));
