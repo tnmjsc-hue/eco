@@ -28,9 +28,13 @@ jobs:
       - name: Restore only public official feed cache (no secrets)
         uses: actions/cache@v4
         with:
-          path: data/raw/calendar/cache
-          key: official-calendar-v1-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: official-calendar-v1-
+          path: |
+            data/raw/calendar/cache
+            data/raw/macro-market/cache
+          key: official-calendar-market-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            official-calendar-market-v1-
+            official-calendar-v1-
       - name: Fetch official data and verify private snapshot before publication
         id: batch
         continue-on-error: true

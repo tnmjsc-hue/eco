@@ -212,6 +212,28 @@ def fetch_source(root, key, url, now):
     return value
 
 
+def retain_source_vintage(root, sources, now):
+    """A cold runner can recover first retrieval from immutable public proofs."""
+    pointer_path = root / "public/data/macro-market/latest.json"
+    if not pointer_path.exists():
+        return
+    pointer = json.loads(pointer_path.read_bytes())
+    manifest = checked_asset(root, pointer["manifest"], r"/data/macro-market/releases/market-[a-f0-9]{20}/manifest\.json")
+    inputs = checked_asset(root, manifest["inputs"], r"/data/macro-market/releases/market-[a-f0-9]{20}/inputs\.json")
+    if inputs["protocol_version"] != VERSION or manifest["release_id"] != pointer["release_id"]:
+        raise ValueError("market source vintage lineage mismatch")
+    old_sources = [row["source"] for row in inputs["metrics"] if row["source"]]
+    old_sources += [s["prior_year"] for s in list(old_sources) if s.get("prior_year")]
+    for key, source in sources.items():
+        matches = [s for s in old_sources if s["url"] == source["url"] and s["sha256"] == source["sha256"] and s.get("retrieved_at")]
+        if matches:
+            dates = {s["retrieved_at"] for s in matches}
+            if len(dates) != 1 or utc(next(iter(dates))) > now:
+                raise ValueError("ambiguous or future market source vintage")
+            source["retrieved_at"] = next(iter(dates))
+            write(root / "data/raw/macro-market/cache" / (key + ".json"), source)
+
+
 def publish(root, inputs, protocol, snapshot, receipt, as_of):
     folder = root / "public/data/macro-market"
     with publication_lock(folder):
@@ -245,6 +267,9 @@ def publish(root, inputs, protocol, snapshot, receipt, as_of):
         actual = {x["object_key"].rsplit("/", 1)[-1]: x["sha256"] for x in receipt}
         if expected != actual or len(receipt) != len(expected) or any(x["object_key"] != f'raw/macro-market/{snapshot.name}/{x["object_key"].rsplit("/", 1)[-1]}' for x in receipt):
             raise ValueError("incomplete private market backup")
+        snapshot_manifest = json.loads((snapshot / "manifest.json").read_bytes())
+        if expected.get("normalized.json") != input_sha or snapshot_manifest.get("protocol_version") != VERSION or snapshot_manifest.get("files") != {k: v for k, v in expected.items() if k != "manifest.json"}:
+            raise ValueError("private market backup does not match publication input")
         base = f"/data/macro-market/releases/{release_id}"
         release = folder / "releases" / release_id
         value = {"schema_version": VERSION, "release_id": release_id, "generated_at": as_of,
@@ -295,6 +320,7 @@ def run(root=ROOT, now=None):
             urls["treasury_real_prior"] = urls["treasury_real"].replace(str(now.year), str(now.year - 1))
         for key, url in urls.items():
             sources[key] = fetch_source(root, key, url, now)
+        retain_source_vintage(root, sources, now)
         metrics = []
         for metric in ("treasury_2y", "treasury_10y", "usd_broad", "real_yield_10y"):
             spec = protocol["metrics"][metric]

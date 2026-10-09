@@ -33,4 +33,6 @@ Batch `python -m eco.macro_market` tạo raw snapshot private, manifest hash và
 
 Frontend kiểm checksum release/manifest/normalized input/protocol, đúng metric registry, thời gian, formula, enum, parent ETH full hash. Lỗi mạng/hash giữ ngày gốc với nhãn lỗi; kiểm tuổi lại tại render. Không có provider request từ browser. Module thị trường refresh cùng lịch, locale/timezone không thay ID hoặc delta.
 
+Actions cache chỉ giữ body nguồn liên bang công khai của calendar/market, không snapshot raw riêng, ETH inputs hoặc credential. Runner mất cache phục hồi timestamp lần tải đầu của đúng source URL/hash từ input immutable đã verify, rồi xác minh body tải lại cùng hash; không tạo vintage mới chỉ vì runner mới tải cùng content. Publisher đối chiếu normalized input hash và toàn bộ manifest snapshot với receipt, không chấp nhận receipt của payload khác.
+
 Chạy `test_macro*.py`, Node `macro-market.test.mjs` và macro/calendar contracts, browser `scripts/check-calendar.mjs`. Fixtures tổng hợp chỉ trong tests; live artifacts phải nguồn thật/backup thật. Đối chiếu Decimal, bps/percent, giá trị âm của real yields, missing/latest/cutoff/age/holiday/revision/hash/lock và provider outage. Việc đo daily changes không phải nghiệm thu consensus hoặc intraday reaction; HANDOFF phải ghi riêng phần đã hoàn thành và phần bị thiếu đầu vào.

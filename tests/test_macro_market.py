@@ -72,11 +72,16 @@ class MarketTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp);snapshot = root / "data/raw/macro-market/test"
             write(snapshot / "raw.json", {"body": "fixture"})
-            write(snapshot / "manifest.json", {"fixture": True})
-            receipt = [{"object_key": f"raw/macro-market/test/{p.name}", "sha256": sha256(p.read_bytes()).hexdigest(), "readback_verified": True} for p in snapshot.iterdir()]
             inputs = {"metrics": [], "eth_parent": {}}
+            def backup(value):
+                write(snapshot / "normalized.json", value)
+                write(snapshot / "manifest.json", {"protocol_version": m.VERSION, "files": {p.name: sha256(p.read_bytes()).hexdigest() for p in snapshot.iterdir() if p.name != "manifest.json"}})
+                return [{"object_key": f"raw/macro-market/test/{p.name}", "sha256": sha256(p.read_bytes()).hexdigest(), "readback_verified": True} for p in snapshot.iterdir()]
+            receipt = backup(inputs)
             with self.assertRaisesRegex(ValueError, "incomplete"):
                 m.publish(root, inputs, PROTOCOL, snapshot, receipt[:1], AS_OF)
+            with self.assertRaisesRegex(ValueError, "does not match"):
+                m.publish(root, {**inputs, "unbacked_input": True}, PROTOCOL, snapshot, receipt, AS_OF)
             first = m.publish(root, inputs, PROTOCOL, snapshot, receipt, AS_OF)
             folder = root / "public/data/macro-market"
             artifact = folder / "releases" / first["release_id"] / "market.json"
@@ -84,7 +89,9 @@ class MarketTests(unittest.TestCase):
             again = m.publish(root, inputs, PROTOCOL, snapshot, receipt, "2026-10-09T04:00:00Z")
             self.assertEqual(again["outcome"], "unchanged")
             self.assertEqual(before, artifact.read_bytes())
-            second = m.publish(root, {**inputs, "fixture_revision": True}, PROTOCOL, snapshot, receipt, "2026-10-09T05:00:00Z")
+            revised = {**inputs, "fixture_revision": True}
+            second = m.publish(root, revised, PROTOCOL, snapshot, backup(revised), "2026-10-09T05:00:00Z")
+            receipt = backup(inputs)
             restored = m.publish(root, inputs, PROTOCOL, snapshot, receipt, "2026-10-09T06:00:00Z")
             self.assertNotEqual(restored["release_id"], first["release_id"])
             self.assertNotEqual(restored["release_id"], second["release_id"])
@@ -111,6 +118,27 @@ class MarketTests(unittest.TestCase):
             status = json.loads(pointer.with_name("status.json").read_bytes())
             self.assertEqual(status["outcome"], "error")
             self.assertNotIn("private detail", str(status))
+
+    def test_cold_runner_recovers_original_retrieval_only_for_verified_same_hash(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            base = "/data/macro-market/releases/market-" + "a" * 20
+            original = {"url": m.SOURCES["fed_yields"], "sha256": "b" * 64, "retrieved_at": "2026-10-08T01:00:00Z"}
+            inputs = {"protocol_version": m.VERSION, "metrics": [{"source": original}]}
+            write(root / "public" / (base + "/inputs.json").lstrip("/"), inputs)
+            input_hash = sha256(body(inputs)).hexdigest()
+            manifest = {"release_id": "market-" + "a" * 20, "inputs": {"url": base + "/inputs.json", "sha256": input_hash}}
+            write(root / "public" / (base + "/manifest.json").lstrip("/"), manifest)
+            write(root / "public/data/macro-market/latest.json", {"release_id": manifest["release_id"], "manifest": {"url": base + "/manifest.json", "sha256": sha256(body(manifest)).hexdigest()}})
+            sources = {"fed_yields": {**original, "retrieved_at": AS_OF, "body": "fixture"}}
+            m.retain_source_vintage(root, sources, m.utc(AS_OF))
+            self.assertEqual(sources["fed_yields"]["retrieved_at"], original["retrieved_at"])
+            sources["fed_yields"].update(sha256="c" * 64, retrieved_at=AS_OF)
+            m.retain_source_vintage(root, sources, m.utc(AS_OF))
+            self.assertEqual(sources["fed_yields"]["retrieved_at"], AS_OF)
+            (root / "public" / (base + "/inputs.json").lstrip("/")).write_bytes(b"{}")
+            with self.assertRaisesRegex(ValueError, "checksum"):
+                m.retain_source_vintage(root, sources, m.utc(AS_OF))
 
 
 if __name__ == "__main__":
