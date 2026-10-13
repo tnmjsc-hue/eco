@@ -1,1 +1,1 @@
-{"last_success_at":"2026-10-12T21:51:18.899272Z","outcome":"ok","schema_version":"1.0.0"}
+{"failed_sources":["dol_schedule"],"last_attempt_at":"2026-10-13T07:04:18.958133Z","last_good_retained":true,"outcome":"source_error","schema_version":"1.0.0"}
