@@ -10,7 +10,7 @@ import re
 import urllib.request
 import xml.etree.ElementTree as ET
 
-from .calendar import backup_snapshot
+from .calendar import backup_snapshot, retry_transient, safe_failure_code
 from .macro_pipeline import body, publication_lock, write
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -196,10 +196,12 @@ def fetch_source(root, key, url, now):
     path = root / "data/raw/macro-market/cache" / (key + ".json")
     previous = json.loads(path.read_bytes()) if path.exists() else None
     request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 ECO noncommercial research", "Accept": "text/csv,application/xml"})
-    with urllib.request.urlopen(request, timeout=40) as response:
-        if response.url != url:
-            raise ValueError("unexpected provider redirect")
-        raw = response.read(4_000_001)
+    def load():
+        with urllib.request.urlopen(request, timeout=40) as response:
+            if response.url != url:
+                raise ValueError("unexpected provider redirect")
+            return response.read(4_000_001)
+    raw = retry_transient(load)
     if len(raw) > 4_000_000:
         raise ValueError("oversized market response")
     digest = sha256(raw).hexdigest()
@@ -313,14 +315,19 @@ def run(root=ROOT, now=None):
     if sha256(body(protocol)).hexdigest() != PROTOCOL_SHA:
         raise ValueError("market protocol changed under frozen version")
     sources = {}
+    stage = "fetch_source"
+    source_key = None
     urls = {**SOURCES, "treasury_real": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_real_yield_curve&field_tdr_date_value=" + str(now.year)}
     try:
         # In January request the previous year as well so the first pair spans New Year.
         if now.month == 1:
             urls["treasury_real_prior"] = urls["treasury_real"].replace(str(now.year), str(now.year - 1))
         for key, url in urls.items():
+            source_key = key
             sources[key] = fetch_source(root, key, url, now)
+        stage = "verify_source_vintage"
         retain_source_vintage(root, sources, now)
+        stage = "parse_measure"
         metrics = []
         for metric in ("treasury_2y", "treasury_10y", "usd_broad", "real_yield_10y"):
             spec = protocol["metrics"][metric]
@@ -334,12 +341,14 @@ def run(root=ROOT, now=None):
                 points += parse_real_yield(prior["body"].encode())
                 source["prior_year"] = {k: prior[k] for k in ("url", "sha256", "retrieved_at")}
             metrics.append(measure(metric, points, source, as_of, protocol))
+        stage = "eth_parent"
         eth, parent = eth_input(root, as_of, protocol)
         metrics.append(eth)
         metrics.append({"metric_id": "gold_usd", **protocol["metrics"]["gold_usd"], "status": "unavailable",
                         "reason": "no_approved_gold_source", "latest": None, "previous": None,
                         "latest_date": None, "previous_date": None, "change": None, "source": None})
         inputs = {"protocol_version": VERSION, "metrics": metrics, "eth_parent": parent}
+        stage = "backup_snapshot"
         snapshot = root / "data/raw/macro-market" / (now.strftime("%Y%m%dT%H%M%S%fZ") + "-" + sha256(body(inputs)).hexdigest()[:12])
         snapshot.mkdir(parents=True)
         for key, source in sources.items():
@@ -348,10 +357,15 @@ def run(root=ROOT, now=None):
         write(snapshot / "manifest.json", {"protocol_version": VERSION, "retrieved_at": as_of,
               "files": {p.name: sha256(p.read_bytes()).hexdigest() for p in snapshot.iterdir()}}, True)
         receipt = backup_snapshot(snapshot, prefix="macro-market")
+        stage = "publish"
         return publish(root, inputs, protocol, snapshot, receipt, as_of)
-    except Exception:
-        write(root / "public/data/macro-market/status.json", {"outcome": "error", "checked_at": as_of,
-              "last_good_retained": (root / "public/data/macro-market/latest.json").exists(), "reason": "source_or_verification_failed"})
+    except Exception as exc:
+        status = {"outcome": "error", "checked_at": as_of,
+                  "last_good_retained": (root / "public/data/macro-market/latest.json").exists(),
+                  "reason": "source_or_verification_failed", "stage": stage, "failure_code": safe_failure_code(exc)}
+        if stage == "fetch_source":
+            status["source"] = source_key
+        write(root / "public/data/macro-market/status.json", status)
         raise
 
 
@@ -360,4 +374,7 @@ if __name__ == "__main__":
         print(json.dumps(run()))
     except Exception:
         # Provider errors must not print request URLs, credentials or raw responses.
-        raise SystemExit("Market batch failed; last verified release retained") from None
+        status_path = ROOT / "public/data/macro-market/status.json"
+        status = json.loads(status_path.read_bytes()) if status_path.exists() else {}
+        detail = "/".join(str(status.get(key, "unknown")) for key in ("stage", "source", "failure_code"))
+        raise SystemExit(f"Market batch failed ({detail}); last verified release retained") from None

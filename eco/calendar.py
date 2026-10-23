@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -62,6 +63,43 @@ def stamp(value):
 
 def digest(body):
     return hashlib.sha256(body).hexdigest()
+
+
+TRANSIENT_HTTP = {408, 425, 429, 500, 502, 503, 504}
+
+
+def retry_transient(operation):
+    """Retry only temporary transport failures; callers still validate the response."""
+    for attempt in range(3):
+        delay = (1, 3)[attempt] if attempt < 2 else 0
+        try:
+            return operation()
+        except urllib.error.HTTPError as exc:
+            if exc.code not in TRANSIENT_HTTP or attempt == 2:
+                raise
+            if exc.code == 429:
+                retry_after = exc.headers.get("Retry-After", "") if exc.headers else ""
+                delay = min(int(retry_after), 30) if re.fullmatch(r"[0-9]{1,4}", retry_after) else (5, 15)[attempt]
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            if attempt == 2:
+                raise
+        time.sleep(delay)
+
+
+def safe_failure_code(exc):
+    """Expose a bounded category, never an exception message or request URL."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return f"http_{exc.code}"
+    if isinstance(exc, TimeoutError):
+        return "timeout"
+    if isinstance(exc, (urllib.error.URLError, ConnectionError)):
+        return "transport_error"
+    message = str(exc) if isinstance(exc, ValueError) else ""
+    match = re.fullmatch(r"R2 (?:GET|PUT): HTTP (\d{3})", message)
+    if match:
+        return f"r2_http_{match[1]}"
+    match = re.fullmatch(r"[a-z_0-9]+: HTTP (\d{3})", message)
+    return f"http_{match[1]}" if match else "validation_or_pipeline_error"
 
 def encode(value):
     return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
@@ -388,18 +426,21 @@ def fetch_source(key, cache, now, max_age, url=None):
         if old.get("last_modified"):
             headers["If-Modified-Since"] = old["last_modified"]
     request = urllib.request.Request(url, data=body, headers=headers)
-    try:
+    def load():
         with urllib.request.urlopen(request, timeout=35) as response:
             if urllib.parse.urlparse(response.url).hostname != urllib.parse.urlparse(url).hostname:
                 raise ValueError("unexpected official source redirect")
             raw = response.read(2_000_001)
             if len(raw) > 2_000_000:
                 raise ValueError("source body exceeded size limit")
-            binary = key.startswith("dol_report_")
-            old = {"source_url": url, "body": base64.b64encode(raw).decode() if binary else raw.decode("utf-8"),
-                   "body_encoding": "base64" if binary else "utf-8", "sha256": digest(raw),
-                   "retrieved_at": stamp(now), "etag": response.headers.get("ETag"),
-                   "last_modified": response.headers.get("Last-Modified")}
+            return raw, response.headers
+    try:
+        raw, response_headers = retry_transient(load)
+        binary = key.startswith("dol_report_")
+        old = {"source_url": url, "body": base64.b64encode(raw).decode() if binary else raw.decode("utf-8"),
+               "body_encoding": "base64" if binary else "utf-8", "sha256": digest(raw),
+               "retrieved_at": stamp(now), "etag": response_headers.get("ETag"),
+               "last_modified": response_headers.get("Last-Modified")}
     except urllib.error.HTTPError as exc:
         if exc.code != 304 or old is None:
             raise ValueError(f"{key}: HTTP {exc.code}") from None
@@ -431,10 +472,12 @@ def backup_snapshot(folder, prefix="calendar"):
         signature = hmac.new(signing, f"AWS4-HMAC-SHA256\n{now}\n{scope}\n{digest(canonical.encode())}".encode(), hashlib.sha256).hexdigest()
         headers = {"x-amz-date": now, "x-amz-content-sha256": sha,
                    "Authorization": f"AWS4-HMAC-SHA256 Credential={access}/{scope}, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature={signature}"}
-        try:
+        def send():
             with urllib.request.urlopen(urllib.request.Request(f"https://{host}{path}", data=body if method == "PUT" else None,
                                                                headers=headers, method=method), timeout=40) as r:
                 return r.read()
+        try:
+            return retry_transient(send)
         except urllib.error.HTTPError as exc:
             if method == "GET" and exc.code == 404:
                 return None
@@ -459,15 +502,18 @@ def run_batch(root=ROOT, now=None):
     public = root / "public/data/calendar"
     sources = {}
     errors = []
+    failure_codes = {}
     for key in SOURCES:
         try:
             # Once per UTC day for schedules; at most 3 API batches/day.
             age = 0 if key != "bls_data" and now.hour == 0 else (20 * 3600 if key != "bls_data" else 4 * 3600)
             sources[key] = fetch_source(key, cache, now, age)
-        except Exception:
+        except Exception as exc:
             errors.append(key)
+            failure_codes[key] = safe_failure_code(exc)
     if errors:
         write_json(public / "status.json", {"schema_version": "1.0.0", "outcome": "source_error", "failed_sources": errors,
+                                             "failure_codes": failure_codes,
                                              "last_attempt_at": stamp(now), "last_good_retained": True})
         raise ValueError("official sources unavailable; retained last good calendar: " + ",".join(errors))
     try:
@@ -552,12 +598,13 @@ def run(root=ROOT, now=None):
     now = now or datetime.now(UTC)
     try:
         return run_batch(root, now)
-    except Exception:
+    except Exception as exc:
         status = root / 'public/data/calendar/status.json'
         existing = json.loads(status.read_bytes()) if status.exists() else {}
         if existing.get('last_attempt_at') != stamp(now):
             write_json(status, {'schema_version': '1.0.0', 'outcome': 'pipeline_error',
-                                'last_attempt_at': stamp(now), 'last_good_retained': True})
+                                'last_attempt_at': stamp(now), 'last_good_retained': True,
+                                'failure_code': safe_failure_code(exc)})
         raise
 
 if __name__ == "__main__":

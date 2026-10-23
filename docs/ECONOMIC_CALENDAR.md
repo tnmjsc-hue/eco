@@ -44,6 +44,8 @@ GitHub có thể chạy trễ; job dùng concurrency chung với batch ETH. Lị
 
 Release `public/data/calendar/releases/calendar-<20hex>/calendar.json` là bất biến; `latest.json` pin path/hash/schema. CAL-01 `calendar-66b4e31ed958b40e784f` được giữ nguyên; CAL-02 thêm release con với `revision.reason=expanded_official_coverage_and_period_matched_results`. `status.json` ghi heartbeat/lỗi. Nội dung không đổi không sinh release mới. Fetch/parse/coverage/R2 fail thì giữ pointer tốt; UI fail mạng/hash giữ bản đã xác minh. Hơn 48 giờ từ batch success thì cảnh báo lịch cũ. Không biến lỗi thành số 0 và không phát hành dữ liệu raw có bản quyền.
 
+Fetch nguồn và R2 PUT/GET thử tối đa ba lần khi gặp timeout/lỗi vận chuyển hoặc HTTP 408/425/429/5xx tạm thời. HTTP 429 tuân theo `Retry-After` dạng giây, tối đa 30 giây. HTTP 4xx khác, redirect, body quá lớn, checksum và parser không được retry. Readback hash vẫn bắt buộc trước công bố. Status lỗi chỉ ghi source key/mã lỗi rút gọn, không ghi URL, response body hay credential.
+
 Tại lần kiểm CAL-02 ngày 08/10/2026: 111 sự kiện trong cửa sổ, 17 có `actual/previous`, 25 response nguồn và 27 object private readback. Đây là số đếm snapshot, có thể thay đổi ở batch sau; không phải cam kết mọi sự kiện đã qua đều có actual.
 
 ## Kiểm tra và bước tiếp

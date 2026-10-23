@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 from eco import macro_market as m
@@ -17,6 +18,21 @@ SOURCE = {"provider": "fed", "url": m.SOURCES["fed_yields"], "retrieved_at": AS_
 
 
 class MarketTests(unittest.TestCase):
+    def test_market_source_retries_503_and_preserves_hash(self):
+        class Response:
+            url = m.SOURCES['fed_yields']
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self, _): return b'official fixture'
+
+        with tempfile.TemporaryDirectory() as temp, patch('eco.calendar.time.sleep') as sleep:
+            transient = urllib.error.HTTPError(m.SOURCES['fed_yields'], 503, 'unavailable', {}, None)
+            with patch.object(m.urllib.request, 'urlopen', side_effect=[transient, Response()]) as open_url:
+                source = m.fetch_source(Path(temp), 'fed_yields', m.SOURCES['fed_yields'], m.utc(AS_OF))
+            self.assertEqual(open_url.call_count, 2)
+            sleep.assert_called_once_with(1)
+            self.assertEqual(source['sha256'], sha256(b'official fixture').hexdigest())
+
     def measure(self, points, metric="treasury_2y", as_of=AS_OF, source=SOURCE):
         return m.measure(metric, points, source, as_of, PROTOCOL)
 
@@ -117,6 +133,9 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(pointer.read_bytes(), before)
             status = json.loads(pointer.with_name("status.json").read_bytes())
             self.assertEqual(status["outcome"], "error")
+            self.assertEqual(status["stage"], "fetch_source")
+            self.assertEqual(status["source"], "fed_yields")
+            self.assertEqual(status["failure_code"], "validation_or_pipeline_error")
             self.assertNotIn("private detail", str(status))
 
     def test_cold_runner_recovers_original_retrieval_only_for_verified_same_hash(self):

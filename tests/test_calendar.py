@@ -1,17 +1,71 @@
 import copy
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 from eco import calendar as cal
 
 
 class CalendarTests(unittest.TestCase):
+    def test_transient_source_error_retries_but_403_does_not(self):
+        class Response:
+            headers = {}
+            def __init__(self, url): self.url = url
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self, _): return b'official fixture'
+
+        now = datetime(2026, 10, 23, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as folder, patch.object(cal.time, 'sleep') as sleep:
+            transient = urllib.error.HTTPError(cal.SOURCES['bls'], 503, 'unavailable', {}, None)
+            with patch.object(cal.urllib.request, 'urlopen', side_effect=[transient, Response(cal.SOURCES['bls'])]) as open_url:
+                result = cal.fetch_source('bls', Path(folder), now, 0)
+            self.assertEqual(result['sha256'], cal.digest(b'official fixture'))
+            self.assertEqual(open_url.call_count, 2)
+            sleep.assert_called_once_with(1)
+            denied = urllib.error.HTTPError(cal.SOURCES['bea'], 403, 'denied', {}, None)
+            with patch.object(cal.urllib.request, 'urlopen', side_effect=denied) as open_url:
+                with self.assertRaisesRegex(ValueError, 'bea: HTTP 403'):
+                    cal.fetch_source('bea', Path(folder), now, 0)
+            self.assertEqual(open_url.call_count, 1)
+            self.assertEqual(sleep.call_count, 1)
+
+            throttled = urllib.error.HTTPError(cal.SOURCES['bea'], 429, 'slow down', {'Retry-After': '7'}, None)
+            with patch.object(cal.urllib.request, 'urlopen', side_effect=[throttled, Response(cal.SOURCES['bea'])]) as open_url:
+                cal.fetch_source('bea', Path(folder), now, 0)
+            self.assertEqual(open_url.call_count, 2)
+            sleep.assert_called_with(7)
+
+    def test_private_backup_retries_transient_put_and_verifies_readback(self):
+        class Response:
+            def __init__(self, body): self.body = body
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self): return self.body
+
+        with tempfile.TemporaryDirectory() as folder:
+            snapshot = Path(folder) / 'snapshot'
+            snapshot.mkdir()
+            (snapshot / 'sample.json').write_bytes(b'fixture')
+            missing = urllib.error.HTTPError('https://example.test', 404, 'missing', {}, None)
+            transient = urllib.error.HTTPError('https://example.test', 500, 'temporary', {}, None)
+            env = {'R2_ACCOUNT_ID': 'a' * 32, 'R2_BUCKET': 'eco-eth-private',
+                   'R2_ACCESS_KEY_ID': 'fixture-id', 'R2_SECRET_ACCESS_KEY': 'fixture-secret'}
+            with patch.dict(os.environ, env), patch.object(cal.time, 'sleep') as sleep, patch.object(
+                    cal.urllib.request, 'urlopen', side_effect=[missing, transient, Response(b''), Response(b'fixture')]) as open_url:
+                receipt = cal.backup_snapshot(snapshot)
+            self.assertEqual(open_url.call_count, 4)
+            sleep.assert_called_once_with(1)
+            self.assertEqual(receipt[0]['sha256'], cal.digest(b'fixture'))
+            self.assertTrue(receipt[0]['readback_verified'])
+
     def test_ics_folded_titles_and_dst(self):
         text = 'BEGIN:VCALENDAR\r\n'
         for day in range(10, 20):
@@ -81,6 +135,8 @@ class CalendarTests(unittest.TestCase):
             self.assertEqual(pointer.read_bytes(), before)
             status = json.loads((pointer.parent/'status.json').read_bytes())
             self.assertEqual(status['outcome'], 'source_error')
+            self.assertEqual(status['failure_codes']['bls_data'], 'validation_or_pipeline_error')
+            self.assertNotIn('provider failure', str(status))
 
     def test_dol_holiday_exception_and_initial_claims_only(self):
         schedule = b'Publication Schedule: Thursday morning at 8:30am EST. <td>Wednesday, November 25, 2026</td>'

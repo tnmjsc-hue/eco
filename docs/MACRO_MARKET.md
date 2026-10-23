@@ -35,4 +35,6 @@ Frontend kiểm checksum release/manifest/normalized input/protocol, đúng metr
 
 Actions cache chỉ giữ body nguồn liên bang công khai của calendar/market, không snapshot raw riêng, ETH inputs hoặc credential. Runner mất cache phục hồi timestamp lần tải đầu của đúng source URL/hash từ input immutable đã verify, rồi xác minh body tải lại cùng hash; không tạo vintage mới chỉ vì runner mới tải cùng content. Publisher đối chiếu normalized input hash và toàn bộ manifest snapshot với receipt, không chấp nhận receipt của payload khác.
 
+Fetch Fed/Treasury và R2 thử tối đa ba lần cho lỗi vận chuyển/HTTP tạm thời theo runbook calendar. Khi thất bại, `status.json` chỉ ghi giai đoạn, source key nếu đang fetch, và mã lỗi rút gọn. Log Actions in cùng các mã này; không in URL, response body hoặc credential. Lỗi kiểm dữ liệu/lineage vẫn chặn công bố và giữ release tốt trước đó.
+
 Chạy `test_macro*.py`, Node `macro-market.test.mjs` và macro/calendar contracts, browser `scripts/check-calendar.mjs`. Fixtures tổng hợp chỉ trong tests; live artifacts phải nguồn thật/backup thật. Đối chiếu Decimal, bps/percent, giá trị âm của real yields, missing/latest/cutoff/age/holiday/revision/hash/lock và provider outage. Việc đo daily changes không phải nghiệm thu consensus hoặc intraday reaction; HANDOFF phải ghi riêng phần đã hoàn thành và phần bị thiếu đầu vào.
