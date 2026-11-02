@@ -1,1 +1,1 @@
-{"checked_at":"2026-11-02T06:47:58.841846+00:00","last_good_retained":false,"outcome":"published","release_id":"market-a2f80647e51804629367"}
+{"checked_at":"2026-11-02T22:28:42.255035+00:00","failure_code":"validation_or_pipeline_error","last_good_retained":true,"outcome":"error","reason":"source_or_verification_failed","stage":"parse_measure"}
