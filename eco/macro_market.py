@@ -332,6 +332,7 @@ def run(root=ROOT, now=None):
         for metric in ("treasury_2y", "treasury_10y", "usd_broad", "real_yield_10y"):
             spec = protocol["metrics"][metric]
             key = "fed_usd" if metric == "usd_broad" else "treasury_real" if metric == "real_yield_10y" else "fed_yields"
+            source_key = key
             raw = sources[key]["body"].encode()
             points = parse_real_yield(raw) if key == "treasury_real" else parse_fed(raw, spec["series_id"], spec["unit"])
             source = {"provider": spec["provider"], **{k: sources[key][k] for k in ("url", "sha256", "retrieved_at")},
@@ -363,7 +364,7 @@ def run(root=ROOT, now=None):
         status = {"outcome": "error", "checked_at": as_of,
                   "last_good_retained": (root / "public/data/macro-market/latest.json").exists(),
                   "reason": "source_or_verification_failed", "stage": stage, "failure_code": safe_failure_code(exc)}
-        if stage == "fetch_source":
+        if stage in ("fetch_source", "parse_measure"):
             status["source"] = source_key
         write(root / "public/data/macro-market/status.json", status)
         raise

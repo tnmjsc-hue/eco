@@ -102,7 +102,16 @@ jobs:
           else
             git diff --cached --check
             git commit -m "Update daily ETH research data ($(date -u +%F))"
-            git push origin HEAD:main
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo 'GitHub push failed after 3 attempts' >&2
+                exit 1
+              fi
+              sleep $((attempt * 5))
+            done
             echo 'changed=true' >> "$GITHUB_OUTPUT"
           fi
       - name: Deploy main and verify public checksums

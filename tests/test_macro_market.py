@@ -138,6 +138,19 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(status["failure_code"], "validation_or_pipeline_error")
             self.assertNotIn("private detail", str(status))
 
+    def test_parse_failure_identifies_source_without_raw_body(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            write(root / f"configs/macro/{m.VERSION}.json", PROTOCOL)
+            bad_source = {"url": m.SOURCES["fed_yields"], "sha256": "a" * 64,
+                          "retrieved_at": AS_OF, "body": "upstream private detail"}
+            with patch.object(m, "fetch_source", return_value=bad_source), self.assertRaises(ValueError):
+                m.run(root, datetime(2026, 10, 9, 3, tzinfo=timezone.utc))
+            status = json.loads((root / "public/data/macro-market/status.json").read_bytes())
+            self.assertEqual(status["stage"], "parse_measure")
+            self.assertEqual(status["source"], "fed_yields")
+            self.assertNotIn("private detail", str(status))
+
     def test_cold_runner_recovers_original_retrieval_only_for_verified_same_hash(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
