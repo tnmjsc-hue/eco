@@ -1,5 +1,6 @@
 {
   "en": {
+    "Core 10 phản ánh mức nóng/lạnh tương đối của ETH trên thang 0–100. Các thành phần có thể liên quan nhau; điểm không phải xác suất hay tín hiệu giao dịch.": "Core 10 shows ETH's relative cycle heat on a 0–100 scale. Components may be related; the score is neither a probability nor a trading signal.",
     "Ba proxy thay thế vai trò E3/E8/E9 từ dữ liệu ETH thật, đã tham gia Core 10. Trang này giải thích ý nghĩa và hiển thị kết quả của từng chỉ số.": "Three ETH data proxies for E3/E8/E9 are included in Core 10. This page explains each indicator and shows its results.",
     "Giá trị gốc của ba chỉ số có thể âm. Bảng và biểu đồ giúp đối chiếu biến động theo ngày; điểm chuẩn hóa của chúng nằm trên Dashboard.": "The original values of these three indicators can be negative. The table and chart show daily changes; their normalized scores appear on the Dashboard.",
     "E2 và E7 cùng phản ánh định giá; C1 cho thấy mức tăng nguồn cung tương đối, C2 cho thấy biến động số dư sàn. Các chỉ số có thể liên quan nhau, không phải những tín hiệu độc lập.": "E2 and E7 both reflect valuation; C1 shows relative supply growth and C2 shows changes in exchange balances. These indicators can be related and are not independent signals.",

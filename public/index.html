@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/styles.css?v=ui-20261113a">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=ui-20261113a"></script>
+  <script type="module" src="/app.js?v=ui-20261113b"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -21,7 +21,6 @@
       <button class="nav-tab" data-view="extended"><i data-lucide="network"></i><span>Mở rộng</span></button>
       <button class="nav-tab" data-view="diagnostics"><i data-lucide="activity"></i><span>Chẩn đoán</span></button>
       <button class="nav-tab" data-view="calendar"><i data-lucide="calendar-days"></i><span>Lịch kinh tế</span></button>
-      <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
     </nav>
     <label class="language-control"><span class="sr-only">Ngôn ngữ</span><select id="language-picker" aria-label="Ngôn ngữ">
       <option value="en">English</option><option value="vi">Tiếng Việt</option><option value="ko">한국어</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="tr">Türkçe</option><option value="pt-BR">Português (Brasil)</option><option value="en-NG">English (Nigeria)</option>
@@ -33,7 +32,7 @@
     <div id="workspace" hidden>
       <section id="view-dashboard" class="view">
         <div class="page-heading"><div><p class="eyebrow">ETH / USD · DAILY UTC</p><h1>Ethereum · Core 10</h1></div><div class="heading-actions"><span class="badge">Reconstructed</span><button id="refresh" class="icon-button" title="Kiểm tra bản dữ liệu mới" aria-label="Kiểm tra bản dữ liệu mới"><i data-lucide="refresh-cw"></i></button><button id="export" class="icon-button" title="Tải CSV của khoảng ngày đang xem" aria-label="Tải CSV"><i data-lucide="download"></i></button></div></div>
-        <div class="notice research-notice"><i data-lucide="info"></i><span>Core 10 tích hợp E2, nguồn cung và số dư sàn. Điểm nghiên cứu 0–100; E2 chia nhóm định giá với MVRV. Chiều nguồn cung/số dư sàn là giả thuyết nghiên cứu. Kết quả thăm dò nằm trong tab Kiểm định. Các thành phần tương quan, chưa có mô hình xác suất.</span></div>
+        <div class="notice research-notice"><i data-lucide="info"></i><span>Core 10 phản ánh mức nóng/lạnh tương đối của ETH trên thang 0–100. Các thành phần có thể liên quan nhau; điểm không phải xác suất hay tín hiệu giao dịch.</span></div>
         <div id="freshness" class="data-status"></div>
         <section class="overview" aria-label="Tổng quan ngày đã chọn">
           <div class="score-block"><div class="label" id="score-label">ECO Core</div><div class="score-line"><strong id="score-value">—</strong><span>/ 100</span></div><div class="heat-scale" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><b id="heat-marker"></b></div><div class="scale-labels"><span>Thấp</span><span>Cao</span></div></div>
@@ -162,16 +161,6 @@
           <p class="small muted">Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a> · NUPL và thay đổi 30 ngày do ECO dẫn xuất cho nghiên cứu phi thương mại. Native ETH L1, không bao quát toàn bộ hệ sinh thái. Dữ liệu không được bảo đảm.</p>
           <div class="proxy-links" hidden><a id="diag-manifest" target="_blank" rel="noreferrer">Manifest & snapshot</a><a id="diag-report" target="_blank" rel="noreferrer">Báo cáo coverage JSON</a></div>
         </div>
-      </section>
-      <section id="view-research" class="view" hidden>
-        <div class="page-heading"><div><p class="eyebrow">CORE-V0.2.0 · EXPLORATORY</p><h1>Kiểm định Core 10</h1></div><span class="badge">Experimental</span></div>
-        <div id="research-conclusion" class="notice research-notice"></div>
-        <div class="research-summary" id="research-summary"></div>
-        <details id="baseline-details"><summary>Chi tiết kiểm định và các baseline lịch sử</summary>
-          <div class="table-wrap"><table><thead><tr><th>Mô hình</th><th>Average Precision</th><th>Δ AP Core 10 − baseline</th><th>CI 95% · 10.000 lần</th></tr></thead><tbody id="extended-results"></tbody></table></div>
-          <p class="small muted">Các phiên bản cũ giúp đối chiếu kết quả trên cùng giai đoạn. <a id="extended-research-link" hidden target="_blank" rel="noreferrer">Báo cáo Core 10</a></p>
-        </details>
-        <div class="research-details"><section><h2>Cách đọc kết quả</h2><p>Kiểm định xem điểm có phân biệt được những ngày trước một đợt giảm giá lớn trong 365 ngày kế tiếp. Kết quả chỉ áp dụng cho giai đoạn đã đánh giá.</p></section><section><h2>Giới hạn bằng chứng</h2><p>Snapshot hiện tại không biết thời điểm nguồn từng sẵn có và các bản sửa đổi trong lịch sử. Backtest này không chứng minh hiệu quả realtime.</p><p>Không có mô hình xác suất, calibration hay chứng nhận giao dịch. Bản preview chưa có chuỗi vận hành shadow 30 ngày.</p></section></div>
       </section>
       <footer><div><strong>ECO</strong><span>Ethereum · Nghiên cứu phi thương mại</span></div><p>Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data">Coin Metrics Community</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a> · Dữ liệu đã chuyển đổi, không được bảo đảm.</p></footer>
     </div>

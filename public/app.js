@@ -1,9 +1,9 @@
 import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
-import { initProxies, resizeProxies } from './proxies.js?v=ui-20261113a';
-import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=ui-20261113a';
+import { initProxies, resizeProxies } from './proxies.js?v=ui-20261113c';
+import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=ui-20261113c';
 import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
-import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=ui-20261113a';
-import { initCalendar, openCalendar } from './calendar.js?v=ui-20261113a';
+import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=ui-20261113c';
+import { initCalendar, openCalendar } from './calendar.js?v=ui-20261113c';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString(numberLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -11,7 +11,6 @@ const dateLabel = date => new Intl.DateTimeFormat(numberLocale(), { day: '2-digi
 const escape = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const state = { rows: [], manifest: null, research: null, status: null, pointerHash: null, followLatest: true, lastChecked: 0, range: 'all', mode: 'ten', selected: CORE_METRICS.map(m => m.id), date: null, view: 'dashboard', busy: false };
 let historyChart;
-const baselineNames = { core: 'Core 4', extended: 'ECO 7', normalized_E7_only: 'E7 riêng', equal_weight_four_components: '4 metric đồng trọng số', normalized_price_group_only: 'Nhóm giá riêng' };
 
 async function getBytes(url, fresh = false) {
   const response = await fetch(url, { cache: fresh ? 'no-cache' : 'default', signal: AbortSignal.timeout(20000) });
@@ -66,7 +65,6 @@ async function load() {
       });
     }
     render();
-    renderResearch();
     icons();
     requestAnimationFrame(() => { historyChart.resize(); resizeProxies(); resizeDiagnostics(); });
   } catch (error) {
@@ -177,16 +175,6 @@ function renderChart() {
     return `<div class="ec-tooltip"><strong>${escape(dateLabel(date))} · UTC</strong>${params.map(p => `${escape(p.seriesName)}<span>${p.value[1] === null ? '—' : p.seriesName === priceName ? '$' + fmt(p.value[1]) : fmt(p.value[1], 2)}</span><br>`).join('')}</div>`;
   } }, xAxis: { type: 'time', axisLine: { lineStyle: { color: '#dfe6e5' } }, axisTick: { show: false }, axisLabel: { fontSize: 10, color: '#687575', hideOverlap: true }, splitNumber: mobile ? 4 : 8 }, yAxis: [{ type: 'value', min: 0, max: 100, interval: 25, name: translate('Điểm'), nameTextStyle: { color: '#087f72', fontSize: 10, align: 'left' }, axisLabel: { color: '#687575', fontSize: 10 }, splitLine: { lineStyle: { color: '#e7eeeb' } } }, { type: $('log-price').checked ? 'log' : 'value', name: 'USD', nameTextStyle: { color: '#687575', fontSize: 10 }, axisLabel: { color: '#687575', fontSize: 9, formatter: value => value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}` }, splitLine: { show: false } }], dataZoom: [{ type: 'inside', filterMode: 'none', zoomOnMouseWheel: false, moveOnMouseWheel: false }, { type: 'slider', height: 13, bottom: 6, borderColor: 'transparent', backgroundColor: '#edf3f0', fillerColor: '#087f7217', handleStyle: { color: '#7ba79c' }, showDetail: false, brushSelect: false }], series }, { notMerge: true });
 }
-function renderResearch() {
-  const r = state.research;
-  $('research-conclusion').textContent = `Chưa chứng minh Core 10 cải thiện dự báo.${r.comparisons.core.upper_95 < 0 ? ' AP thăm dò thấp hơn Core 4 trong khoảng tin cậy này;' : ''} Kết quả vẫn mang tính thăm dò.`;
-  $('research-summary').innerHTML = [
-    ['Khoảng đánh giá', `${escape(dateLabel(r.start))}<br>${escape(dateLabel(r.end))}`], ['Ngày được chấm', fmt(r.n, 0)],
-    ['Prevalence nhãn dương', `${fmt(r.prevalence * 100, 1)}%`], ['Core 10 Average Precision', fmt(r.statistics.core_ten.average_precision, 3)],
-  ].map(([label, value]) => `<div><div class="label">${label}</div><strong>${value}</strong></div>`).join('');
-  $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='core_ten'?'Core 10':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='core_ten'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='core_ten'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
-  $('extended-research-link').href = `/data/core-v2/releases/${state.manifest.release_id}/research.json`;
-}
 function view(name) {
   state.view = name;
   document.querySelectorAll('.view').forEach(node => { node.hidden = node.id !== `view-${name}`; });
@@ -226,11 +214,11 @@ function start() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   new ResizeObserver(() => { historyChart?.resize(); }).observe(document.querySelector('main'));
-  if (['#research', '#extended', '#diagnostics', '#calendar'].includes(location.hash)) view(location.hash.slice(1));
+  if (['#extended', '#diagnostics', '#calendar'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
   initLanguage();
-  document.addEventListener('eco-language-changed', () => { if (!state.rows.length) return; render(); renderResearch(); requestAnimationFrame(() => historyChart?.resize()); });
+  document.addEventListener('eco-language-changed', () => { if (!state.rows.length) return; render(); requestAnimationFrame(() => historyChart?.resize()); });
   load();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();

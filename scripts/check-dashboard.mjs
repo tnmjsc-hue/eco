@@ -86,15 +86,7 @@ try {
   await page.locator('#latest-day').click();
   await page.locator('[data-mode="ten"]').click();
   await page.locator('[data-range="all"]').click();
-  await page.locator('[data-view="research"]').click();
-  assert.ok((await page.locator('#research-conclusion').innerText()).includes('Chưa chứng minh'));
-  assert.equal(await page.locator('#research-chart, #comparison-rows, #secondary-results').count(),0);
-  assert.equal(await page.locator('#baseline-details').getAttribute('open'),null);
-  assert.ok((await page.locator('#research-summary').innerText()).includes('Core 10 Average Precision'));
-  await page.locator('#baseline-details summary').click();
-  assert.equal(await page.locator('#extended-results tr').count(),5);
-  await page.screenshot({ path: 'test-results/research-1440.png', fullPage: true });
-  assert.equal(await page.locator('#view-methodology, [data-view="methodology"]').count(), 0);
+  assert.equal(await page.locator('#view-research, [data-view="research"], #view-methodology, [data-view="methodology"]').count(), 0);
   assert.equal(await page.locator('a[href*="github.com"]').count(), 0);
   for (const width of [360, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
@@ -104,9 +96,6 @@ try {
     assert.ok(layout.scroll <= width, `horizontal overflow at ${width}: ${layout.scroll}`);
     assert.ok(layout.date.right <= layout.cell.right + 1, `date overflow at ${width}`);
     await page.screenshot({ path: `test-results/dashboard-${width}.png`, fullPage: true });
-    await page.locator('[data-view="research"]').click();
-    await page.screenshot({ path: `test-results/research-${width}.png`, fullPage: true });
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   }
   await page.locator('[data-view="dashboard"]').click();
   await page.route('**/data/core-v2/latest.json', route => route.abort());
