@@ -14,6 +14,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.locator('#workspace').waitFor({ state: 'visible', timeout: 30000 });
+  await page.locator('#language-picker').selectOption('vi');
   const pointer = await (await page.request.get(new URL('/data/core-v2/latest.json', url).href)).json();
   const manifest = await (await page.request.get(new URL(pointer.manifest_url, url).href)).json();
   const history = await (await page.request.get(new URL(`/data/core-v2/releases/${pointer.release_id}/history.json`, url).href)).json();
@@ -26,7 +27,6 @@ try {
   assert.equal(await page.locator('#selected-date').inputValue(), latestDate);
   assert.equal(await page.locator('#coverage-value').innerText(), '10 / 10');
   assert.equal(await page.locator('#component-rows tr').count(),10);
-  assert.ok((await page.locator('#component-rows').innerText()).includes('Tạm thời · flash'));
   assert.ok((await page.locator('#score-label').innerText()).includes('Core · 10'));
   for (const r of history.rows) assert.equal(r.core_score,coreHistory.rows.find(c=>c.date===r.date).score);
   assert.equal(await page.locator('[data-mode="core"], [data-mode="extended"], #custom-comparison').count(),0);
@@ -94,12 +94,8 @@ try {
   await page.locator('#baseline-details summary').click();
   assert.equal(await page.locator('#extended-results tr').count(),5);
   await page.screenshot({ path: 'test-results/research-1440.png', fullPage: true });
-  assert.equal(await page.locator('[data-view="methodology"]').isVisible(), false);
-  await page.goto(new URL('#methodology', url).href);
-  await page.reload({ waitUntil: 'networkidle' });
-  await page.locator('summary').last().click();
-  assert.ok((await page.locator('#provenance').innerText()).includes(manifest.protocol_sha256));
-  await page.screenshot({ path: 'test-results/methodology-1440.png', fullPage: true });
+  assert.equal(await page.locator('#view-methodology, [data-view="methodology"]').count(), 0);
+  assert.equal(await page.locator('a[href*="github.com"]').count(), 0);
   for (const width of [360, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
     await page.locator('[data-view="dashboard"]').click();
@@ -165,7 +161,7 @@ try {
   await page.locator('#selected-date').dispatchEvent('change');
   await mockDailyRelease(tomorrow, 60, 'core10-00000000000000000002');
   await page.clock.fastForward(15 * 60 * 1000);
-  await page.waitForFunction(() => document.getElementById('manifest-link').getAttribute('href').includes('00000000000000000002'));
+  await page.waitForFunction(() => !document.getElementById('refresh').disabled);
   assert.equal(await page.locator('#selected-date').inputValue(), latestDate);
   assert.equal(await page.locator('#score-value').innerText(), latestScore);
   assert.deepEqual(errors, []);

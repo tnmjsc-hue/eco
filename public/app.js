@@ -1,9 +1,9 @@
 import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
-import { initProxies, resizeProxies } from './proxies.js?v=prob-20261009a';
-import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=prob-20261009a';
+import { initProxies, resizeProxies } from './proxies.js?v=ui-20261113a';
+import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=ui-20261113a';
 import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
-import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=prob-20261009a';
-import { initCalendar, openCalendar } from './calendar.js?v=prob-20261009a';
+import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=ui-20261113a';
+import { initCalendar, openCalendar } from './calendar.js?v=ui-20261113a';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString(numberLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -57,7 +57,6 @@ async function load() {
     if (state.followLatest || !state.rows.some(r => r.date === state.date)) state.date = manifest.last_valid_score_date;
     $('selected-date').min = state.rows[0].date;
     $('selected-date').max = state.rows.at(-1).date;
-    $('manifest-link').href = pointer.manifest_url;
     $('loading').hidden = true;
     $('workspace').hidden = false;
     if (!historyChart) {
@@ -68,7 +67,6 @@ async function load() {
     }
     render();
     renderResearch();
-    renderProvenance();
     icons();
     requestAnimationFrame(() => { historyChart.resize(); resizeProxies(); resizeDiagnostics(); });
   } catch (error) {
@@ -181,22 +179,13 @@ function renderChart() {
 }
 function renderResearch() {
   const r = state.research;
-  $('research-conclusion').textContent = `Chưa chứng minh Core 10 cải thiện dự báo.${r.comparisons.core.upper_95 < 0 ? ' AP thăm dò thấp hơn Core 4 trong khoảng tin cậy này;' : ''} Holdout đã dùng lại. Giữ nguyên công thức và nhãn Experimental.`;
+  $('research-conclusion').textContent = `Chưa chứng minh Core 10 cải thiện dự báo.${r.comparisons.core.upper_95 < 0 ? ' AP thăm dò thấp hơn Core 4 trong khoảng tin cậy này;' : ''} Kết quả vẫn mang tính thăm dò.`;
   $('research-summary').innerHTML = [
     ['Khoảng đánh giá', `${escape(dateLabel(r.start))}<br>${escape(dateLabel(r.end))}`], ['Ngày được chấm', fmt(r.n, 0)],
     ['Prevalence nhãn dương', `${fmt(r.prevalence * 100, 1)}%`], ['Core 10 Average Precision', fmt(r.statistics.core_ten.average_precision, 3)],
   ].map(([label, value]) => `<div><div class="label">${label}</div><strong>${value}</strong></div>`).join('');
   $('extended-results').innerHTML = Object.entries(r.statistics).map(([n,v])=>`<tr><td>${n==='core_ten'?'Core 10':baselineNames[n]??n}</td><td>${fmt(v.average_precision,4)}</td><td>${n==='core_ten'?'—':fmt(r.comparisons[n].ap_delta,4)}</td><td>${n==='core_ten'?'—':`[${fmt(r.comparisons[n].lower_95,4)}; ${fmt(r.comparisons[n].upper_95,4)}]`}</td></tr>`).join('');
   $('extended-research-link').href = `/data/core-v2/releases/${state.manifest.release_id}/research.json`;
-}
-function renderProvenance() {
-  const m = state.manifest;
-  $('provenance').replaceChildren();
-  for (const [label, value] of [ ['Release Core 10', m.release_id], ['Core 4 cha', m.parents.core.release_id], ['Proxy cha', m.parents.proxies.release_id], ['ECO 7 cha',m.parents.extended.release_id], ['Diagnostics cha',m.parents.diagnostics.release_id], ['Protocol SHA-256', m.protocol_sha256], ['Engine SHA-256', m.engine_sha256], ['Tính điểm UTC', m.computed_at], ['Revision', m.revision ? `${m.revision.reason} · trước đó ${m.revision.previous_release_id??'không có'}` : 'Release nghiên cứu ban đầu'], ['Availability lịch sử', 'Không biết; không gọi lịch sử là as-published'], ['Phạm vi', `${m.rows} ngày lịch · ${m.score_rows} ngày có Core 10 · bắt đầu ${m.first_score_date}`] ]) {
-    const dt = document.createElement('dt'); dt.textContent = label;
-    const dd = document.createElement('dd'); dd.textContent = value;
-    $('provenance').append(dt, dd);
-  }
 }
 function view(name) {
   state.view = name;
@@ -237,11 +226,11 @@ function start() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   new ResizeObserver(() => { historyChart?.resize(); }).observe(document.querySelector('main'));
-  if (['#research', '#methodology', '#extended', '#diagnostics', '#calendar'].includes(location.hash)) view(location.hash.slice(1));
+  if (['#research', '#extended', '#diagnostics', '#calendar'].includes(location.hash)) view(location.hash.slice(1));
   setInterval(() => { if (!document.hidden) load(); }, 15 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - state.lastChecked > 60000) load(); });
   initLanguage();
-  document.addEventListener('eco-language-changed', () => { if (!state.rows.length) return; render(); renderResearch(); renderProvenance(); requestAnimationFrame(() => historyChart?.resize()); });
+  document.addEventListener('eco-language-changed', () => { if (!state.rows.length) return; render(); renderResearch(); requestAnimationFrame(() => historyChart?.resize()); });
   load();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();

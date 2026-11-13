@@ -1,5 +1,5 @@
 import { PROXIES, validateProxyPointer, validateProxyRelease, exportProxyCSV } from './proxy-model.js?v=proxies-1';
-import { numberLocale, translate } from './i18n.js?v=prob-20261009a';
+import { numberLocale, translate } from './i18n.js?v=ui-20261113a';
 const $ = id => document.getElementById(id);
 const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
 const fmt = (v, n=2) => v === null ? '—' : v.toLocaleString(numberLocale(),{maximumFractionDigits:n,minimumFractionDigits:n});
@@ -58,7 +58,7 @@ function render() {
   $('proxy-cards').innerHTML=PROXIES.map(m=>{
     const v=row.metrics[m.id];const value=v.value===null?'—':m.id==='value_per_transfer'?`$${fmt(v.value,0)} / (lượt/ngày)`:`${fmt(v.value*100,3)}%`;
     const reason=reasonNames[v.raw_reason??v.score_reason]??'';
-    return `<article class="proxy-card" style="--proxy-color:${m.color}"><div class="proxy-card-heading"><span class="metric-id">${m.slot} · proxy</span><span class="status-pill ${v.score===null?'missing':'ready'}">${v.score===null?'Chưa đủ':'Nghiên cứu'}</span></div><h2>${m.name}</h2><div class="proxy-score">${v.score===null?'—':fmt(v.score,1)}<small>/ 100</small></div><p class="small">${m.description}</p><p class="small muted">${value} · ${dateLabel(row.date)} UTC${reason?'<br>'+reason:''}${v.source_flags.length?'<br>Cờ nguồn: '+escape(v.source_flags.join(', '))+' · tạm thời':''}</p><p class="small">${m.interpretation}</p><details><summary>Công thức & giới hạn</summary><p><code>${m.formula}</code></p><p class="small">${m.limitation}</p></details></article>`;
+    return `<article class="proxy-card" style="--proxy-color:${m.color}"><div class="proxy-card-heading"><span class="metric-id">${m.slot} · proxy</span><span class="status-pill ${v.score===null?'missing':'ready'}">${v.score===null?'Chưa đủ':'Nghiên cứu'}</span></div><h2>${m.name}</h2><div class="proxy-score">${v.score===null?'—':fmt(v.score,1)}<small>/ 100</small></div><p class="small">${m.description}</p><p class="small muted">${value} · ${dateLabel(row.date)} UTC${reason?'<br>'+reason:''}${v.source_flags.length?'<br>Cờ nguồn: '+escape(v.source_flags.join(', '))+' · tạm thời':''}</p><p class="small">${m.interpretation}</p><p class="small muted">${m.limitation}</p></article>`;
   }).join('');
   plot();
 }

@@ -1,5 +1,5 @@
 import { DIAGNOSTICS, validateDiagnosticPointer, validateDiagnosticRelease, diagnosticRange, exportDiagnosticCSV } from './diagnostic-model.js?v=diagnostics-1';
-import { numberLocale, translate } from './i18n.js?v=prob-20261009a';
+import { numberLocale, translate } from './i18n.js?v=ui-20261113a';
 const $ = id => document.getElementById(id);
 const dateLabel = d => new Intl.DateTimeFormat(numberLocale(),{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${d}T00:00:00Z`));
 const fmt = (v,n=3) => v===null?'—':v.toLocaleString(numberLocale(),{minimumFractionDigits:n,maximumFractionDigits:n});
@@ -55,7 +55,7 @@ function render() {
   $('diag-prev').disabled=state.date===state.history.rows[0].date;$('diag-next').disabled=state.date===state.history.rows.at(-1).date;
   $('diag-cards').innerHTML=DIAGNOSTICS.map(d=>{
     const v=row.metrics[d.id],label=v.value===null?'—':fmt(v.value*d.scale,d.unit==='ETH'?0:3)+(d.unit==='ETH'?' ETH':'%');
-    return `<article class="proxy-card diagnostic-card" style="--proxy-color:${d.color}"><div class="proxy-card-heading"><span class="metric-id">${d.slot} · chẩn đoán</span><span class="status-pill ${v.value===null?'missing':'ready'}">${v.value===null?'Chưa đủ':'Đã tính'}</span></div><h2>${d.name}</h2><div class="diag-value">${label}</div><p class="small">${d.description}</p><p class="small muted">${dateLabel(row.date)} UTC${v.reason?'<br>'+escape(reasons[v.reason]??v.reason):''}${v.source_flags.length?'<br>Cờ nguồn: '+escape(v.source_flags.join(', '))+' · tạm thời':''}</p><p class="small">${d.interpretation}</p><details><summary>Công thức & giới hạn</summary><p><code>${d.formula}</code></p><p class="small">${d.limitation}</p></details></article>`;
+    return `<article class="proxy-card diagnostic-card" style="--proxy-color:${d.color}"><div class="proxy-card-heading"><span class="metric-id">${d.slot} · chẩn đoán</span><span class="status-pill ${v.value===null?'missing':'ready'}">${v.value===null?'Chưa đủ':'Đã tính'}</span></div><h2>${d.name}</h2><div class="diag-value">${label}</div><p class="small">${d.description}</p><p class="small muted">${dateLabel(row.date)} UTC${v.reason?'<br>'+escape(reasons[v.reason]??v.reason):''}${v.source_flags.length?'<br>Cờ nguồn: '+escape(v.source_flags.join(', '))+' · tạm thời':''}</p><p class="small">${d.interpretation}</p><p class="small muted">${d.limitation}</p></article>`;
   }).join('');plot();
 }
 function plot() {

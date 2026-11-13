@@ -49,11 +49,10 @@ try{
   await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
   await page.locator('.macro-peers>summary').click();
   assert.ok(await page.locator('#macro-peers tr').count()>=7);
-  await page.locator('.macro-details>summary').click();
-  assert.ok((await page.locator('#macro-rules').innerText()).includes('X10_NO_CONSENSUS'));
-  assert.ok((await page.locator('#macro-provenance').innerText()).includes(identity));
+  assert.equal(await page.locator('.macro-details').isVisible(), false);
+  assert.ok((await page.locator('#macro-rules').textContent()).includes('X10_NO_CONSENSUS'));
+  assert.ok((await page.locator('#macro-provenance').textContent()).includes(identity));
   assert.ok((await page.locator('#macro-manifest').getAttribute('href')).includes('/manifest.json'));
-  await page.locator('.macro-details>summary').click();
   await page.locator('.macro-peers>summary').click();
   for(const language of ['en','ko','ru','hi','tr','pt-BR','en-NG','vi']){
     await page.locator('#language-picker').selectOption(language);

@@ -1,5 +1,5 @@
 import {loadProbability} from './macro-probability-model.js?v=prob-20261009a';
-import {translate as t,numberLocale} from './i18n.js?v=prob-20261009a';
+import {translate as t,numberLocale} from './i18n.js?v=ui-20261113a';
 const $=id=>document.getElementById(id);
 const STATES={collecting:'Đang thu thập mẫu',awaiting_calibration:'Chờ mẫu hiệu chỉnh',awaiting_test:'Chờ kiểm tra ngoài mẫu',validation_failed:'Chưa vượt kiểm định',validated_holdout:'Đã vượt kiểm tra ngoài mẫu nội bộ'};
 let good=null,warning=null,busy=false,calendarId=null;

@@ -13,6 +13,7 @@ try {
   const page=await browser.newPage({viewport:{width:1440,height:1000},acceptDownloads:true});await page.clock.install({time:new Date()});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(new URL('#diagnostics',url).href,{waitUntil:'networkidle'});await page.locator('#diag-content').waitFor({state:'visible'});
+  await page.locator('#language-picker').selectOption('vi');
   const pointer=await(await page.request.get(new URL('/data/diagnostics/latest.json',url).href)).json();
   const manifest=await(await page.request.get(new URL(pointer.manifest_url,url).href)).json();
   const history=await(await page.request.get(new URL(`/data/diagnostics/releases/${pointer.release_id}/history.json`,url).href)).json();

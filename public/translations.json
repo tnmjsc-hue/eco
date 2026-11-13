@@ -1,5 +1,14 @@
 {
   "en": {
+    "Ba proxy thay thế vai trò E3/E8/E9 từ dữ liệu ETH thật, đã tham gia Core 10. Trang này giải thích ý nghĩa và hiển thị kết quả của từng chỉ số.": "Three ETH data proxies for E3/E8/E9 are included in Core 10. This page explains each indicator and shows its results.",
+    "Giá trị gốc của ba chỉ số có thể âm. Bảng và biểu đồ giúp đối chiếu biến động theo ngày; điểm chuẩn hóa của chúng nằm trên Dashboard.": "The original values of these three indicators can be negative. The table and chart show daily changes; their normalized scores appear on the Dashboard.",
+    "E2 và E7 cùng phản ánh định giá; C1 cho thấy mức tăng nguồn cung tương đối, C2 cho thấy biến động số dư sàn. Các chỉ số có thể liên quan nhau, không phải những tín hiệu độc lập.": "E2 and E7 both reflect valuation; C1 shows relative supply growth and C2 shows changes in exchange balances. These indicators can be related and are not independent signals.",
+    "Nhấn đường để chọn ngày và xem kết quả.": "Select a point on the line to see that day's result.",
+    "Bảng cho thấy kết quả khi ghép từng proxy với điểm Core. Chênh lệch quan sát được chưa chứng minh khả năng dự báo tốt hơn.": "The table shows results when each proxy is combined with the Core score. The observed differences do not establish better forecasting performance.",
+    "Nguồn: Coin Metrics Community · CC BY-NC 4.0. Dữ liệu ETH L1 không bao quát toàn bộ hệ sinh thái.": "Source: Coin Metrics Community · CC BY-NC 4.0. ETH L1 data does not cover the entire ecosystem.",
+    "Các phiên bản cũ giúp đối chiếu kết quả trên cùng giai đoạn.": "Earlier versions provide comparisons over the same period.",
+    "Kiểm định xem điểm có phân biệt được những ngày trước một đợt giảm giá lớn trong 365 ngày kế tiếp. Kết quả chỉ áp dụng cho giai đoạn đã đánh giá.": "The evaluation checks whether the score distinguishes days before a large price decline in the following 365 days. Results apply only to the period evaluated.",
+    "Kết quả vẫn mang tính thăm dò.": "The results remain exploratory.",
     "MQL5 hạn chế hiển thị lịch trong khung nhúng ở một số trình duyệt. Mở trang chính thức trong tab mới để xem dữ liệu toàn cầu, thực tế, dự báo và kỳ trước.": "Some browsers block MQL5 calendars inside embedded frames. Open the official page in a new tab to view global events, actuals, forecasts and previous readings.",
     "Xanh · USD bull": "Green · USD bullish",
     "Đỏ · USD bear": "Red · USD bearish",

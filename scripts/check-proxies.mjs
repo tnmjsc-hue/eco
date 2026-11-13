@@ -12,6 +12,7 @@ try {
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('#workspace').waitFor({state:'visible'});
+  await page.locator('#language-picker').selectOption('vi');
   const coreScore=await page.locator('#score-value').innerText();
   await page.locator('[data-view="extended"]').click();
   await page.locator('#proxy-content').waitFor({state:'visible'});

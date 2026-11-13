@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fafbfb">
-  <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with verifiable data and methodology.">
+  <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=prob-20261009a">
+  <link rel="stylesheet" href="/styles.css?v=ui-20261113a">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=prob-20261009a"></script>
+  <script type="module" src="/app.js?v=ui-20261113a"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -22,7 +22,6 @@
       <button class="nav-tab" data-view="diagnostics"><i data-lucide="activity"></i><span>Chẩn đoán</span></button>
       <button class="nav-tab" data-view="calendar"><i data-lucide="calendar-days"></i><span>Lịch kinh tế</span></button>
       <button class="nav-tab" data-view="research"><i data-lucide="flask-conical"></i><span>Kiểm định</span></button>
-      <button class="nav-tab" data-view="methodology" hidden><i data-lucide="notebook-text"></i><span>Phương pháp</span></button>
     </nav>
     <label class="language-control"><span class="sr-only">Ngôn ngữ</span><select id="language-picker" aria-label="Ngôn ngữ">
       <option value="en">English</option><option value="vi">Tiếng Việt</option><option value="ko">한국어</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="tr">Türkçe</option><option value="pt-BR">Português (Brasil)</option><option value="en-NG">English (Nigeria)</option>
@@ -51,8 +50,7 @@
           <div class="section-toolbar"><div><h2 id="component-title">Mười thành phần</h2><p class="small muted">Giá 37,5% · định giá 37,5% · mạng 25%</p></div><div class="segmented" role="group" aria-label="Chế độ điểm"><button class="active" data-mode="ten" aria-pressed="true">Core 10</button><button data-mode="custom" aria-pressed="false">Tùy chỉnh</button></div></div>
           <div id="selection-note" class="notice" hidden></div>
           <div class="table-wrap"><table class="metric-table"><thead><tr><th class="selection-column">Chọn</th><th>Chỉ số</th><th>Điểm</th><th>Trọng số</th><th>Trạng thái</th></tr></thead><tbody id="component-rows"></tbody></table></div>
-          <div class="small muted component-footnote">E2 và E7 chia nhóm định giá 37,5%; hai phép đo sàn chia nhóm sàn 6,25%. C1 đo khan hiếm tương đối, C2 đo thay đổi ròng theo nhãn sàn. E3/E8/E9 proxy giữ công thức riêng; E4 còn R&amp;D.</div>
-          <aside class="notice arkham-reference"><div><strong>Đối chiếu ETH với Arkham</strong><p class="small muted">Khám phá chủ sở hữu, thay đổi số dư và dòng tiền sàn. Chọn Ethereum khi đối chiếu; nhãn dự đoán, cầu nối và hợp đồng staking cần được phân biệt. Dữ liệu Arkham đang được đánh giá như nguồn bổ sung, chưa tham gia Core 10.</p><div class="proxy-links"><a href="https://arkm.com/explorer/token/ethereum" target="_blank" rel="noreferrer">ETH · holders & dòng tiền ↗</a><a href="https://arkm.com/explorer/entity/binance" target="_blank" rel="noreferrer">Ví sàn Binance ↗</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ARKHAM_SOURCE.md" target="_blank" rel="noreferrer">Nguồn, coverage & kế hoạch tích hợp</a></div></div></aside>
+          <div class="small muted component-footnote">E2 và E7 cùng phản ánh định giá; C1 cho thấy mức tăng nguồn cung tương đối, C2 cho thấy biến động số dư sàn. Các chỉ số có thể liên quan nhau, không phải những tín hiệu độc lập.</div>
         </section>
       </section>
       <section id="view-calendar" class="view" hidden>
@@ -75,7 +73,7 @@
               <h3>3. Bối cảnh chung</h3><p id="macro-regime" class="macro-regime"></p><div id="macro-axes" class="macro-axes"></div><p id="macro-context-note" class="small"></p>
               <h3>4. Tác động tài sản có điều kiện</h3><div id="macro-assets" class="macro-assets"></div>
               <p class="small muted">Đánh giá này so với kỳ trước. Số đo thị trường, consensus và phạm vi phản ứng được trình bày riêng bên dưới.</p>
-              <details class="macro-details"><summary>Quy tắc, vintage và bằng chứng</summary><ul id="macro-rules"></ul><p id="macro-provenance" class="small"></p><p id="macro-exclusions" class="small muted"></p><div class="proxy-links"><a id="macro-download" target="_blank" rel="noreferrer">Tải đánh giá JSON</a><a id="macro-manifest" target="_blank" rel="noreferrer">Manifest và input đã xác minh</a></div><p class="small muted">Snapshot hiện tại có thể chứa số liệu đã sửa đổi. Ngày lịch, kỳ quan sát, thời điểm biết dữ liệu và thời điểm xuất đánh giá khác nhau. Không dùng snapshot này để suy ra hệ thống đã biết số vào thời điểm công bố lịch sử.</p></details>
+              <details class="macro-details" hidden><summary>Chi tiết kỹ thuật</summary><ul id="macro-rules"></ul><p id="macro-provenance" class="small"></p><p id="macro-exclusions" class="small muted"></p><div class="proxy-links" hidden><a id="macro-download" target="_blank" rel="noreferrer">Tải đánh giá JSON</a><a id="macro-manifest" target="_blank" rel="noreferrer">Manifest và input đã xác minh</a></div><p class="small muted">Snapshot hiện tại có thể chứa số liệu đã sửa đổi. Ngày lịch, kỳ quan sát, thời điểm biết dữ liệu và thời điểm xuất đánh giá khác nhau. Không dùng snapshot này để suy ra hệ thống đã biết số vào thời điểm công bố lịch sử.</p></details>
             </div>
           </section>
           <section class="macro-panel" aria-labelledby="market-heading">
@@ -86,7 +84,7 @@
               <p class="small muted">Lợi suất: 1 bps = 0,01 điểm phần trăm. USD broad là chỉ số Fed, khác DXY; H.10 công bố trễ. ETH là giá đóng ngày UTC. Các thước đo có thể khác ngày; xem từng cặp ngày.</p>
               <p class="small"><strong>Consensus trước tin: chưa khả dụng.</strong> Chưa có nguồn được phép hiển thị và snapshot dự báo được ghi nhận trước công bố. Không dùng kỳ trước làm dự báo.</p>
               <p class="small"><strong>Phản ứng quanh giờ công bố: chưa đo được.</strong> Chưa có cửa sổ giá intraday trước/sau thời điểm công bố thực. Biến động theo ngày bên trên không chứng minh do sự kiện gây ra.</p>
-              <div class="proxy-links"><a id="market-download" target="_blank" rel="noreferrer">Tải số đo JSON</a><a id="market-manifest" target="_blank" rel="noreferrer">Nguồn và hash số đo</a></div>
+              <div class="proxy-links" hidden><a id="market-download" target="_blank" rel="noreferrer">Tải số đo JSON</a><a id="market-manifest" target="_blank" rel="noreferrer">Nguồn và hash số đo</a></div>
               <p class="small muted">Nguồn: Federal Reserve Board, US Treasury và Coin Metrics Community (CC BY-NC 4.0). Nghiên cứu phi thương mại; không phải xác suất hay khuyến nghị giao dịch.</p>
             </div>
           </section>
@@ -101,8 +99,8 @@
               <div class="table-wrap"><table class="macro-table"><thead><tr><th>Huấn luyện</th><th>Hiệu chỉnh</th><th>Kiểm tra ngoài mẫu</th></tr></thead><tbody><tr><td id="prob-train"></td><td id="prob-calibration"></td><td id="prob-test"></td></tr></tbody></table></div>
               <p id="prob-regime-samples" class="small muted"></p><p id="prob-validation" class="small"></p>
               <p class="small muted">Mô hình riêng của ECO, chưa phải đồng thuận thị trường. Mỗi case dùng bối cảnh đã biết trước cửa sổ giá; không backfill lịch sử vĩ mô. 180 cửa sổ 7 ngày không chồng nhau cần tối thiểu khoảng 3,5 năm, chưa tính thời gian chờ và dữ liệu thiếu.</p>
-              <div class="proxy-links"><a id="prob-download" target="_blank" rel="noreferrer">Tải mô hình JSON</a><a id="prob-manifest" target="_blank" rel="noreferrer">Bằng chứng mô hình</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/MACRO_PROBABILITY.md" target="_blank" rel="noreferrer">Phương pháp xác suất</a></div>
-              <p id="prob-version" class="small muted"></p>
+              <div class="proxy-links" hidden><a id="prob-download" target="_blank" rel="noreferrer">Tải mô hình JSON</a><a id="prob-manifest" target="_blank" rel="noreferrer">Bằng chứng mô hình</a></div>
+              <p id="prob-version" class="small muted" hidden></p>
             </div>
           </section>
           <div class="cal-toolbar">
@@ -123,30 +121,30 @@
             <div id="cal-release-detail" class="cal-release-detail"></div>
           </section>
           <section class="cal-results"><h2>Số liệu BLS mới nhất</h2><p class="small muted">Vintage mới nhất, đã điều chỉnh mùa vụ. CPI/PPI là thay đổi chỉ số theo tháng; NFP là thay đổi số việc làm, đơn vị nghìn. Kỳ trước có thể đã sửa đổi. Chỉ kỳ mới nhất được nối với sự kiện BLS đã qua giờ; không coi là số tại thời điểm công bố.</p><div id="cal-indicators" class="cal-indicators"></div></section>
-          <details class="cal-source-notes"><summary>Nguồn và lịch cập nhật</summary><p>Kiểm tra lịch lúc 07:37 mỗi ngày; kiểm tra số liệu lúc 20:37 và 01:37 hôm sau vào ngày làm việc Mỹ (giờ Việt Nam). GitHub có thể chạy chậm; đây là batch, không phải realtime. Cache và conditional request giảm tải; dữ liệu không đổi thì giữ release. Trình duyệt chỉ kiểm tra JSON mỗi 15 phút khi tab đang mở.</p><p>Phạm vi: CPI, NFP, PPI, JOLTS, trợ cấp thất nghiệp hằng tuần, GDP, PCE, thương mại, biên bản FOMC, Beige Book, sản lượng công nghiệp và các tin BLS/Fed khác. Giờ ET được đổi theo DST. Chưa bao gồm lịch toàn cầu, PMI tư nhân, phát biểu hoặc sự kiện riêng của crypto.</p><div class="proxy-links"><a href="https://www.bls.gov/help/hlpiCAL.htm" target="_blank" rel="noreferrer">BLS · calendar ↗</a><a href="https://www.bea.gov/news/schedule" target="_blank" rel="noreferrer">BEA · calendar ↗</a><a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noreferrer">Fed · FOMC ↗</a><a href="https://oui.doleta.gov/unemploy/claims_arch.asp" target="_blank" rel="noreferrer">DOL · weekly claims ↗</a><a id="cal-manifest" target="_blank" rel="noreferrer">Dữ liệu và provenance JSON</a></div><p>Cơ sở diễn giải: <a href="https://www.federalreserve.gov/monetarypolicy/monetary-policy-what-are-its-goals-how-does-it-work.htm" target="_blank" rel="noreferrer">Fed · monetary transmission</a> · <a href="https://www.gold.org/goldhub/research/the-impact-of-monetary-policy-on-gold" target="_blank" rel="noreferrer">World Gold Council</a> · <a href="https://www.imf.org/en/Publications/WP/Issues/2023/08/04/The-Crypto-Cycle-and-US-Monetary-Policy-534834" target="_blank" rel="noreferrer">IMF · crypto cycle</a>. Kịch bản do ECO tổng hợp; chưa kiểm định tác động của từng sự kiện.</p></details>
+          <details class="cal-source-notes" hidden><summary>Thông tin nguồn</summary><p>Kiểm tra lịch lúc 07:37 mỗi ngày; kiểm tra số liệu lúc 20:37 và 01:37 hôm sau vào ngày làm việc Mỹ (giờ Việt Nam). Lịch cập nhật theo đợt, không phải realtime; giờ hiển thị có thể thay đổi khi cơ quan nguồn điều chỉnh lịch.</p><p>Phạm vi: CPI, NFP, PPI, JOLTS, trợ cấp thất nghiệp hằng tuần, GDP, PCE, thương mại, biên bản FOMC, Beige Book, sản lượng công nghiệp và các tin BLS/Fed khác. Giờ ET được đổi theo DST. Chưa bao gồm lịch toàn cầu, PMI tư nhân, phát biểu hoặc sự kiện riêng của crypto.</p><div class="proxy-links" hidden><a href="https://www.bls.gov/help/hlpiCAL.htm" target="_blank" rel="noreferrer">BLS · calendar ↗</a><a href="https://www.bea.gov/news/schedule" target="_blank" rel="noreferrer">BEA · calendar ↗</a><a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noreferrer">Fed · FOMC ↗</a><a href="https://oui.doleta.gov/unemploy/claims_arch.asp" target="_blank" rel="noreferrer">DOL · weekly claims ↗</a><a id="cal-manifest" target="_blank" rel="noreferrer">Dữ liệu và provenance JSON</a></div><p>Cơ sở diễn giải: <a href="https://www.federalreserve.gov/monetarypolicy/monetary-policy-what-are-its-goals-how-does-it-work.htm" target="_blank" rel="noreferrer">Fed · monetary transmission</a> · <a href="https://www.gold.org/goldhub/research/the-impact-of-monetary-policy-on-gold" target="_blank" rel="noreferrer">World Gold Council</a> · <a href="https://www.imf.org/en/Publications/WP/Issues/2023/08/04/The-Crypto-Cycle-and-US-Monetary-Policy-534834" target="_blank" rel="noreferrer">IMF · crypto cycle</a>. Kịch bản do ECO tổng hợp; chưa kiểm định tác động của từng sự kiện.</p></details>
         </div>
       </section>
       <section id="view-extended" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">ETH · METRIC NGHIÊN CỨU</p><h1>Ba góc nhìn on-chain</h1></div><button id="proxy-refresh" class="icon-button" aria-label="Cập nhật metric mở rộng" title="Cập nhật metric mở rộng"><i data-lucide="refresh-cw"></i></button></div>
-        <div class="notice research-notice">Ba proxy thay thế vai trò E3/E8/E9 từ dữ liệu ETH thật, đã tham gia Core 10. Trang này trình bày công thức, dữ liệu và đánh giá nghiên cứu của từng proxy.</div>
+        <div class="notice research-notice">Ba proxy thay thế vai trò E3/E8/E9 từ dữ liệu ETH thật, đã tham gia Core 10. Trang này giải thích ý nghĩa và hiển thị kết quả của từng chỉ số.</div>
         <div id="proxy-loading" class="loading" role="status">Đang xác minh metric mở rộng…</div>
         <div id="proxy-error" class="notice error" role="alert" hidden><span id="proxy-error-text"></span><button id="proxy-retry" class="text-button">Thử lại</button></div>
         <div id="proxy-content" hidden>
           <p id="proxy-freshness" class="small muted"></p>
           <div class="proxy-toolbar"><label for="proxy-date" class="small">Ngày quan sát · UTC <input id="proxy-date" type="date"></label><button id="proxy-latest" class="text-button">Ngày nguồn gần nhất</button><button id="proxy-export" class="text-button">Tải CSV</button></div>
           <div id="proxy-cards" class="proxy-cards"></div>
-          <div class="section-toolbar"><div><h2>Lịch sử ba proxy · 0–100</h2><p class="small muted">Reconstructed · q05/q95 chỉ dùng quá khứ · nhấn đường để chọn ngày</p></div><div class="segmented" role="group" aria-label="Khoảng lịch sử proxy"><button data-proxy-range="1y" aria-pressed="false">1 năm</button><button data-proxy-range="3y" aria-pressed="false">3 năm</button><button class="active" data-proxy-range="all" aria-pressed="true">Tất cả</button></div></div>
+          <div class="section-toolbar"><div><h2>Lịch sử ba proxy · 0–100</h2><p class="small muted">Nhấn đường để chọn ngày và xem kết quả.</p></div><div class="segmented" role="group" aria-label="Khoảng lịch sử proxy"><button data-proxy-range="1y" aria-pressed="false">1 năm</button><button data-proxy-range="3y" aria-pressed="false">3 năm</button><button class="active" data-proxy-range="all" aria-pressed="true">Tất cả</button></div></div>
           <div id="proxy-chart" class="history-chart" role="img" aria-label="Lịch sử điểm ba proxy ETH E3 E8 E9"></div>
           <h2>Đánh giá so với Core</h2><p id="proxy-evaluation" class="small muted"></p>
           <div class="table-wrap"><table><thead><tr><th>Proxy</th><th>AP riêng</th><th>AP Core</th><th>Δ AP khi ghép thử</th><th>CI 95%</th></tr></thead><tbody id="proxy-results"></tbody></table></div>
-          <p class="small muted">Phép ghép thử: 75% Core + 25% một proxy. Chênh lệch dùng cùng ngày và bootstrap ghép cặp 90 ngày, 10.000 lần. Công bố nghiên cứu không đồng nghĩa đã chứng minh khả năng dự báo hoặc tính độc lập.</p>
-          <p class="small muted">Nguồn: Coin Metrics Community · CC BY-NC 4.0 · SMA, tỷ số, log và chuẩn hóa do dự án thực hiện. Dữ liệu không được bảo đảm; native ETH L1 không bao quát toàn bộ hệ sinh thái.</p>
-          <div class="proxy-links"><a id="proxy-manifest" target="_blank" rel="noreferrer">Manifest & coverage</a><a id="proxy-research-json" target="_blank" rel="noreferrer">Báo cáo JSON</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-005-network-research-proxies.md" target="_blank" rel="noreferrer">Phương pháp & quyết định thay thế</a></div>
+          <p class="small muted">Bảng cho thấy kết quả khi ghép từng proxy với điểm Core. Chênh lệch quan sát được chưa chứng minh khả năng dự báo tốt hơn.</p>
+          <p class="small muted">Nguồn: Coin Metrics Community · CC BY-NC 4.0. Dữ liệu ETH L1 không bao quát toàn bộ hệ sinh thái.</p>
+          <div class="proxy-links" hidden><a id="proxy-manifest" target="_blank" rel="noreferrer">Manifest & coverage</a><a id="proxy-research-json" target="_blank" rel="noreferrer">Báo cáo JSON</a></div>
         </div>
       </section>
       <section id="view-diagnostics" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">ETH · NUPL / NGUỒN CUNG / SỐ DƯ SÀN</p><h1>Ba chỉ số chẩn đoán</h1></div><button id="diag-refresh" class="icon-button" aria-label="Cập nhật chỉ số chẩn đoán" title="Cập nhật chỉ số chẩn đoán"><i data-lucide="refresh-cw"></i></button></div>
-        <div class="notice research-notice">Giá trị dẫn xuất theo đơn vị gốc, có thể âm. Cả ba đã được chuẩn hóa riêng để tích hợp Core 10 trên Dashboard. E2 chia nhóm định giá với MVRV; nguồn cung/số dư sàn dùng giả thuyết có chiều ghi trong Phương pháp. Trang này giữ nguyên dữ liệu gốc để đối chiếu.</div>
+        <div class="notice research-notice">Giá trị gốc của ba chỉ số có thể âm. Bảng và biểu đồ giúp đối chiếu biến động theo ngày; điểm chuẩn hóa của chúng nằm trên Dashboard.</div>
         <div id="diag-loading" class="loading" role="status">Đang xác minh chỉ số chẩn đoán…</div>
         <div id="diag-error" class="notice error" role="alert" hidden><span id="diag-error-text"></span><button id="diag-retry" class="text-button">Thử lại</button></div>
         <div id="diag-content" hidden>
@@ -160,9 +158,9 @@
           <h2>Coverage & giới hạn</h2>
           <div class="table-wrap"><table><thead><tr><th>Chỉ số</th><th>Ngày hợp lệ</th><th>Ngày thiếu</th><th>Từ ngày</th><th>Ngày âm</th><th>Ngày có cờ nguồn</th></tr></thead><tbody id="diag-coverage"></tbody></table></div>
           <p class="small muted">C1/C2 cần đủ 31 ngày lịch từ t−30 đến t. Ngày thiếu được giữ trống, không điền giá trị hoặc làm mượt qua khoảng thiếu. Số dư sàn dùng nhãn địa chỉ được nhận diện; cờ flash có thể sửa hồi cứu. Không suy ra tổng nạp/rút từ thay đổi ròng.</p>
-          <p id="diag-lineage" class="small muted"></p>
+          <p id="diag-lineage" class="small muted" hidden></p>
           <p class="small muted">Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a> · NUPL và thay đổi 30 ngày do ECO dẫn xuất cho nghiên cứu phi thương mại. Native ETH L1, không bao quát toàn bộ hệ sinh thái. Dữ liệu không được bảo đảm.</p>
-          <div class="proxy-links"><a id="diag-manifest" target="_blank" rel="noreferrer">Manifest & snapshot</a><a id="diag-report" target="_blank" rel="noreferrer">Báo cáo coverage JSON</a><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-007-raw-eth-diagnostics.md" target="_blank" rel="noreferrer">Công thức & quyết định phương pháp</a></div>
+          <div class="proxy-links" hidden><a id="diag-manifest" target="_blank" rel="noreferrer">Manifest & snapshot</a><a id="diag-report" target="_blank" rel="noreferrer">Báo cáo coverage JSON</a></div>
         </div>
       </section>
       <section id="view-research" class="view" hidden>
@@ -171,37 +169,11 @@
         <div class="research-summary" id="research-summary"></div>
         <details id="baseline-details"><summary>Chi tiết kiểm định và các baseline lịch sử</summary>
           <div class="table-wrap"><table><thead><tr><th>Mô hình</th><th>Average Precision</th><th>Δ AP Core 10 − baseline</th><th>CI 95% · 10.000 lần</th></tr></thead><tbody id="extended-results"></tbody></table></div>
-          <p class="small muted">Cùng ngày, nhãn giảm ít nhất 50% trong 365 ngày kế tiếp, bootstrap ghép cặp 90 ngày. Các phiên bản cũ chỉ dùng làm baseline nghiên cứu; trọng số khóa trước kiểm định tổng hợp. <a id="extended-research-link" target="_blank" rel="noreferrer">Báo cáo Core 10, tương quan, ablation & regime</a></p>
+          <p class="small muted">Các phiên bản cũ giúp đối chiếu kết quả trên cùng giai đoạn. <a id="extended-research-link" hidden target="_blank" rel="noreferrer">Báo cáo Core 10</a></p>
         </details>
-        <div class="research-details"><section><h2>Protocol đã khóa</h2><p>Nhãn dương khi giá thấp nhất trong 365 ngày kế tiếp giảm ít nhất 50% so với giá đóng ngày đang xét. Chỉ đánh giá ngày có horizon hoàn tất.</p><p>Paired moving-block bootstrap 90 ngày, 10.000 lần, seed 20261003. Không tối ưu lại trọng số hoặc ngưỡng sau kết quả.</p></section><section><h2>Giới hạn bằng chứng</h2><p>Snapshot hiện tại không biết thời điểm nguồn từng sẵn có và các bản sửa đổi trong lịch sử. Backtest này không chứng minh hiệu quả realtime.</p><p>Không có mô hình xác suất, calibration hay chứng nhận giao dịch. Bản preview chưa có chuỗi vận hành shadow 30 ngày.</p></section></div>
+        <div class="research-details"><section><h2>Cách đọc kết quả</h2><p>Kiểm định xem điểm có phân biệt được những ngày trước một đợt giảm giá lớn trong 365 ngày kế tiếp. Kết quả chỉ áp dụng cho giai đoạn đã đánh giá.</p></section><section><h2>Giới hạn bằng chứng</h2><p>Snapshot hiện tại không biết thời điểm nguồn từng sẵn có và các bản sửa đổi trong lịch sử. Backtest này không chứng minh hiệu quả realtime.</p><p>Không có mô hình xác suất, calibration hay chứng nhận giao dịch. Bản preview chưa có chuỗi vận hành shadow 30 ngày.</p></section></div>
       </section>
-      <section id="view-methodology" class="view" hidden>
-        <div class="page-heading"><div><p class="eyebrow">PHƯƠNG PHÁP / DỮ LIỆU</p><h1>Mười thành phần của Core 10</h1></div><span class="badge">core-v0.2.0</span></div>
-        <div class="method-grid"><section><h2>Điểm đo điều gì?</h2><p>Mức tương đối của giá, định giá, khan hiếm nguồn cung, số dư sàn và hoạt động ETH so với lịch sử trước đó. Điểm cao biểu thị raw có chiều đã chọn nằm gần hoặc trên biên lịch sử cao. E2/E7 cùng họ MVRV; mười thành phần có tương quan, chưa chứng minh dự báo đỉnh.</p><p>Normalizer dùng q05/q95 tuyến tính của tối đa 1.460 ngày lịch trước, ít nhất 365 raw hợp lệ, loại ngày t khỏi fit. Thiếu bất kỳ thành phần bắt buộc thì Core 10 là null; không fill. Ba feature mới dùng lịch raw đầy đủ từ 30/07/2015.</p></section><section><h2>Trọng số và chế độ tùy chỉnh</h2><p>Giá 37,5%: E1/E5/E6 mỗi 12,5%. Định giá 37,5%: E7/E2 mỗi 18,75%. Mạng 25% chia đều bốn họ sàn/nguồn cung/địa chỉ/transfer; tỷ trọng sàn và thay đổi số dư sàn mỗi 3,125%, ba họ còn lại mỗi 6,25%.</p><p>C1 dùng âm % tăng cung: tăng cung ròng thấp → điểm khan hiếm cao. C2 tăng số dư sàn → điểm cao. Đây là giả thuyết nghiên cứu; London/Merge/Dencun và đổi nhãn sàn ảnh hưởng diễn giải. Tùy chỉnh dùng trọng số Core 10 trên tập đã chọn, chuẩn hóa tổng về 100%; tập rỗng hoặc metric thiếu → null.</p><p><a href="https://github.com/tnmjsc-hue/eco/blob/main/docs/ADR-008-core-ten-experimental.md" target="_blank" rel="noreferrer">Quyết định Core 10 & giả thuyết</a></p></section></div>
-        <div class="table-wrap"><table class="formula-table"><thead><tr><th>Thành phần</th><th>Công thức raw</th><th>Điều kiện</th></tr></thead><tbody>
-          <tr><td>E1 · MA Cycle</td><td><code>ln(SMA111(P) / (2 × SMA350(P)))</code></td><td>350 ngày giá liên tục</td></tr>
-          <tr><td>E5 · MA 2 năm</td><td><code>ln(P / SMA730(P))</code></td><td>730 ngày giá liên tục</td></tr>
-          <tr><td>E6 · Log Trend</td><td><code>ln(P) − a − b × ln(age)</code></td><td>OLS chỉ dữ liệu u &lt; t, ít nhất 730 giá; gốc 08/08/2015</td></tr>
-          <tr><td>E7 · MVRV Z</td><td><code>(M − M/V) / std(M trước t)</code></td><td>Population std, toàn bộ quá khứ, ít nhất 365 vốn hóa</td></tr>
-          <tr><td>E3 proxy · Tỷ trọng sàn</td><td><code>ln(SMA30(SplyExNtv / SplyCur))</code></td><td>Native ETH, nhãn ví sàn tạm thời, có thể sửa hồi cứu</td></tr>
-          <tr><td>E8 proxy · Cường độ địa chỉ</td><td><code>ln(SMA30(AdrActCnt) / AdrBalCnt)</code></td><td>Active/funded khác tập; địa chỉ không bằng người dùng</td></tr>
-          <tr><td>E9 proxy · Vốn hóa/lượt chuyển</td><td><code>ln(CapMrktCurUSD / SMA90(TxTfrCnt))</code></td><td>Số lượt native ETH, gồm internal transfers; không phải transfer value USD</td></tr>
-          <tr><td>E2 · NUPL</td><td><code>1 − 1/CapMVRVCur</code></td><td>Ratio có thể âm; chia ngân sách định giá với E7</td></tr>
-          <tr><td>C1 · Khan hiếm nguồn cung</td><td><code>−100 × (SplyCur(t)/SplyCur(t−30) − 1)</code></td><td>31 ngày liên tục; không tách gross issuance và burn</td></tr>
-          <tr><td>C2 · Biến động số dư sàn</td><td><code>SplyExNtv(t) − SplyExNtv(t−30)</code></td><td>31 ngày liên tục, ETH có thể âm; cờ flash và nhãn không đầy đủ</td></tr>
-        </tbody></table></div>
-        <div class="method-grid"><section><h2>Nguồn và quyền sử dụng</h2><p><a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data" target="_blank" rel="noreferrer">Coin Metrics Community Data</a>, ETH native mainnet, USD, daily UTC. P = PriceUSD, M = CapMrktCurUSD, V = CapMVRVCur. Raw được lưu riêng tư tại Cloudflare R2; website chỉ lấy JSON dẫn xuất tính sẵn từ Pages/CDN.</p><p>Dữ liệu và dẫn xuất công bố cho nghiên cứu phi thương mại theo <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noreferrer">CC BY-NC 4.0</a>. ECO đã chuẩn hóa và tổng hợp dữ liệu; Coin Metrics không bảo trợ ECO. Không bảo đảm tính chính xác hay phù hợp đầu tư.</p></section><section><h2>Ngày, lịch sử và phiên bản</h2><p>Ngày quan sát là ngày UTC của nguồn, kết thúc ở nửa đêm ngày kế tiếp. Chỉ dùng ngày đã đóng. Job chạy dự kiến 10:17 và kiểm tra lại 14:17 giờ Việt Nam; dữ liệu nguồn có thể đến chậm. Khi lỗi, giữ nguyên release hợp lệ và báo trạng thái.</p><p>Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.</p></section></div>
-        <h2>Mục tiêu nghiên cứu 9 metric</h2>
-        <div class="table-wrap"><table><thead><tr><th>Chỉ số</th><th>Vai trò</th><th>Trạng thái</th></tr></thead><tbody>
-          <tr><td>E1 / E5 / E6 / E7</td><td>4 thành phần Core</td><td><span class="status-pill ready">Đã tính</span></td></tr>
-          <tr><td>E2 · NUPL</td><td>Core 10 và raw diagnostic</td><td>Chia trọng số nhóm định giá, không thêm nhóm độc lập</td></tr>
-          <tr><td>E3 / E8 / E9 · proxy mới</td><td>Core 10</td><td>Ba phép dẫn xuất có lịch sử riêng; không tương đương RHODL/Dormancy/NVT gốc</td></tr>
-          <tr><td>C1 / C2</td><td>Nguồn cung / số dư sàn, Core 10</td><td>Chuẩn hóa từ raw đã xác minh; chiều tính là giả thuyết nghiên cứu</td></tr>
-          <tr><td>E4 · Fee Activity</td><td>Chỉ nghiên cứu</td><td>Đã backfill và đánh giá; kết quả hiện tại không đủ để thêm vào Core</td></tr>
-        </tbody></table></div>
-        <details><summary>Manifest và khả năng tái lập</summary><dl id="provenance" class="provenance"></dl><a id="manifest-link" class="text-button" target="_blank" rel="noreferrer"><i data-lucide="file-json"></i>Manifest JSON</a></details>
-      </section>
-      <footer><div><strong>ECO</strong><span>Ethereum · Nghiên cứu phi thương mại</span></div><p>Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data">Coin Metrics Community</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a> · Dữ liệu đã chuyển đổi, không được bảo đảm.</p><a href="https://github.com/tnmjsc-hue/eco" target="_blank" rel="noreferrer">Mã nguồn & báo cáo <i data-lucide="arrow-up-right"></i></a></footer>
+      <footer><div><strong>ECO</strong><span>Ethereum · Nghiên cứu phi thương mại</span></div><p>Nguồn: <a href="https://docs.coinmetrics.io/packages/coin-metrics-community-data">Coin Metrics Community</a> · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a> · Dữ liệu đã chuyển đổi, không được bảo đảm.</p></footer>
     </div>
     <noscript>Dashboard cần JavaScript. Bản dữ liệu công khai: <a href="/data/core-v2/latest.json">release pointer Core 10</a>.</noscript>
   </main>

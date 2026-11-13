@@ -1,4 +1,4 @@
-import { translate as t, numberLocale } from './i18n.js?v=prob-20261009a';
+import { translate as t, numberLocale } from './i18n.js?v=ui-20261113a';
 import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=prob-20261009a';
 import {refreshMacro,renderMacro} from './macro.js?v=prob-20261009a';
 import {refreshMarket,renderMarket} from './macro-market.js?v=prob-20261009a';
