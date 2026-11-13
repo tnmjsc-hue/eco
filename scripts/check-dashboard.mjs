@@ -94,7 +94,9 @@ try {
   await page.locator('#baseline-details summary').click();
   assert.equal(await page.locator('#extended-results tr').count(),5);
   await page.screenshot({ path: 'test-results/research-1440.png', fullPage: true });
-  await page.locator('[data-view="methodology"]').click();
+  assert.equal(await page.locator('[data-view="methodology"]').isVisible(), false);
+  await page.goto(new URL('#methodology', url).href);
+  await page.reload({ waitUntil: 'networkidle' });
   await page.locator('summary').last().click();
   assert.ok((await page.locator('#provenance').innerText()).includes(manifest.protocol_sha256));
   await page.screenshot({ path: 'test-results/methodology-1440.png', fullPage: true });
