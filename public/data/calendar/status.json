@@ -1,1 +1,1 @@
-{"failed_sources":["bls_data"],"failure_codes":{"bls_data":"http_503"},"last_attempt_at":"2026-11-12T21:04:29.087166Z","last_good_retained":true,"outcome":"source_error","schema_version":"1.0.0"}
+{"last_success_at":"2026-11-13T07:14:04.511679Z","outcome":"ok","schema_version":"1.0.0"}
