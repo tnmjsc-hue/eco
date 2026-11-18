@@ -2,6 +2,8 @@
 
 Protocol `macro-market-v1.0.0`, schema `macro-market-v1.0.0`. Đây là sidecar độc lập; không sửa `macro-cross-v1.0.1`, assessment/ledger đã phát hành hoặc Core 10. Chốt protocol trước triển khai theo §16 của đặc tả macro.
 
+Nguồn tham chiếu bên ngoài cho kỳ vọng Fed và giá chuẩn vàng đã được rà riêng trong [MACRO_GOLD_SOURCES.md](MACRO_GOLD_SOURCES.md). UI chỉ liên kết tới trang gốc vì quyền hiển thị lại số chưa xác minh; hai nguồn đó không đổi registry hoặc payload của sidecar v1.
+
 ## Nguồn, quyền và phạm vi
 
 | Metric ID | Nguồn cố định | Đơn vị | Tuổi tối đa |

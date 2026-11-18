@@ -1,8 +1,8 @@
-import { translate as t, numberLocale } from './i18n.js?v=ui-20261113c';
+import { translate as t, numberLocale } from './i18n.js?v=gold-sources-1';
 import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=prob-20261009a';
-import {refreshMacro,renderMacro} from './macro.js?v=prob-20261009a';
-import {refreshMarket,renderMarket} from './macro-market.js?v=prob-20261009a';
-import {refreshProbability,renderProbability} from './macro-probability.js?v=prob-20261009a';
+import {refreshMacro,renderMacro} from './macro.js?v=gold-sources-1';
+import {refreshMarket,renderMarket} from './macro-market.js?v=gold-sources-1';
+import {refreshProbability,renderProbability} from './macro-probability.js?v=gold-sources-1';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };

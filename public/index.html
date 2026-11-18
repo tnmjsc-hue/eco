@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=ui-20261113a">
+  <link rel="stylesheet" href="/styles.css?v=gold-sources-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=ui-20261113b"></script>
+  <script type="module" src="/app.js?v=gold-sources-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -81,6 +81,7 @@
             <div id="market-content" hidden><p id="market-date" class="small muted"></p>
               <div class="table-wrap"><table class="macro-table"><thead><tr><th>Thước đo</th><th>Giá trị / ngày</th><th>Thay đổi giữa hai ngày</th></tr></thead><tbody id="market-rows"></tbody></table></div>
               <p class="small muted">Lợi suất: 1 bps = 0,01 điểm phần trăm. USD broad là chỉ số Fed, khác DXY; H.10 công bố trễ. ETH là giá đóng ngày UTC. Các thước đo có thể khác ngày; xem từng cặp ngày.</p>
+              <div class="gold-source-links"><h3>Nguồn tham chiếu vàng và kỳ vọng Fed</h3><p class="small">Các liên kết sau mở dữ liệu tại nhà cung cấp. Chưa nhập giá vàng hoặc xác suất lãi suất vào kết luận vàng của ECO.</p><ul class="small"><li><a href="https://www.atlantafed.org/research-and-data/data/market-probability-tracker" target="_blank" rel="noreferrer">Atlanta Fed · Market Probability Tracker ↗</a> — kỳ vọng từ quyền chọn SOFR cho các quý tới; không phải xác suất của riêng cuộc họp FOMC kế tiếp.</li><li><a href="https://www.lbma.org.uk/prices-and-data/precious-metal-prices" target="_blank" rel="noreferrer">LBMA · Gold Price ↗</a> — giá chuẩn vàng London công bố trễ; việc hiển thị lại giá cần quyền dữ liệu phù hợp.</li></ul></div>
               <p class="small"><strong>Consensus trước tin: chưa khả dụng.</strong> Chưa có nguồn được phép hiển thị và snapshot dự báo được ghi nhận trước công bố. Không dùng kỳ trước làm dự báo.</p>
               <p class="small"><strong>Phản ứng quanh giờ công bố: chưa đo được.</strong> Chưa có cửa sổ giá intraday trước/sau thời điểm công bố thực. Biến động theo ngày bên trên không chứng minh do sự kiện gây ra.</p>
               <div class="proxy-links" hidden><a id="market-download" target="_blank" rel="noreferrer">Tải số đo JSON</a><a id="market-manifest" target="_blank" rel="noreferrer">Nguồn và hash số đo</a></div>

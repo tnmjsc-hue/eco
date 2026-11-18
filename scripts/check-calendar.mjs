@@ -33,6 +33,9 @@ try{
   assert.equal(await page.locator('#cal-error').isVisible(),false);
   assert.equal(await page.locator('#cal-indicators article').count(),5);
   assert.equal(await page.locator('#macro-assets article').count(),3);
+  assert.match(await page.locator('#macro-assets article').nth(1).innerText(),/Chưa đưa vào kết luận/);
+  assert.equal(await page.locator('.gold-source-links a[href="https://www.atlantafed.org/research-and-data/data/market-probability-tracker"]').count(),1);
+  assert.equal(await page.locator('.gold-source-links a[href="https://www.lbma.org.uk/prices-and-data/precious-metal-prices"]').count(),1);
   assert.equal(await page.locator('#macro-axes>div').count(),3);
   const identity=await page.locator('#macro-content').getAttribute('data-assessment-id');
   const context=await page.locator('#macro-regime').innerText();
