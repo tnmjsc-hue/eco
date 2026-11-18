@@ -1,9 +1,9 @@
 import { REASONS, displayScore, scoreColor, dateMinus } from './data-model.js?v=dashboard-1';
-import { initProxies, resizeProxies } from './proxies.js?v=gold-sources-1';
-import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=gold-sources-1';
+import { initProxies, resizeProxies } from './proxies.js?v=macro-scenario-1';
+import { initDiagnostics, resizeDiagnostics } from './diagnostics.js?v=macro-scenario-1';
 import { CORE_METRICS, CORE_VERSION, coreScore, validateCorePointer, validateCore, validateCoreParents, exportCoreCSV } from './core-model.js?v=core-ten-only-1';
-import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=gold-sources-1';
-import { initCalendar, openCalendar } from './calendar.js?v=gold-sources-1';
+import { initLanguage, numberLocale, relativeDaysAgo, translate } from './i18n.js?v=macro-scenario-1';
+import { initCalendar, openCalendar } from './calendar.js?v=macro-scenario-1';
 
 const $ = id => document.getElementById(id);
 const fmt = (number, digits = 2) => number === null ? '—' : number.toLocaleString(numberLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });

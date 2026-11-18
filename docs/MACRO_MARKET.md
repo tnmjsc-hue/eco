@@ -2,6 +2,12 @@
 
 Protocol `macro-market-v1.0.0`, schema `macro-market-v1.0.0`. Đây là sidecar độc lập; không sửa `macro-cross-v1.0.1`, assessment/ledger đã phát hành hoặc Core 10. Chốt protocol trước triển khai theo §16 của đặc tả macro.
 
+## Kiểm tra lệch hướng ngày 2026-11-18
+
+Assessment `macro-f5c924c5aa389daa473d` ở `2026-11-17T21:54Z` là R04/partial: USD `adverse`, Gold và crypto `supportive`. Đây là kết quả tất định của bảng I-/A+ trong `macro-cross-v1.0.1`, không phải xu hướng kỹ thuật hay phản ứng giá. Sidecar `market-e63f8546a8321064bb5a` cùng thời điểm có USD broad +0,0873% (12→13/11), ETH -0,6407% (15→16/11), lợi suất thực 10 năm +1 bps (13→16/11). Các hướng này không ủng hộ việc đọc nhãn tài sản như hướng thị trường hiện tại. Gold chưa có giá được phép công bố; Fed expectations và event window cũng chưa được đo. USD broad là Fed H.10, không phải DXY và công bố trễ.
+
+Giao diện nay đặt tên rõ là **kịch bản từ số liệu kinh tế**, hiển thị các thay đổi theo ngày đã xác minh cùng ngày quan sát ngay trước card tài sản, và không dùng màu xanh/đỏ cho nhãn kịch bản. Nếu market status lỗi/quá hạn, phần đối chiếu nói rõ đây là bản giữ tại ngày gốc. Không tự sửa kết luận v1 hoặc assessment/ledger cũ: muốn hợp nhất real yield, USD, giá vàng, ETH và kỳ vọng Fed phải có nguồn/quyền, cửa sổ thời gian thống nhất, ngưỡng, backtest và ruleset version mới. Lựa chọn đảo nhãn theo giá mới nhất bị loại vì các chuỗi đang khác ngày và không chứng minh nguyên nhân sự kiện.
+
 Nguồn tham chiếu bên ngoài cho kỳ vọng Fed và giá chuẩn vàng đã được rà riêng trong [MACRO_GOLD_SOURCES.md](MACRO_GOLD_SOURCES.md). UI chỉ liên kết tới trang gốc vì quyền hiển thị lại số chưa xác minh; hai nguồn đó không đổi registry hoặc payload của sidecar v1.
 
 ## Nguồn, quyền và phạm vi

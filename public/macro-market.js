@@ -1,5 +1,5 @@
 import {loadMarket} from './macro-market-model.js?v=prob-20261009a';
-import {translate as t,numberLocale} from './i18n.js?v=gold-sources-1';
+import {translate as t,numberLocale} from './i18n.js?v=macro-scenario-1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=s=>esc(t(s));
@@ -10,10 +10,14 @@ const day=iso=>iso?new Intl.DateTimeFormat(numberLocale(),{timeZone:'UTC',dateSt
 const timestamp=iso=>new Intl.DateTimeFormat(numberLocale(),{timeZone:$('cal-zone').value,dateStyle:'medium',timeStyle:'short'}).format(new Date(iso));
 const num=value=>value===null?'—':Number(value).toLocaleString(numberLocale(),{maximumFractionDigits:4});
 export function renderMarket(){
-  if(!good){$('market-error').hidden=false;$('market-error').textContent=t(warning||'Đang xác minh số đo thị trường…');return;}
+  if(!good){$('market-error').hidden=false;$('market-error').textContent=t(warning||'Đang xác minh số đo thị trường…');$('macro-market-check').textContent=t('Chưa có số đo thị trường đã xác minh để đối chiếu kịch bản tài sản.');return;}
   const {data:d,status,pointer}=good;
   const age=Date.now()-Date.parse(status.checked_at);
   const outdated=!!warning||status.outcome==='error'||age<0||age>48*3600000;
+  const usable=id=>d.metrics.find(m=>m.metric_id===id&&m.status==='measured'&&m.change!==null&&m.latest_date&&Date.parse(`${m.latest_date}T00:00:00Z`)<=Date.now()&&((Date.now()-Date.parse(`${m.latest_date}T00:00:00Z`))/86400000)<=m.max_age_days);
+  const observation=(id,name,unit)=>{const m=usable(id);if(!m)return null;const change=Number(m.change);const direction=t(change>0?'tăng':change<0?'giảm':'ít đổi');return `${t(name)} ${direction} ${num(Math.abs(change))} ${unit} (${day(m.previous_date)} → ${day(m.latest_date)})`;};
+  const observed=[observation('usd_broad','USD broad','%'),observation('eth_usd','ETH / USD','%'),observation('real_yield_10y','Lợi suất thực Mỹ 10 năm','bps')].filter(Boolean);
+  $('macro-market-check').textContent=outdated?t('Bản số đo thị trường đang được giữ tại ngày gốc; chưa dùng để đối chiếu kịch bản hiện tại.'):observed.length?`${t('Số đo theo ngày đã xác minh')}: ${observed.join(' · ')}. ${t('Các ngày khác nhau và không đo phản ứng quanh giờ tin; chưa có giá vàng được phép hiển thị.')}`:t('Chưa có số đo thị trường đã xác minh để đối chiếu kịch bản tài sản.');
   $('market-error').hidden=!outdated;$('market-error').textContent=t(warning||'Giữ số đo tại ngày gốc; lần kiểm tra nguồn mới nhất chưa thành công hoặc đã quá hạn.');
   $('market-content').hidden=false;$('market-content').dataset.releaseId=d.release_id;
   $('market-date').textContent=`${t('Snapshot thị trường')}: ${timestamp(d.generated_at)} · ${t('Kiểm tra nguồn')}: ${timestamp(status.checked_at)}`;

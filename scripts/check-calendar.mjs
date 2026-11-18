@@ -33,6 +33,10 @@ try{
   assert.equal(await page.locator('#cal-error').isVisible(),false);
   assert.equal(await page.locator('#cal-indicators article').count(),5);
   assert.equal(await page.locator('#macro-assets article').count(),3);
+  assert.match(await page.locator('#macro-heading').innerText(),/chưa phải xu hướng giá/);
+  assert.match(await page.locator('#macro-market-check').innerText(),/USD broad (tăng|giảm|ít đổi).*ETH \/ USD (tăng|giảm|ít đổi).*Lợi suất thực Mỹ 10 năm (tăng|giảm|ít đổi)/);
+  assert.match(await page.locator('#macro-market-check').innerText(),/không đo phản ứng quanh giờ tin/);
+  assert.match(await page.locator('#macro-content').innerText(),/không dùng làm nhận định thị trường hiện tại/);
   assert.match(await page.locator('#macro-assets article').nth(1).innerText(),/Chưa đưa vào kết luận/);
   assert.equal(await page.locator('.gold-source-links a[href="https://www.atlantafed.org/research-and-data/data/market-probability-tracker"]').count(),1);
   assert.equal(await page.locator('.gold-source-links a[href="https://www.lbma.org.uk/prices-and-data/precious-metal-prices"]').count(),1);
@@ -91,6 +95,7 @@ try{
   await page.locator('#cal-refresh').click();await page.locator('#prob-error').waitFor({state:'hidden'});
   await page.route('**/data/macro-market/latest.json',r=>r.abort());
   await page.locator('#cal-refresh').click();await page.locator('#market-error').waitFor({state:'visible'});
+  assert.match(await page.locator('#macro-market-check').innerText(),/giữ tại ngày gốc/);
   assert.equal(await page.locator('#market-date').innerText(),marketDate);
   assert.equal(await page.locator('#market-content').getAttribute('data-release-id'),marketIdentity);
   assert.ok((await page.locator('#market-rows').innerText()).includes('Bản giữ tại ngày gốc'),await page.locator('#market-rows').innerText());

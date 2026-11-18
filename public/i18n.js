@@ -1,4 +1,4 @@
-import dictionaries from './translations.json?v=gold-sources-1' with { type: 'json' };
+import dictionaries from './translations.json?v=macro-scenario-1' with { type: 'json' };
 
 const languageCodes = ['en', 'vi', 'ko', 'ru', 'hi', 'tr', 'pt-BR', 'en-NG'];
 const localeCodes = { en: 'en-US', vi: 'vi-VN', ko: 'ko-KR', ru: 'ru-RU', hi: 'hi-IN', tr: 'tr-TR', 'pt-BR': 'pt-BR', 'en-NG': 'en-NG' };

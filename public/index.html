@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=gold-sources-1">
+  <link rel="stylesheet" href="/styles.css?v=macro-scenario-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=gold-sources-1"></script>
+  <script type="module" src="/app.js?v=macro-scenario-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -61,7 +61,7 @@
         <div id="cal-content" hidden>
           <p id="cal-freshness" class="small muted" role="status"></p>
           <section class="macro-panel" aria-labelledby="macro-heading">
-            <div class="section-toolbar"><h2 id="macro-heading">Đánh giá chéo vĩ mô mới nhất</h2><span id="macro-grade" class="badge"></span></div>
+            <div class="section-toolbar"><h2 id="macro-heading">Đánh giá số liệu kinh tế · chưa phải xu hướng giá</h2><span id="macro-grade" class="badge"></span></div>
             <p id="macro-loading" role="status">Đang xác minh đánh giá macro…</p>
             <p id="macro-error" class="notice error" role="alert" hidden></p>
             <div id="macro-content" hidden>
@@ -70,8 +70,11 @@
               <div class="table-wrap"><table class="macro-table"><tbody id="macro-latest-rows"></tbody></table></div><p id="macro-latest-note" class="small muted"></p>
               <details class="macro-peers"><summary>2. Đối chiếu các chỉ số khác · cùng hướng, mâu thuẫn và thiếu</summary><div class="table-wrap"><table class="macro-table"><tbody id="macro-peers"></tbody></table></div></details>
               <h3>3. Bối cảnh chung</h3><p id="macro-regime" class="macro-regime"></p><div id="macro-axes" class="macro-axes"></div><p id="macro-context-note" class="small"></p>
-              <h3>4. Tác động tài sản có điều kiện</h3><div id="macro-assets" class="macro-assets"></div>
-              <p class="small muted">Đánh giá này so với kỳ trước. Số đo thị trường, consensus và phạm vi phản ứng được trình bày riêng bên dưới.</p>
+              <h3>4. Kịch bản tài sản từ số liệu kinh tế</h3>
+              <p class="small">Các nhãn dưới đây chỉ suy từ số liệu kinh tế so với kỳ trước. Chúng chưa kiểm tra xu hướng giá, kỳ vọng Fed hay phản ứng quanh giờ công bố; không dùng làm nhận định thị trường hiện tại.</p>
+              <p id="macro-market-check" class="notice" role="status">Đang đối chiếu số đo thị trường theo ngày…</p>
+              <div id="macro-assets" class="macro-assets"></div>
+              <p class="small muted">Số đo USD và ETH có thể trái với kịch bản này. Mỗi chuỗi có ngày quan sát riêng ở bảng bên dưới; vàng chưa có giá được phép hiển thị.</p>
               <details class="macro-details" hidden><summary>Chi tiết kỹ thuật</summary><ul id="macro-rules"></ul><p id="macro-provenance" class="small"></p><p id="macro-exclusions" class="small muted"></p><div class="proxy-links" hidden><a id="macro-download" target="_blank" rel="noreferrer">Tải đánh giá JSON</a><a id="macro-manifest" target="_blank" rel="noreferrer">Manifest và input đã xác minh</a></div><p class="small muted">Snapshot hiện tại có thể chứa số liệu đã sửa đổi. Ngày lịch, kỳ quan sát, thời điểm biết dữ liệu và thời điểm xuất đánh giá khác nhau. Không dùng snapshot này để suy ra hệ thống đã biết số vào thời điểm công bố lịch sử.</p></details>
             </div>
           </section>
