@@ -1,1 +1,1 @@
-{"failed_sources":["dol_schedule"],"failure_codes":{"dol_schedule":"http_502"},"last_attempt_at":"2026-11-23T08:10:12.445359Z","last_good_retained":true,"outcome":"source_error","schema_version":"1.0.0"}
+{"last_success_at":"2026-11-24T01:11:43.636565Z","outcome":"ok","schema_version":"1.0.0"}
