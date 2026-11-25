@@ -1,4 +1,4 @@
-import {translate as t,numberLocale} from './i18n.js?v=macro-scenario-1';
+import {translate as t,numberLocale} from './i18n.js?v=calendar-forex-factory-1';
 import {loadAssessment,METRICS} from './macro-model.js?v=prob-20261009a';
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

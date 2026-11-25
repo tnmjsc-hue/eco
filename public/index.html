@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=macro-scenario-1">
+  <link rel="stylesheet" href="/styles.css?v=calendar-forex-factory-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=macro-scenario-1"></script>
+  <script type="module" src="/app.js?v=calendar-forex-factory-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -55,7 +55,10 @@
       <section id="view-calendar" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">USD · GOLD · CRYPTO</p><h1>Lịch kinh tế</h1><p class="small muted">Các sự kiện vĩ mô Mỹ từ BLS, BEA, Fed và DOL</p></div><button id="cal-refresh" class="icon-button" aria-label="Cập nhật lịch kinh tế"><i data-lucide="refresh-cw"></i></button></div>
         <div class="notice research-notice">Lịch chính thức, giờ Việt Nam mặc định. Mức ảnh hưởng do ECO phân loại. Đánh giá là kịch bản có điều kiện; chưa có dự báo đồng thuận hoặc mô hình xác suất.</div>
-        <details id="cal-mql5" class="cal-external"><summary>Lịch mở rộng MQL5 · nhiều thị trường, thực tế và dự báo</summary><p class="small muted">MQL5 hạn chế hiển thị lịch trong khung nhúng ở một số trình duyệt. Mở trang chính thức trong tab mới để xem dữ liệu toàn cầu, thực tế, dự báo và kỳ trước.</p><p><a class="text-button" href="https://www.mql5.com/en/economic-calendar" target="_blank" rel="noopener noreferrer">Mở lịch đầy đủ tại MQL5 ↗</a></p></details>
+        <div class="cal-external">
+          <a id="cal-forex-factory" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer"><span>Mở lịch Forex Factory Live (tab mới)</span> <span aria-hidden="true">↗</span></a>
+          <p class="small muted">Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.</p>
+        </div>
         <div id="cal-loading" class="loading" role="status">Đang xác minh lịch kinh tế…</div>
         <div id="cal-error" class="notice error" role="alert" hidden><span id="cal-error-text"></span><button id="cal-retry" class="text-button">Thử lại</button></div>
         <div id="cal-content" hidden>
