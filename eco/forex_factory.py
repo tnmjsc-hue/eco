@@ -1,13 +1,14 @@
 """Fetch and publish verified Forex Factory calendar snapshots without changing macro inputs."""
 
 import argparse
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 import gzip
 import html
 import json
 from pathlib import Path
 import re
 import urllib.request
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .calendar import ROOT, UTC, backup_snapshot, digest, encode, retry_transient, safe_failure_code, stamp, write_json
 
@@ -70,6 +71,11 @@ def parse_calendar(body, charset, start, end):
     day_count = (end - start).days + 1
     if len(days) != day_count:
         raise ForexFactoryError("date_coverage_mismatch", "Forex Factory date coverage mismatch")
+    zone_match = re.search(r"timezone_name:\s*'([A-Za-z0-9_+/-]+)'", page)
+    try:
+        source_zone = ZoneInfo(zone_match[1]) if zone_match else None
+    except ZoneInfoNotFoundError:
+        source_zone = None
     events = []
     ids = set()
     for offset, entry in enumerate(days):
@@ -77,10 +83,7 @@ def parse_calendar(body, charset, start, end):
         month = MONTHS[day.month - 1]
         if not re.fullmatch(rf"[A-Za-z]{{3}} <span>{month} {day.day}</span>", entry["date"]):
             raise ForexFactoryError("date_coverage_mismatch", "Forex Factory date coverage mismatch")
-        day_epoch = entry["dateline"]
-        next_epoch = days[offset + 1]["dateline"] if offset + 1 < day_count else day_epoch + 25 * 3600
-        if type(day_epoch) is not int or type(next_epoch) is not int or next_epoch - day_epoch not in {23 * 3600, 24 * 3600, 25 * 3600}:
-            raise ForexFactoryError("invalid_day_boundary", "invalid calendar day boundary")
+        utc_day = datetime.combine(day, time.min, UTC)
         for row in entry["events"]:
             event_id = row["id"]
             currency = row["currency"]
@@ -93,10 +96,18 @@ def parse_calendar(body, charset, start, end):
                     or not re.fullmatch(r"[A-Z]{3}|All", currency)
                     or impact not in IMPACTS or not title
                     or type(masked) is not bool or type(expects_actual) is not bool or type(row["leaked"]) is not bool
-                    or type(event_epoch) is not int):
+                    or (not masked and type(event_epoch) is not int)):
                 raise ForexFactoryError("invalid_event", "invalid or duplicate Forex Factory event")
-            if not day_epoch <= event_epoch < next_epoch:
-                raise ForexFactoryError("event_outside_day", "Forex Factory event epoch is outside its calendar day")
+            # Day header epochs are display metadata. Only the timed event epoch
+            # defines the instant. Masked times keep the source's labelled date.
+            scheduled_at = None
+            if not masked:
+                instant = datetime.fromtimestamp(event_epoch, UTC)
+                same_day = (instant.astimezone(source_zone).date() == day if source_zone else
+                            utc_day - timedelta(hours=14) <= instant < utc_day + timedelta(hours=36))
+                if not same_day:
+                    raise ForexFactoryError("event_outside_day", "Forex Factory event epoch is outside its calendar day")
+                scheduled_at = stamp(instant)
             if row["date"] != f"{month} {day.day}, {day.year}":
                 raise ForexFactoryError("event_date_mismatch", "Forex Factory event date does not match its calendar day")
             ids.add(event_id)
@@ -110,7 +121,7 @@ def parse_calendar(body, charset, start, end):
                 "currency": currency,
                 "impact": impact,
                 "source_day": day.isoformat(),
-                "scheduled_at": None if masked else stamp(datetime.fromtimestamp(event_epoch, UTC)),
+                "scheduled_at": scheduled_at,
                 "time_label": clean_text(row["timeLabel"], 48) if masked else None,
                 "expects_actual": expects_actual,
                 "actual": None if row["leaked"] else actual,

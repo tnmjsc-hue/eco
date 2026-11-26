@@ -24,10 +24,11 @@ def page(**updates):
     event.update(updates)
     days = [
         {"date": "Thu <span>Nov 26</span>", "dateline": MIDNIGHT, "events": [event]},
-        {"date": "Fri <span>Nov 27</span>", "dateline": MIDNIGHT + 86400, "events": []},
+        {"date": "Fri <span>Nov 27</span>", "dateline": None, "events": []},
     ]
     return (
-        "<script>window.calendarComponentStates[1] = {\ndays: "
+        "<script>window.calendarSettings = {timezone_name: 'UTC'};\n"
+        "window.calendarComponentStates[1] = {\ndays: "
         + json.dumps(days)
         + ', time: "ignored"};</script><tr data-event-id="123"></tr>'
     ).encode()
