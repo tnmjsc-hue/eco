@@ -1,6 +1,6 @@
 import { translate as t, numberLocale } from './i18n.js?v=calendar-vn-days-1';
 import { VIETNAM_TIME_ZONE, validateCalendar } from './calendar-model.js?v=calendar-vn-days-1';
-import { initForexCalendar, refreshForexCalendar } from './forex-factory.js?v=calendar-vn-days-1';
+import { initForexCalendar, refreshForexCalendar } from './forex-factory.js?v=calendar-row-link-1';
 import {refreshMacro,renderMacro} from './macro.js?v=calendar-vn-days-1';
 import {refreshMarket,renderMarket} from './macro-market.js?v=calendar-vn-days-1';
 import {refreshProbability,renderProbability} from './macro-probability.js?v=calendar-vn-days-1';

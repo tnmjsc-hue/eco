@@ -2,7 +2,6 @@ import { translate as t, numberLocale } from './i18n.js?v=calendar-vn-days-1';
 import { VIETNAM_TIME_ZONE, dayInZone, selectEvents, groupCalendarDays } from './calendar-model.js?v=calendar-vn-days-1';
 import { verifyForexPointer, verifyForexCalendar, forexEventStatus } from './forex-factory-model.js?v=forex-factory-feed-1';
 
-const SOURCE = 'https://calendar.forexfactory.com';
 const REFRESH_MS = 60_000;
 const labels = {
   released: 'Đã có số liệu',
@@ -160,13 +159,6 @@ function render() {
       button.dataset.calEvent = String(event.id);
       button.setAttribute('aria-pressed',String(event.id === state.selected));
       name.append(button);
-      if (event.source_path) {
-        const link = node('a','Forex Factory ↗');
-        link.href = SOURCE + event.source_path;
-        link.target = '_blank';
-        link.rel = 'noreferrer';
-        name.append(link);
-      }
       row.append(name);
       addReading(row,'actual','Thực tế',event);
       addReading(row,'forecast','Dự báo',event);

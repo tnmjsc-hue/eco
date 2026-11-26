@@ -56,6 +56,7 @@ try{
   await currencyFilter.selectOption(foreignCurrency);
   const matchingRows = page.locator('#cal-rows tr[data-ff-event]');
   assert.ok(await matchingRows.count() > 0);
+  assert.equal(await page.locator('#cal-rows .cal-event a').count(),0);
   assert.ok((await matchingRows.locator('td:nth-child(2)').allTextContents()).every(c => c === foreignCurrency));
   assert.ok((await matchingRows.locator('td:nth-child(5)').allTextContents()).some(actual => actual !== '—'));
   await currencyFilter.selectOption('all');

@@ -1,5 +1,7 @@
 # Bàn giao triển khai ETH Cycle Index
 
+**CAL-FOREX-FACTORY-ROW-LINK — LOCAL_VERIFIED (2026-11-26):** Bỏ nhãn và liên kết Forex Factory trong từng hàng. Tên sự kiện tiếp tục là nút chọn để theo dõi. URL nguồn vẫn thuộc hợp đồng dữ liệu forex-factory-calendar-v1.0.0. CSS và chuỗi cache module được cập nhật, browser check xác nhận không có thẻ liên kết trong cột sự kiện. Local oracle 17/17, Node 48/48, validator, syntax, diff check và browser lịch/Dashboard bốn viewport đạt. Snapshot ff-calendar-c80510e1492f8f94b215. Không sửa assessment hay lịch sử điểm. Kế tiếp xác minh CI và Cloudflare Pages.
+
 **CAL-FOREX-FACTORY-DAYS — LOCAL_VERIFIED (2026-11-26):** Bảng Forex Factory nhóm theo ngày Việt Nam UTC+7, dùng tiêu đề có thứ và ngày, xếp giờ tăng dần trong nhóm. Tin cả ngày hoặc chưa rõ giờ nằm đầu nhóm theo ngày nguồn. Cố định UTC+7 cho khung ngày, hiển thị giờ và mốc tải trong tab. Giữ hợp đồng dữ liệu forex-factory-calendar-v1.0.0 và macro-cross-v1.0.1. Mô hình và lịch sử điểm không đổi.
 
 - Worktree từ origin/main c61265f, snapshot ff-calendar-c80510e1492f8f94b215. Sửa HTML/CSS, model lọc và nhóm ngày, render lịch, timestamp giao diện macro, i18n/cache, browser check, Node test và runbook. Oracle 17/17, Python macro 81/81, Python toàn bộ 200/200, Node 48/48, validator nghiên cứu, JS syntax và diff check đạt. Browser local đạt 1440/768/390/360, tám ngôn ngữ. Ép trình duyệt New York và xác minh sự kiện qua 17:00 UTC nằm đúng nhóm Việt Nam. Đếm ngược, bộ lọc, checksum và Dashboard qua hồi quy. Kế tiếp xác minh deploy Pages và hai hostname.
