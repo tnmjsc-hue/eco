@@ -53,7 +53,7 @@ class ForexFactoryTests(TestCase):
             ff.parse_calendar(page(), "utf-8", START, START)
         with self.assertRaisesRegex(ValueError, "visible calendar"):
             ff.parse_calendar(page().replace(b'event-id="123"', b'event-id="456"'), "utf-8", START, END)
-        with self.assertRaisesRegex(ValueError, "invalid or duplicate"):
+        with self.assertRaisesRegex(ValueError, "outside its calendar day"):
             ff.parse_calendar(page(dateline=MIDNIGHT + 86400), "utf-8", START, END)
 
     def test_revision_unchanged_replay_and_failed_backup_leave_good_pointer(self):
