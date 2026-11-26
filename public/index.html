@@ -7,7 +7,7 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=calendar-row-link-1">
+  <link rel="stylesheet" href="/styles.css?v=calendar-no-live-panel-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
   <script type="module" src="/app.js?v=calendar-row-link-1"></script>
@@ -54,10 +54,6 @@
       </section>
       <section id="view-calendar" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">USD · GOLD · CRYPTO</p><h1>Lịch kinh tế</h1><p class="small muted">Lịch vĩ mô toàn cầu từ Forex Factory</p></div><button id="cal-refresh" class="icon-button" aria-label="Cập nhật lịch kinh tế"><i data-lucide="refresh-cw"></i></button></div>
-        <div class="cal-external">
-          <a id="cal-forex-factory" href="https://calendar.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer"><span>Mở lịch Forex Factory Live (tab mới)</span> <span aria-hidden="true">↗</span></a>
-          <p class="small muted">Bảng ECO cập nhật theo đợt. Mở lịch nguồn để theo dõi số liệu trực tiếp.</p>
-        </div>
         <p id="ff-loading" class="loading" role="status">Đang xác minh lịch Forex Factory…</p>
         <div id="ff-error" class="notice error" role="alert" hidden><span id="ff-error-text"></span> <button id="ff-retry" class="text-button">Thử lại</button></div>
         <section id="ff-content" aria-label="Lịch vĩ mô toàn cầu từ Forex Factory" hidden>

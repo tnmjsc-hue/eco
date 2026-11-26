@@ -32,21 +32,8 @@ try{
   const marketIdentity=await page.locator('#market-content').getAttribute('data-release-id');
   assert.equal(await page.locator('#macro-error').isVisible(),false,await page.locator('#macro-error').textContent());
   assert.equal(await page.locator('#cal-error').isVisible(),false);
-  const forexFactoryUrl = 'https://calendar.forexfactory.com/calendar';
-  const forexFactory = page.locator('#cal-forex-factory');
-  assert.equal(await forexFactory.isVisible(), true);
-  assert.equal(await forexFactory.getAttribute('href'), forexFactoryUrl);
-  assert.equal(await forexFactory.getAttribute('target'), '_blank');
-  assert.match(await forexFactory.getAttribute('rel'), /\bnoopener\b/);
-  assert.match(await forexFactory.innerText(), /Mở lịch Forex Factory Live/);
-  const browserContext = page.context();
-  const stubCalendar = route => route.fulfill({ body: 'Forex Factory navigation check' });
-  await browserContext.route(forexFactoryUrl, stubCalendar);
-  const [forexFactoryTab] = await Promise.all([page.waitForEvent('popup'), forexFactory.click()]);
-  await forexFactoryTab.waitForURL(forexFactoryUrl);
-  assert.match(page.url(), /#calendar$/);
-  await forexFactoryTab.close();
-  await browserContext.unroute(forexFactoryUrl, stubCalendar);
+  assert.equal(await page.locator('#view-calendar a[href*="forexfactory.com"]').count(),0);
+  assert.equal(await page.getByText('Bảng ECO cập nhật theo đợt. Mở lịch nguồn để theo dõi số liệu trực tiếp.',{exact:true}).count(),0);
   const forexPointer = await (await page.request.get(new URL('/data/forex-factory/latest.json',url).href)).json();
   const forexData = await (await page.request.get(new URL(forexPointer.url,url).href)).json();
   const oldDate = await page.locator('#ff-freshness').textContent();
@@ -133,9 +120,6 @@ try{
     await page.locator('#language-picker').selectOption(language);
     assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`locale ${language}`);
-    if(language==='en'||language==='en-NG'){
-      assert.match(await forexFactory.innerText(), /Open Forex Factory Live calendar/);
-    }
     if(language==='en'){
       const text=await page.locator('#macro-content').innerText();
       assert.ok(text.includes('Compared with the previous period'));assert.ok(!/[ăđơư]/i.test(text),text);
@@ -148,7 +132,6 @@ try{
   for(const width of [1440,768,390,360]){
     await page.setViewportSize({width,height:1000});
     assert.equal(await page.locator('#cal-rows .cal-day-heading').first().isVisible(),true);
-    assert.equal(await forexFactory.isVisible(), true);
     await page.screenshot({path:`test-results/macro-${width}.png`,fullPage:true});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`width ${width}`);
   }
@@ -204,5 +187,5 @@ try{
   await page.locator('[data-view="calendar"]').click();
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
-  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_new_tab:true,forex_factory_table:true,forex_factory_waiting:true,vietnam_date_groups:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
+  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_table:true,forex_factory_waiting:true,vietnam_date_groups:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
 }finally{await browser.close();}

@@ -4,7 +4,7 @@
 
 **Số đo thị trường trên Lịch kinh tế:** sidecar `macro-market-v1.0.0` bổ sung lợi suất Mỹ 2/10 năm, lợi suất thực 10 năm, USD broad Fed và giá ETH theo ngày, kèm cặp ngày, bps/% và source/hash. [Protocol và nguồn](docs/MACRO_MARKET.md). Consensus trước tin, giá vàng và phản ứng intraday vẫn chưa có đầu vào được duyệt; không suy ra surprise hoặc tác động do tin từ daily changes. Trạng thái chạy/deploy xem HANDOFF.
 
-**Tab Lịch kinh tế:** bảng toàn cầu từ Forex Factory có giờ địa phương, mức ảnh hưởng, số thực tế, dự báo và kỳ trước. Chọn một sự kiện để theo dõi đếm ngược và trạng thái chờ số thực tế. ECO đọc snapshot đã kiểm hash và cập nhật theo batch, còn liên kết mở Live trên trang nguồn. Phần đánh giá chéo dùng số liệu chính thức BLS/BEA/Fed/DOL. [Nguồn và runbook](docs/ECONOMIC_CALENDAR.md).
+**Tab Lịch kinh tế:** bảng toàn cầu từ Forex Factory dùng giờ Việt Nam (UTC+7), hiển thị mức ảnh hưởng, số thực tế, dự báo và kỳ trước. Chọn một sự kiện để theo dõi đếm ngược và trạng thái chờ số thực tế. ECO đọc snapshot đã kiểm hash và cập nhật theo batch. Phần đánh giá chéo dùng số liệu chính thức BLS/BEA/Fed/DOL. [Nguồn và runbook](docs/ECONOMIC_CALENDAR.md).
 
 Mục tiêu: xây dựng chỉ số chu kỳ ETH và website có trải nghiệm tương tự [CBBI](https://colintalkscrypto.com/cbbi/), với phương pháp, dữ liệu và lịch sử tính điểm có thể kiểm chứng.
 
