@@ -1,1 +1,1 @@
-{"failure_code":"validation_or_pipeline_error","last_attempt_at":"2026-11-26T02:40:30.965653Z","outcome":"error"}
+{"failure_code":"invalid_day_boundary","failure_stage":"parse","last_attempt_at":"2026-11-26T02:44:37.242778Z","outcome":"error"}
