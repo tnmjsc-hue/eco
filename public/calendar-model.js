@@ -6,11 +6,14 @@ export function dayInZone(iso, zone = 'Asia/Ho_Chi_Minh') {
   const get = key => parts.find(p => p.type === key).value;
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
-export function selectEvents(events, { start, end, zone, impact = 'all', search = '' }) {
+export function selectEvents(events, { start, end, zone, impact = 'all', currency = 'all', search = '' }) {
+  const needle = search.trim().toLowerCase();
+  const dateFormatter = new Intl.DateTimeFormat('sv-SE', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' });
   return events.filter(e => {
-    const day = dayInZone(e.scheduled_at, zone);
+    const day = e.scheduled_at === null ? e.source_day : dateFormatter.format(new Date(e.scheduled_at));
+    const text = [e.title,e.source_title,e.provider,e.currency].filter(Boolean).join(' ').toLowerCase();
     return day >= start && day <= end && (impact === 'all' || e.impact === impact)
-      && `${e.title} ${e.source_title} ${e.provider}`.toLowerCase().includes(search.trim().toLowerCase());
+      && (currency === 'all' || e.currency === currency) && text.includes(needle);
   });
 }
 export function validateCalendar(data) {

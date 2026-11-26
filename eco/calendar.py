@@ -450,7 +450,7 @@ def fetch_source(key, cache, now, max_age, url=None):
 
 def backup_snapshot(folder, prefix="calendar"):
     """Bucket-limited SigV4 PUT/GET. No credentials, raw bodies or signed URLs in logs."""
-    if prefix not in {"calendar", "macro-market"}:
+    if prefix not in {"calendar", "macro-market", "forex-factory"}:
         raise ValueError("invalid private snapshot prefix")
     account = os.environ.get("R2_ACCOUNT_ID", "")
     bucket = os.environ.get("R2_BUCKET", "eco-eth-private")

@@ -2,9 +2,17 @@
 
 CAL-02, ngày 08/10/2026; `us-macro-calendar-v1.1.0`, schema `1.1.0`. Tab `#calendar` độc lập với methodology, điểm và lịch sử Core 10.
 
-## Nguồn lịch và quyền dữ liệu
+## Lịch toàn cầu Forex Factory
 
-Bảng ECO dùng lịch và số liệu của cơ quan công bố Mỹ. Nút **Mở lịch Forex Factory Live** dẫn thẳng đến [lịch Forex Factory](https://www.forexfactory.com/calendar) trong tab mới để xem các sự kiện toàn cầu, dự báo, kỳ trước và số thực tế cập nhật khi có tin. [Forex Factory mô tả chế độ Live](https://www.forexfactory.com/blog/1227046-introducing-calendar-live-data) trên trang lịch gốc. Tệp Weekly Export dùng để tải lịch theo tuần. Fair Economy yêu cầu văn bản cho phép trước khi sao chép hoặc phân phối lại dữ liệu lịch FEED. Muốn dùng FEED cho bảng ECO cần văn bản cho phép công bố và tài liệu về giao diện truy cập được cấp quyền, tần suất cập nhật, giờ công bố và revision. [Điều khoản Forex Factory](https://www.forexfactory.com/notices).
+Ngày 26/11/2026 người dùng xác nhận đã được cấp phép dùng nguồn. Bảng chính đọc snapshot `forex-factory-calendar-v1.0.0` từ tên miền lịch chính thức. Ghép dải 30 ngày trước/sau theo ngày Việt Nam bằng URL range công khai. Parser đọc state JSON nhúng trong HTML, đối chiếu phạm vi ngày và ID từng hàng với bảng HTML. Lịch Weekly Export JSON được đối chiếu, nhưng chỉ có lịch, dự báo và kỳ trước. [Lịch Forex Factory](https://calendar.forexfactory.com/calendar).
+
+- Hiển thị số thực tế, dự báo và kỳ trước theo chuỗi giá trị nguồn. Khi có điều chỉnh, bảng dùng số kỳ trước đã sửa và hiện cả số trước điều chỉnh. Ô trống giữ dấu —.
+- Epoch được đổi sang UTC khi lưu. Giờ cụ thể hiển thị theo múi giờ bảng. Sự kiện cả ngày hoặc chưa rõ giờ giữ ngày và nhãn nguồn, không có đếm ngược. Thời điểm lấy snapshot tách biệt với giờ công bố dự kiến và chưa đo được giờ nguồn nhận tin.
+- Đếm ngược cập nhật mỗi giây cho sự kiện đang theo dõi. Sau giờ dự kiến, sự kiện có chỉ tiêu số chuyển sang chờ trong tối đa một giờ nếu snapshot chưa có actual, sau đó hiển thị chưa có số thực tế. Bản phát hành mới có actual sẽ hiện số nguồn. Trình duyệt đang mở kiểm tra snapshot mỗi phút. Hosted batch theo lịch bên dưới, có thể trễ; nút Live mở Forex Factory để nhận cập nhật gốc. [Mô tả Forex Factory Live](https://www.forexfactory.com/blog/1227046-introducing-calendar-live-data).
+- `python -m eco.forex_factory` lưu HTML gzip, bản chuẩn hóa và manifest vào R2 riêng tư với từng SHA-256 và readback. Release công khai chỉ gồm trường lịch chuẩn hóa và provenance; pointer đối chiếu hash của release bất biến. Nội dung không đổi giữ release, chỉ cập nhật lần kiểm. Lỗi HTML, R2 hoặc checksum giữ bản tốt gần nhất. Chạy cùng batch lịch kinh tế hiện hữu, tải từ backend, không gọi nguồn từ trang ECO.
+- Dự báo trong bảng là từ snapshot hiện hành. Đánh giá v1 cần vintage dự báo thật sự ghi nhận trước công bố và định nghĩa metric đã kiểm chứng. Kịch bản ECO tiếp tục lấy input đã pin từ luồng số liệu chính thức bên dưới.
+
+## Số liệu chính thức Mỹ dùng trong đánh giá ECO
 
 | Nguồn ECO | Đường dữ liệu | Phạm vi |
 |---|---|---|
@@ -13,7 +21,7 @@ Bảng ECO dùng lịch và số liệu của cơ quan công bố Mỹ. Nút **M
 | Federal Reserve | [FOMC](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm) và [lịch sự kiện theo tháng](https://www.federalreserve.gov/newsevents/calendar.htm) | FOMC, biên bản, Beige Book, sản xuất công nghiệp, tín dụng tiêu dùng |
 | DOL | [lịch và kho weekly claims](https://oui.doleta.gov/unemploy/claims_arch.asp), PDF thông cáo từng ngày | Weekly initial jobless claims; ngoại lệ ngày nghỉ trong lịch nguồn |
 
-Lịch ECO lọc theo USD và các sự kiện Mỹ; không tuyên bố bao phủ PMI tư nhân, sự kiện toàn cầu hoặc toàn bộ diễn văn. Nội dung cơ quan chính thức được trích theo trường số/lịch cần thiết, dẫn link bản gốc; không sao chép hình ảnh, logo hay bài viết. Attribution không hàm ý cơ quan nguồn bảo chứng ECO. Xem [BLS copyright](https://www.bls.gov/bls/linksite.htm), [BEA FAQ 145](https://www.bea.gov/help/faq/145) và [Fed disclaimer](https://www.federalreserve.gov/disclaimer.htm).
+Luồng số liệu chính thức dùng trong đánh giá ECO bao phủ các sự kiện Mỹ liệt kê bên trên. Nội dung cơ quan chính thức được trích theo trường số/lịch cần thiết, dẫn link bản gốc; không sao chép hình ảnh, logo hay bài viết. Attribution không hàm ý cơ quan nguồn bảo chứng ECO. Xem [BLS copyright](https://www.bls.gov/bls/linksite.htm), [BEA FAQ 145](https://www.bea.gov/help/faq/145) và [Fed disclaimer](https://www.federalreserve.gov/disclaimer.htm).
 
 ## Kết quả gắn sự kiện
 
@@ -23,7 +31,7 @@ Mỗi sự kiện giữ `scheduled_at`, `source_title`, `reference_period`, `dat
 - DOL lấy initial claims đã điều chỉnh mùa vụ từ PDF đúng ngày công bố; kỳ tham chiếu là tuần kết thúc, đơn vị nghìn. Kiểm ngày công bố và chuỗi tuần, không gán continuing claims vào initial claims.
 - BLS chỉ gắn năm series vào **sự kiện gần nhất đã qua** khi kỳ API khớp kỳ suy ra từ ngày công bố. Đây là **vintage mới nhất tại lúc batch tải**, có thể đã được revision; không được coi là số đúng bản tin tại thời điểm lịch sử. Các sự kiện BLS khác vẫn null nếu không có parser nguồn đúng kỳ.
 - `forecast` trong bảng ECO vẫn null vì các nguồn sơ cấp này không cung cấp consensus đã được cấp quyền. `previous` không thay thế `forecast`; không tự tính surprise từ hai cột đó.
-- Màu Actual xanh/đỏ là hướng USD so với `previous`, chỉ áp dụng cho CPI/PCE/PPI, GDP, việc làm, JOLTS, sản lượng công nghiệp, trợ cấp thất nghiệp và cán cân thương mại theo chiều đã định nghĩa cho từng loại. Đây là ngữ cảnh xu hướng có điều kiện, không phải so sánh với consensus, dự đoán phản ứng giá hay khuyến nghị. Sự kiện thiếu số kỳ trước hoặc chưa được ánh xạ giữ màu trung tính.
+Số thực tế và kỳ trước trong bảng lịch được trình bày trung tính.
 
 Năm series BLS seasonally adjusted: `CUSR0000SA0` CPI index; `CES0000000001` NFP level (nghìn); `LNS14000000` thất nghiệp %; `WPSFD4` PPI final demand index; `JTS000000000000000JOL` job openings (nghìn). CPI/PPI tính `100 × (index_month/index_previous_month − 1)` và làm tròn một chữ số; NFP là chênh lệch hai mức lao động tháng. Thiếu tháng thì null. API warning catalog có thể đi cùng data hợp lệ, lỗi status/thiếu series bị chặn. Footnote `P` là sơ bộ. [FAQ BLS](https://www.bls.gov/developers/api_faqs.htm) nêu độ trễ và revision.
 
@@ -36,7 +44,7 @@ Năm series BLS seasonally adjusted: `CUSR0000SA0` CPI index; `CES0000000001` NF
 | `37 0 * * *` | 07:37 hằng ngày | Rà lại lịch BLS, BEA, Fed, DOL và BLS API |
 | `37 13,18 * * 1-5` | 20:37 và 01:37 hôm sau, thứ Hai–Sáu UTC | Bắt kết quả sau các khung giờ công bố Mỹ |
 
-GitHub có thể chạy trễ; job dùng concurrency chung với batch ETH. Lịch nguồn được cache 20 giờ giữa các lần quét, ép refresh ở 00 UTC; BLS API cache 4 giờ. BEA/DOL bản tin vừa công bố cache 4 giờ; DOL PDF cũ cache 180 ngày. GET có ETag/Last-Modified khi nguồn hỗ trợ; cache nội bộ có hash. Lịch Fed tháng chỉ tải các tháng trong cửa sổ 45 ngày trước và 180 ngày sau. Browser chỉ tải JSON release bất biến của ECO khi mở tab, revalidate pointer/status mỗi 15 phút khi đang xem; lịch Forex Factory mở khi người dùng nhấn liên kết.
+GitHub có thể chạy trễ; job dùng concurrency chung với batch ETH. Lịch nguồn được cache 20 giờ giữa các lần quét, ép refresh ở 00 UTC; BLS API cache 4 giờ. BEA/DOL bản tin vừa công bố cache 4 giờ; DOL PDF cũ cache 180 ngày. GET có ETag/Last-Modified khi nguồn hỗ trợ; cache nội bộ có hash. Lịch Fed tháng chỉ tải các tháng trong cửa sổ 45 ngày trước và 180 ngày sau. Browser chỉ tải JSON release bất biến của ECO khi mở tab, revalidate pointer/status mỗi 15 phút khi đang xem; bảng Forex Factory kiểm bản phát hành ECO mỗi phút khi tab đang mở.
 
 ## Snapshot, phát hành và lỗi
 

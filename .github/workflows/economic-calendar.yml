@@ -44,6 +44,21 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: python -m eco.calendar
+      - name: Fetch Forex Factory calendar and verify its private snapshot
+        id: forex
+        continue-on-error: true
+        env:
+          R2_ACCOUNT_ID: '3ebcb7a2f66c7ae9b5804ff91e6ec702'
+          R2_BUCKET: eco-eth-private
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: python -m eco.forex_factory
+      - name: Verify Forex Factory release contract
+        id: forex_verify
+        if: steps.forex.outcome == 'success'
+        run: |
+          python -m unittest discover -s tests -p test_forex_factory.py -v
+          node --test tests/forex-factory.test.mjs
       - name: Assess verified calendar and retain immutable macro history
         id: macro
         if: always()
@@ -94,8 +109,10 @@ jobs:
           git diff --check
       - name: Commit calendar allowlist
         id: commit
-        if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure' || steps.market_verify.outcome == 'success')
+        if: always() && (steps.verify.outcome == 'success' || steps.batch.outcome == 'failure' || steps.market_verify.outcome == 'success' || steps.forex_verify.outcome == 'success' || steps.forex.outcome == 'failure')
         env:
+          FOREX_OUTCOME: ${{ steps.forex.outcome }}
+          FOREX_VERIFY: ${{ steps.forex_verify.outcome }}
           BATCH_OUTCOME: ${{ steps.batch.outcome }}
           MACRO_OUTCOME: ${{ steps.macro.outcome }}
           MACRO_VERIFY: ${{ steps.macro_verify.outcome }}
@@ -108,6 +125,11 @@ jobs:
           git config user.email 'eco-daily[bot]@users.noreply.github.com'
           git add -- public/data/calendar/status.json
           git add -- public/data/macro-assessment/status.json
+          if [ "$FOREX_VERIFY" = 'success' ]; then
+            git add -- public/data/forex-factory/latest.json public/data/forex-factory/status.json public/data/forex-factory/releases
+          elif [ "$FOREX_OUTCOME" = 'failure' ]; then
+            git add -- public/data/forex-factory/status.json
+          fi
           if [ "$BATCH_OUTCOME" = 'success' ] && [ "$MACRO_VERIFY" = 'success' ]; then
             git add -- public/data/calendar/latest.json public/data/calendar/releases
           fi
@@ -140,5 +162,5 @@ jobs:
           CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: node scripts/verify-calendar-deploy.mjs
       - name: Surface data failure
-        if: always() && (steps.batch.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure' || steps.market.outcome == 'failure' || steps.market_verify.outcome == 'failure' || steps.probability.outcome == 'failure' || steps.probability_verify.outcome == 'failure')
+        if: always() && (steps.batch.outcome == 'failure' || steps.forex.outcome == 'failure' || steps.forex_verify.outcome == 'failure' || steps.macro.outcome == 'failure' || steps.macro_verify.outcome == 'failure' || steps.market.outcome == 'failure' || steps.market_verify.outcome == 'failure' || steps.probability.outcome == 'failure' || steps.probability_verify.outcome == 'failure')
         run: exit 1

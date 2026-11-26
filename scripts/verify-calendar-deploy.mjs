@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { verifyForexPointer, verifyForexCalendar } from '../public/forex-factory-model.js';
 const hash = b => createHash('sha256').update(b).digest('hex');
 const pointer = await readFile('public/data/calendar/latest.json');
 const status = await readFile('public/data/calendar/status.json');
@@ -31,6 +32,13 @@ const marketAssets=[market,market.manifest,marketManifest.inputs,marketManifest.
 for(const a of marketAssets){if(!/^\/data\/(?:macro-market\/releases\/market-[a-f0-9]{20}\/(?:market|manifest|inputs|protocol)|core-v2\/releases\/core10-[a-f0-9]{20}\/(?:manifest|history))\.json$/.test(a.url)||hash(await readFile(`public${a.url}`))!==a.sha256)throw Error('Invalid market asset');}
 for(const asset of macroAssets){if(!/^\/data\/(calendar|macro-assessment)\/[a-zA-Z0-9/.-]+\.json$/.test(asset.url)||hash(await readFile(`public${asset.url}`))!==asset.sha256)throw Error('Invalid macro asset');}
 if (!/^calendar-[a-f0-9]{20}$/.test(data.release_id) || data.url !== `/data/calendar/releases/${data.release_id}/calendar.json`) throw Error('Invalid calendar pointer');
+const forexPointer = await readFile('public/data/forex-factory/latest.json');
+const forexStatus = await readFile('public/data/forex-factory/status.json');
+const forex = JSON.parse(forexPointer);
+verifyForexPointer(forex);
+const forexBytes = await readFile('public' + forex.url);
+if (hash(forexBytes) !== forex.sha256) throw Error('Invalid Forex Factory release hash');
+verifyForexCalendar(JSON.parse(forexBytes),forex);
 const hook = process.env.CLOUDFLARE_DEPLOY_HOOK;
 if (!hook || new URL(hook).hostname !== 'api.cloudflare.com') throw Error('Missing approved Pages deployment hook');
 try { const r = await fetch(hook, {method:'POST',signal:AbortSignal.timeout(30000)}); if (!r.ok) throw Error(); await r.body?.cancel(); }
@@ -40,13 +48,14 @@ for (let attempt = 0; attempt < 40; attempt++) {
   try {
     const bytes = async path => { const r=await fetch(`https://eco.tnmp.cloud${path}`,{cache:'no-store',signal:AbortSignal.timeout(15000)}); if (!r.ok) throw Error(); return Buffer.from(await r.arrayBuffer()); };
     if (hash(await bytes('/data/calendar/latest.json')) !== hash(pointer) || hash(await bytes('/data/calendar/status.json')) !== hash(status) || hash(await bytes(data.url)) !== data.sha256) continue;
+    if (hash(await bytes('/data/forex-factory/latest.json')) !== hash(forexPointer) || hash(await bytes('/data/forex-factory/status.json')) !== hash(forexStatus) || hash(await bytes(forex.url)) !== forex.sha256) continue;
     if(hash(await bytes('/data/macro-assessment/latest.json'))!==hash(macroPointer)||hash(await bytes('/data/macro-assessment/status.json'))!==hash(macroStatus))continue;
     const checks=await Promise.all(macroAssets.map(async a=>hash(await bytes(a.url))===a.sha256));if(!checks.every(Boolean))continue;
     if(hash(await bytes('/data/macro-market/latest.json'))!==hash(marketPointer)||hash(await bytes('/data/macro-market/status.json'))!==hash(marketStatus))continue;
     if(!(await Promise.all(marketAssets.map(async a=>hash(await bytes(a.url))===a.sha256))).every(Boolean))continue;
     if(hash(await bytes('/data/macro-probability/latest.json'))!==hash(probabilityPointer)||hash(await bytes('/data/macro-probability/status.json'))!==hash(probabilityStatus))continue;
     if(!(await Promise.all(probabilityAssets.map(async a=>hash(await bytes(a.url))===a.sha256))).every(Boolean))continue;
-    console.log(JSON.stringify({production_verified:true,release_id:data.release_id,assessment_id:macro.assessment_id,macro_assets_verified:macroAssets.length,market_release_id:market.release_id,market_assets_verified:marketAssets.length,probability_release_id:probability.release_id,probability_assets_verified:probabilityAssets.length})); process.exit(0);
+    console.log(JSON.stringify({production_verified:true,forex_factory_release_id:forex.release_id,release_id:data.release_id,assessment_id:macro.assessment_id,macro_assets_verified:macroAssets.length,market_release_id:market.release_id,market_assets_verified:marketAssets.length,probability_release_id:probability.release_id,probability_assets_verified:probabilityAssets.length})); process.exit(0);
   } catch { /* CDN may still serve the previous release. */ }
 }
 throw Error('Production calendar did not match the verified artifacts');

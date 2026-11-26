@@ -1,93 +1,29 @@
-import { translate as t, numberLocale } from './i18n.js?v=calendar-forex-factory-1';
-import { dayInZone, selectEvents, validateCalendar } from './calendar-model.js?v=prob-20261009a';
-import {refreshMacro,renderMacro} from './macro.js?v=calendar-forex-factory-1';
-import {refreshMarket,renderMarket} from './macro-market.js?v=calendar-forex-factory-1';
-import {refreshProbability,renderProbability} from './macro-probability.js?v=calendar-forex-factory-1';
+import { translate as t, numberLocale } from './i18n.js?v=forex-factory-feed-1';
+import { validateCalendar } from './calendar-model.js?v=forex-factory-feed-1';
+import { initForexCalendar, refreshForexCalendar } from './forex-factory.js?v=forex-factory-feed-1';
+import {refreshMacro,renderMacro} from './macro.js?v=forex-factory-feed-1';
+import {refreshMarket,renderMarket} from './macro-market.js?v=forex-factory-feed-1';
+import {refreshProbability,renderProbability} from './macro-probability.js?v=forex-factory-feed-1';
 
 const $ = id => document.getElementById(id);
-const state = { data: null, status: null, selected: null, checked: 0, busy: false, release: null, hash: null };
+const state = { data: null, status: null, checked: 0, busy: false, release: null, hash: null };
 const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const txt = source => esc(t(source));
-const dateLabel = (iso, time = false) => new Intl.DateTimeFormat(numberLocale(), {timeZone: $('cal-zone').value, dateStyle: 'medium', ...(time ? {timeStyle:'short'} : {})}).format(new Date(iso));
-const addDays = (day, count) => new Date(Date.parse(`${day}T12:00:00Z`) + count * 86400000).toISOString().slice(0,10);
-function value(v, unit) {
-  if (v === null) return '—';
-  const number = v.toLocaleString(numberLocale(), {minimumFractionDigits:['thousand_jobs','thousand_claims'].includes(unit)?0:1,maximumFractionDigits:1});
-  return `${number}${unit === 'percent' || unit === 'percent_saar' ? '%' : ['thousand_jobs','thousand_claims'].includes(unit) ? 'k' : unit === 'billion_usd' ? ` ${t('tỷ USD')}` : ''}`;
-}
-function actualPresentation(event) {
-  return {
-    className: event.actual === null ? 'muted' : 'cal-value',
-    title: '',
-  };
-}
+const dateLabel = iso => new Intl.DateTimeFormat(numberLocale(), {timeZone: $('cal-zone').value, dateStyle: 'medium',timeStyle:'short'}).format(new Date(iso));
 
-function setRange(kind) {
-  const today = dayInZone(new Date().toISOString(), $('cal-zone').value);
-  let start = today, end = today;
-  if (kind === 'week' || kind === 'next') {
-    const day = new Date(`${today}T12:00:00Z`).getUTCDay();
-    start = addDays(today, -((day + 6) % 7) + (kind === 'next' ? 7 : 0));
-    end = addDays(start, 6);
-  }
-  if (kind === 'month') end = addDays(today, 30);
-  if (kind === 'past') start = addDays(today, -30);
-  $('cal-start').value = start; $('cal-end').value = end;
-  document.querySelectorAll('[data-cal-range]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.calRange === kind)));
-  render();
-}
 function render() {
   renderMacro();
   renderMarket();
   renderProbability();
   if (!state.data) return;
-  for (const id of ['cal-zone','cal-impact']) for (const option of $(id).options) {
-    option.dataset.sourceLabel ??= option.textContent;
-    option.textContent = t(option.dataset.sourceLabel);
-  }
   const { data } = state;
-  const start = $('cal-start').value, end = $('cal-end').value, zone = $('cal-zone').value;
-  if (!start || !end || end < start) { $('cal-range-error').hidden = false; return; }
-  $('cal-range-error').hidden = true;
-  const rows = selectEvents(data.events, {start, end, zone, impact:$('cal-impact').value, search:$('cal-search').value});
-  if (!rows.some(e => e.id === state.selected)) state.selected = rows[0]?.id ?? null;
-  $('cal-count').textContent = `${rows.length} ${t('sự kiện')} · ${zone}`;
-  $('cal-empty').hidden = rows.length > 0;
-  $('cal-rows').replaceChildren();
-  for (const e of rows) {
-    const tr = document.createElement('tr');
-    tr.classList.toggle('cal-selected', e.id === state.selected);
-    const time = new Intl.DateTimeFormat(numberLocale(), {timeZone:zone, hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(e.scheduled_at));
-    const elapsed = Date.parse(e.scheduled_at) < Date.now();
-    const status = e.actual !== null ? (e.data_status === 'official_release' ? 'Đã có số liệu chính thức' : 'Số liệu kỳ mới nhất')
-      : elapsed ? 'Chưa xác minh số liệu' : 'Sắp diễn ra';
-    const actual = actualPresentation(e);
-    tr.innerHTML = `<td data-label="${txt('Ngày / giờ')}"><time datetime="${esc(e.scheduled_at)}">${esc(dateLabel(e.scheduled_at))}<b>${esc(time)}${e.time_basis ? ' ≈' : ''}</b></time></td>
-      <td data-label="${txt('Tiền tệ')}"><span class="badge">USD</span></td>
-      <td data-label="${txt('Ảnh hưởng')}"><span class="cal-impact ${e.impact}">${txt(e.impact === 'high' ? 'Cao' : 'Vừa')}</span></td>
-      <td class="cal-event"><button class="cal-event-button" data-cal-event="${esc(e.id)}" aria-pressed="${e.id === state.selected}">${txt(e.title)}</button><small>${esc(e.source_title)}</small><a href="${esc(e.source_url)}" target="_blank" rel="noreferrer">${e.provider.toUpperCase()} ↗</a></td>
-      <td data-label="${txt('Thực tế')}" class="${actual.className}"${actual.title}>${esc(value(e.actual,e.unit))}</td><td data-label="${txt('Dự báo')}" class="muted">—</td><td data-label="${txt('Kỳ trước')}" class="${e.previous === null ? 'muted' : 'cal-value'}">${esc(value(e.previous,e.unit))}</td>
-      <td data-label="${txt('Trạng thái')}"><span class="small">${txt(status)}</span></td>`;
-    tr.querySelector('button').addEventListener('click', () => { state.selected = e.id; render(); });
-    $('cal-rows').append(tr);
-  }
-  const selected = rows.find(e => e.id === state.selected);
-  $('cal-assessment').hidden = !selected;
-  if (selected) {
-    const actual = actualPresentation(selected);
-    $('cal-selected-title').textContent = t(selected.title);
-    const source = `<a href="${esc(selected.data_source_url || selected.source_url)}" target="_blank" rel="noreferrer">${txt('Xem nguồn chính thức')} ↗</a>`;
-    $('cal-release-detail').innerHTML = selected.actual !== null
-      ? `<div class="cal-result-head"><div><p class="eyebrow">${txt('Kết quả theo kỳ')}</p><strong class="${actual.className}"${actual.title}>${esc(value(selected.actual,selected.unit))}</strong><span class="small muted">${txt('Kỳ trước')}: ${esc(value(selected.previous,selected.unit))}</span></div><div class="small"><p>${txt('Kỳ tham chiếu')}: <b>${esc(selected.reference_period)}</b></p><p>${txt('Dữ liệu tải lúc')}: ${esc(dateLabel(selected.data_vintage_at,true))}</p>${source}</div></div>${selected.details.length ? `<ul>${selected.details.map(d=>`<li>${txt(d.label)}: <b>${esc(value(d.actual,d.unit))}</b> · ${txt('Kỳ trước')}: ${esc(value(d.previous,d.unit))}</li>`).join('')}</ul>` : ''}<p class="small muted">${txt(selected.data_status === 'official_release' ? 'Số liệu từ bản tin công bố chính thức.' : 'Số liệu BLS thuộc kỳ mới nhất, có thể đã được điều chỉnh sau công bố; không phải vintage tại thời điểm sự kiện.')}</p>`
-      : `<p class="small muted">${txt(Date.parse(selected.scheduled_at) < Date.now() ? 'Đã qua giờ dự kiến; chưa đối chiếu được số liệu của đúng kỳ công bố.' : 'Chưa đến giờ công bố; số thực tế chưa có.')}</p>${source}`;
-  }
   $('cal-indicators').innerHTML = data.indicators.map(i => {
     const value = v => v === null ? '—' : `${v.toLocaleString(numberLocale(), {minimumFractionDigits: i.unit==='percent'?1:0,maximumFractionDigits:1})}${i.unit==='percent'?'%':'k'}`;
     return `<article class="cal-indicator"><p class="eyebrow">${esc(i.title)}</p><strong>${esc(value(i.value))}</strong><p class="small">${txt('Kỳ tham chiếu')}: ${esc(i.reference_period)}${i.preliminary ? ` · ${txt('Sơ bộ')}` : ''}</p><p class="small muted">${txt('Kỳ trước')}: ${esc(value(i.previous))} (${esc(i.previous_period)})</p><a class="small" href="${esc(i.source_url)}" target="_blank" rel="noreferrer">BLS ↗</a></article>`;
   }).join('');
   const lastSuccess = state.status?.last_success_at ?? data.sources.bls.checked_at;
   const stale = Date.now() - Date.parse(lastSuccess) > 48 * 3600000;
-  $('cal-freshness').textContent = `${t('Batch thành công')}: ${dateLabel(lastSuccess, true)} · ${t('Snapshot số liệu')}: ${dateLabel(data.sources.bls_data.checked_at, true)} · ${t(stale ? 'Lịch có thể đã cũ; kiểm tra nguồn chính thức' : 'Nguồn chính thức · cập nhật theo batch')}`;
+  $('cal-freshness').textContent = `${t('Batch thành công')}: ${dateLabel(lastSuccess)} · ${t('Snapshot số liệu')}: ${dateLabel(data.sources.bls_data.checked_at)} · ${t(stale ? 'Lịch có thể đã cũ; kiểm tra nguồn chính thức' : 'Nguồn chính thức · cập nhật theo batch')}`;
   $('cal-freshness').classList.toggle('negative', stale);
   $('cal-manifest').href = `/data/calendar/releases/${state.release}/calendar.json`;
 }
@@ -121,13 +57,19 @@ async function load(force = false) {
     $('cal-refresh').disabled = false; state.busy = false;
   }
 }
-export function openCalendar() { load(); }
+export function openCalendar() {
+  refreshForexCalendar();
+  load();
+}
+
 export function initCalendar() {
-  setRange('week');
-  document.querySelectorAll('[data-cal-range]').forEach(b => b.addEventListener('click',()=>setRange(b.dataset.calRange)));
-  for (const id of ['cal-start','cal-end','cal-zone','cal-impact']) $(id).addEventListener('change',render);
-  $('cal-search').addEventListener('input',render);
-  $('cal-refresh').addEventListener('click',()=>load(true)); $('cal-retry').addEventListener('click',()=>load(true));
+  initForexCalendar();
+  $('cal-zone').addEventListener('change',render);
+  $('cal-refresh').addEventListener('click',() => {
+    refreshForexCalendar(true);
+    load(true);
+  });
+  $('cal-retry').addEventListener('click',() => load(true));
   document.addEventListener('eco-language-changed',render);
-  setInterval(()=>{if (!document.hidden && !$('view-calendar').hidden) load();},15*60000);
+  setInterval(() => { if (!document.hidden && !$('view-calendar').hidden) load(); },15*60000);
 }

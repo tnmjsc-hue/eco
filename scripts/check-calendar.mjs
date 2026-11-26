@@ -17,6 +17,7 @@ try{
   page.on('request',r=>{if(/bls\.gov|bea\.gov|federalreserve\.gov|home\.treasury\.gov|coinmetrics\.io|r2\.cloudflarestorage|forexfactory\.com/.test(r.url()))providerRequests.push(r.url());});
   await page.addInitScript(()=>{if(window===top)localStorage.setItem('eco-language','vi');});
   await page.goto(`${url.split('#')[0]}#calendar`,{waitUntil:'networkidle'});
+  await page.locator('#ff-content').waitFor({state:'visible'});
   await page.locator('#macro-content').waitFor({state:'visible'});
   await page.locator('#market-content').waitFor({state:'visible'});
   await page.locator('#prob-content').waitFor({state:'visible'});
@@ -31,7 +32,7 @@ try{
   const marketIdentity=await page.locator('#market-content').getAttribute('data-release-id');
   assert.equal(await page.locator('#macro-error').isVisible(),false,await page.locator('#macro-error').textContent());
   assert.equal(await page.locator('#cal-error').isVisible(),false);
-  const forexFactoryUrl = 'https://www.forexfactory.com/calendar';
+  const forexFactoryUrl = 'https://calendar.forexfactory.com/calendar';
   const forexFactory = page.locator('#cal-forex-factory');
   assert.equal(await forexFactory.isVisible(), true);
   assert.equal(await forexFactory.getAttribute('href'), forexFactoryUrl);
@@ -46,6 +47,43 @@ try{
   assert.match(page.url(), /#calendar$/);
   await forexFactoryTab.close();
   await browserContext.unroute(forexFactoryUrl, stubCalendar);
+  const forexPointer = await (await page.request.get(new URL('/data/forex-factory/latest.json',url).href)).json();
+  const forexData = await (await page.request.get(new URL(forexPointer.url,url).href)).json();
+  const oldDate = await page.locator('#ff-freshness').textContent();
+  await page.locator('[data-cal-range="past"]').click();
+  const currencyFilter = page.locator('#ff-currency');
+  const foreignCurrency = forexData.events.find(event => event.currency !== 'USD' && event.actual !== null).currency;
+  await currencyFilter.selectOption(foreignCurrency);
+  const matchingRows = page.locator('#cal-rows tr');
+  assert.ok(await matchingRows.count() > 0);
+  assert.ok((await matchingRows.locator('td:nth-child(2)').allTextContents()).every(c => c === foreignCurrency));
+  assert.ok((await matchingRows.locator('td:nth-child(5)').allTextContents()).some(actual => actual !== '—'));
+  await currencyFilter.selectOption('all');
+  const expected = forexData.events.find(e => e.scheduled_at && e.expects_actual && !e.actual && Date.parse(e.scheduled_at) > Date.now());
+  assert.ok(expected);
+  const releaseTime = Date.parse(expected.scheduled_at);
+  await page.evaluate(time => { window.originalDateNow = Date.now; Date.now = () => time; },releaseTime-10000);
+  await page.locator('#cal-zone').selectOption('UTC');
+  await page.locator('#cal-start').fill(expected.scheduled_at.slice(0,10));
+  await page.locator('#cal-end').fill(expected.scheduled_at.slice(0,10));
+  await page.locator('#cal-end').dispatchEvent('change');
+  await page.locator('[data-cal-event="'+expected.id+'"]').click();
+  assert.equal(await page.locator('#ff-countdown').isVisible(),true);
+  assert.equal(await page.locator('#ff-watch-status').getAttribute('data-status'),'upcoming');
+  await page.evaluate(time => { Date.now = () => time; },releaseTime+1000);
+  await page.locator('#ff-watch-status[data-status="waiting"]').waitFor({timeout:3000});
+  assert.equal(await page.locator('#ff-countdown').isVisible(),false);
+  await page.evaluate(() => { Date.now = window.originalDateNow; delete window.originalDateNow; });
+  await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
+  await page.locator('[data-cal-range="week"]').click();
+  await page.route('**/data/forex-factory/latest.json',route=>route.abort());
+  await page.locator('#cal-refresh').click();
+  await page.locator('#ff-error').waitFor({state:'visible'});
+  assert.ok((await page.locator('#ff-freshness').textContent()).startsWith(oldDate));
+  assert.equal(await page.locator('#ff-content').isVisible(),true);
+  await clearRoutes();
+  await page.locator('#ff-retry').click();
+  await page.locator('#ff-error').waitFor({state:'hidden'});
   assert.equal(await page.locator('#cal-indicators article').count(),5);
   assert.equal(await page.locator('#macro-assets article').count(),3);
   assert.match(await page.locator('#macro-heading').innerText(),/chưa phải xu hướng giá/);
@@ -91,6 +129,7 @@ try{
       assert.ok(!/[ăđơư]/i.test(marketText),marketText);
     }
   }
+  await page.locator('[data-cal-range="week"]').click();
   for(const width of [1440,768,390,360]){
     await page.setViewportSize({width,height:1000});
     assert.equal(await forexFactory.isVisible(), true);
@@ -149,5 +188,5 @@ try{
   await page.locator('[data-view="calendar"]').click();
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
-  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_new_tab:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
+  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_new_tab:true,forex_factory_table:true,forex_factory_waiting:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
 }finally{await browser.close();}
