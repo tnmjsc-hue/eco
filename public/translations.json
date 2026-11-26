@@ -1,5 +1,6 @@
 {
   "en": {
+    "Giờ": "Time",
     "Lịch vĩ mô toàn cầu từ Forex Factory": "Global macroeconomic calendar by Forex Factory",
     "Bảng ECO cập nhật theo đợt. Mở lịch nguồn để theo dõi số liệu trực tiếp.": "ECO updates in batches. Open the source calendar for live releases.",
     "Đang xác minh lịch Forex Factory…": "Verifying the Forex Factory calendar…",
@@ -741,6 +742,7 @@
     "Phương pháp xác suất": "Probability methodology"
   },
   "ko": {
+    "Giờ": "시간",
     "Mở lịch Forex Factory Live (tab mới)": "Forex Factory 실시간 일정 열기(새 탭)",
     "Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.": "전 세계 경제 일정, 전망치, 이전 수치를 확인하세요. Forex Factory 탭을 열어 두면 발표된 실제 수치가 자동으로 업데이트됩니다.",
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "차트는 각 릴리스의 빈티지에 따라 재구성됩니다. 릴리스는 변경할 수 없습니다. 수정에는 자체 수정 사항과 이유가 있습니다. 새 날짜의 첫 번째 게시 기록은 백필 기록을 게시된 상태로 만들지 않고 달력이 활성화된 시점과 별도로 저장됩니다. 아직은 실험적 연구로, 아직 30일간의 그림자가 완료되지 않았습니다.",
@@ -1289,6 +1291,7 @@
     "Phương pháp xác suất": "Probability methodology"
   },
   "ru": {
+    "Giờ": "Время",
     "Mở lịch Forex Factory Live (tab mới)": "Открыть календарь Forex Factory Live (новая вкладка)",
     "Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.": "Смотрите мировые события, прогнозы и предыдущие значения. Оставьте вкладку Forex Factory открытой, чтобы фактические значения обновлялись автоматически по мере публикации.",
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "График реконструируется в соответствии с винтажем каждого релиза. Релиз является неизменным; исправление имеет свою ревизию и причину. Первая запись публикации для новой даты сохраняется отдельно от момента включения календаря, без создания истории заполнения в том виде, в котором она опубликована. Все еще экспериментальное исследование, еще не завершенное 30-дневное исследование тени.",
@@ -1837,6 +1840,7 @@
     "Phương pháp xác suất": "Probability methodology"
   },
   "hi": {
+    "Giờ": "समय",
     "Mở lịch Forex Factory Live (tab mới)": "Forex Factory का लाइव कैलेंडर खोलें (नया टैब)",
     "Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.": "दुनिया भर की आर्थिक घटनाएँ, पूर्वानुमान और पिछले आँकड़े देखें। Forex Factory टैब खुला रखें ताकि जारी होते ही वास्तविक आँकड़े अपने आप अपडेट हों।",
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "प्रत्येक रिलीज़ के विंटेज के अनुसार चार्ट का पुनर्निर्माण किया जाता है। रिहाई अपरिवर्तनीय है; सुधार का अपना संशोधन और कारण होता है। नई तारीख के लिए पहला प्रकाशन रिकॉर्ड, बैकफ़िल इतिहास को प्रकाशित किए बिना, कैलेंडर सक्षम होने पर अलग से सहेजा जाता है। अभी भी एक प्रायोगिक अध्ययन, 30 दिन की छाया अभी तक पूरी नहीं हुई है।",
@@ -2385,6 +2389,7 @@
     "Phương pháp xác suất": "Probability methodology"
   },
   "tr": {
+    "Giờ": "Saat",
     "Mở lịch Forex Factory Live (tab mới)": "Forex Factory canlı takvimini aç (yeni sekme)",
     "Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.": "Küresel etkinlikleri, tahminleri ve önceki verileri görün. Açıklanan sonuçların otomatik güncellenmesi için Forex Factory sekmesini açık tutun.",
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "Grafik, her sürümün vintage'ına göre yeniden oluşturulur. Serbest bırakma değişmez; düzeltmenin kendi revizyonu ve nedeni vardır. Yeni tarihe ilişkin ilk yayın kaydı, dolgu geçmişini yayınlandığı gibi yapmadan, takvim etkinleştirildiğinden ayrı olarak kaydedilir. Halen Deneysel bir çalışma olup, 30 günlük gölge süresi henüz tamamlanmamıştır.",
@@ -2933,6 +2938,7 @@
     "Phương pháp xác suất": "Probability methodology"
   },
   "pt-BR": {
+    "Giờ": "Hora",
     "Mở lịch Forex Factory Live (tab mới)": "Abrir calendário ao vivo do Forex Factory (nova aba)",
     "Xem lịch toàn cầu, dự báo và kỳ trước. Giữ tab Forex Factory mở để số thực tế tự cập nhật khi có tin.": "Veja eventos globais, previsões e dados anteriores. Mantenha a aba do Forex Factory aberta para receber os resultados automaticamente assim que forem divulgados.",
     "Biểu đồ là reconstructed theo vintage của từng release. Release cũ bất biến; correction có revision và lý do riêng. Bản ghi công bố đầu tiên cho ngày mới được lưu riêng từ khi bật lịch, không biến lịch sử backfill thành as-published. Vẫn là nghiên cứu Experimental, chưa hoàn thành shadow 30 ngày.": "O gráfico é reconstruído de acordo com a safra de cada lançamento. A liberação é imutável; a correção tem sua própria revisão e razão. O primeiro registro de publicação da nova data é salvo separadamente de quando o calendário está habilitado, sem fazer o histórico de preenchimento conforme publicado. Ainda um estudo experimental, ainda não completou a sombra de 30 dias.",

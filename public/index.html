@@ -7,10 +7,10 @@
   <meta name="description" content="ECO Ethereum Core 10 experimental research dashboard with daily scores and indicator results.">
   <title>ECO | Ethereum Core 10 Experimental</title>
   <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css?v=forex-factory-feed-1">
+  <link rel="stylesheet" href="/styles.css?v=calendar-vn-days-1">
   <script defer src="/vendor/echarts.min.js?v=6.1.0"></script>
   <script defer src="/vendor/lucide.min.js?v=0.468.0"></script>
-  <script type="module" src="/app.js?v=forex-factory-feed-1"></script>
+  <script type="module" src="/app.js?v=calendar-vn-days-1"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung</a>
@@ -64,7 +64,6 @@
           <p id="ff-freshness" class="small muted"></p>
           <div class="cal-toolbar">
             <div class="segmented" role="group" aria-label="Khoảng lịch kinh tế"><button data-cal-range="today" aria-pressed="false">Hôm nay</button><button data-cal-range="week" aria-pressed="true">Tuần này</button><button data-cal-range="next" aria-pressed="false">Tuần sau</button><button data-cal-range="month" aria-pressed="false">30 ngày</button><button data-cal-range="past" aria-pressed="false">30 ngày qua</button></div>
-            <label>Múi giờ <select id="cal-zone"><option value="Asia/Ho_Chi_Minh">Việt Nam (UTC+7)</option><option value="UTC">UTC</option><option value="America/New_York">New York (ET)</option></select></label>
             <label>Ảnh hưởng <select id="cal-impact"><option value="all">Tất cả</option><option value="high">Cao</option><option value="medium">Vừa</option><option value="low">Thấp</option><option value="holiday">Ngày nghỉ</option></select></label>
             <label>Tiền tệ <select id="ff-currency"><option value="all">Tất cả</option></select></label>
             <label>Tìm sự kiện <input id="cal-search" type="search" placeholder="CPI, NFP, PCE, FOMC…"></label>
@@ -77,7 +76,7 @@
             <div><span id="ff-watch-status" role="status"></span><b id="ff-countdown" hidden></b></div>
           </div>
           <p class="small muted">Chọn tên sự kiện để theo dõi. Giờ và số kỳ trước có thể được nguồn điều chỉnh.</p>
-          <div class="table-wrap cal-table-wrap"><table class="cal-table"><thead><tr><th>Ngày / giờ</th><th>Tiền tệ</th><th>Ảnh hưởng</th><th>Sự kiện</th><th>Thực tế</th><th>Dự báo</th><th>Kỳ trước</th><th>Trạng thái</th></tr></thead><tbody id="cal-rows"></tbody></table></div>
+          <div class="table-wrap cal-table-wrap"><table id="cal-rows" class="cal-table"><thead><tr><th>Giờ</th><th>Tiền tệ</th><th>Ảnh hưởng</th><th>Sự kiện</th><th>Thực tế</th><th>Dự báo</th><th>Kỳ trước</th><th>Trạng thái</th></tr></thead></table></div>
           <p id="cal-empty" class="notice" hidden>Không có sự kiện trong bộ lọc này</p>
         </section>
         <div id="cal-loading" class="loading" role="status">Đang xác minh số liệu chính thức của Mỹ…</div>

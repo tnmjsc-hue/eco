@@ -1,21 +1,47 @@
 export const CALENDAR_VERSION = 'us-macro-calendar-v1.1.0';
 const CATEGORIES=['inflation','labor','growth','policy'];
 
-export function dayInZone(iso, zone = 'Asia/Ho_Chi_Minh') {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(iso));
-  const get = key => parts.find(p => p.type === key).value;
-  return `${get('year')}-${get('month')}-${get('day')}`;
+export const VIETNAM_TIME_ZONE = 'Asia/Ho_Chi_Minh';
+
+const dayFormatter = zone => new Intl.DateTimeFormat('sv-SE', {
+  timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit',
+});
+const eventDay = (event, formatter) => event.scheduled_at === null
+  ? event.source_day
+  : formatter.format(new Date(event.scheduled_at));
+const sortTimestamp = event => event.scheduled_at === null
+  ? Number.MIN_SAFE_INTEGER
+  : Date.parse(event.scheduled_at);
+
+export function dayInZone(iso, zone = VIETNAM_TIME_ZONE) {
+  return dayFormatter(zone).format(new Date(iso));
 }
-export function selectEvents(events, { start, end, zone, impact = 'all', currency = 'all', search = '' }) {
+
+export function selectEvents(events, { start, end, zone = VIETNAM_TIME_ZONE, impact = 'all', currency = 'all', search = '' }) {
   const needle = search.trim().toLowerCase();
-  const dateFormatter = new Intl.DateTimeFormat('sv-SE', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const formatter = dayFormatter(zone);
   return events.filter(e => {
-    const day = e.scheduled_at === null ? e.source_day : dateFormatter.format(new Date(e.scheduled_at));
+    const day = eventDay(e,formatter);
     const text = [e.title,e.source_title,e.provider,e.currency].filter(Boolean).join(' ').toLowerCase();
     return day >= start && day <= end && (impact === 'all' || e.impact === impact)
       && (currency === 'all' || e.currency === currency) && text.includes(needle);
   });
 }
+
+export function groupCalendarDays(events, zone = VIETNAM_TIME_ZONE) {
+  const formatter = dayFormatter(zone);
+  const days = new Map();
+  for (const event of events) {
+    const day = eventDay(event,formatter);
+    if (!days.has(day)) days.set(day,[]);
+    days.get(day).push(event);
+  }
+  return [...days.keys()].sort().map(day => ({
+    day,
+    events: days.get(day).sort((left,right) => sortTimestamp(left) - sortTimestamp(right)),
+  }));
+}
+
 export function validateCalendar(data) {
   if (data.schema_version !== '1.1.0' || data.calendar_version !== CALENDAR_VERSION || data.scope !== 'US_major_macro'
     || !Array.isArray(data.events) || data.events.length < 15 || !Array.isArray(data.indicators) || data.indicators.length !== 5

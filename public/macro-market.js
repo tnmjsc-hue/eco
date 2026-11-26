@@ -1,5 +1,6 @@
+import { VIETNAM_TIME_ZONE } from './calendar-model.js?v=calendar-vn-days-1';
 import {loadMarket} from './macro-market-model.js?v=prob-20261009a';
-import {translate as t,numberLocale} from './i18n.js?v=forex-factory-feed-1';
+import {translate as t,numberLocale} from './i18n.js?v=calendar-vn-days-1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=s=>esc(t(s));
@@ -7,7 +8,7 @@ const NAMES={treasury_2y:'Lợi suất Mỹ 2 năm',treasury_10y:'Lợi suất M
 const REASONS={missing_pair:'Chưa đủ hai ngày quan sát',missing_latest_value:'Nguồn thiếu giá trị ngày mới nhất',pair_gap:'Hai ngày quan sát cách nhau quá xa',invalid_price_or_index:'Giá hoặc chỉ số không hợp lệ',no_approved_gold_source:'Chưa có nguồn vàng được phép hiển thị',observation_expired:'Ngày quan sát đã cũ'};
 let good=null,busy=false,warning=null;
 const day=iso=>iso?new Intl.DateTimeFormat(numberLocale(),{timeZone:'UTC',dateStyle:'medium'}).format(new Date(iso)):'—';
-const timestamp=iso=>new Intl.DateTimeFormat(numberLocale(),{timeZone:$('cal-zone').value,dateStyle:'medium',timeStyle:'short'}).format(new Date(iso));
+const timestamp=iso=>new Intl.DateTimeFormat(numberLocale(),{timeZone:VIETNAM_TIME_ZONE,dateStyle:'medium',timeStyle:'short'}).format(new Date(iso));
 const num=value=>value===null?'—':Number(value).toLocaleString(numberLocale(),{maximumFractionDigits:4});
 export function renderMarket(){
   if(!good){$('market-error').hidden=false;$('market-error').textContent=t(warning||'Đang xác minh số đo thị trường…');$('macro-market-check').textContent=t('Chưa có số đo thị trường đã xác minh để đối chiếu kịch bản tài sản.');return;}

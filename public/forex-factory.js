@@ -1,5 +1,5 @@
-import { translate as t, numberLocale } from './i18n.js?v=forex-factory-feed-1';
-import { dayInZone, selectEvents } from './calendar-model.js?v=forex-factory-feed-1';
+import { translate as t, numberLocale } from './i18n.js?v=calendar-vn-days-1';
+import { VIETNAM_TIME_ZONE, dayInZone, selectEvents, groupCalendarDays } from './calendar-model.js?v=calendar-vn-days-1';
 import { verifyForexPointer, verifyForexCalendar, forexEventStatus } from './forex-factory-model.js?v=forex-factory-feed-1';
 
 const SOURCE = 'https://calendar.forexfactory.com';
@@ -28,7 +28,7 @@ function addDays(day, count) {
 }
 
 function setRange(kind) {
-  const today = dayInZone(new Date().toISOString(), $('cal-zone').value);
+  const today = dayInZone(new Date().toISOString());
   let start = today, end = today;
   if (kind === 'week' || kind === 'next') {
     const day = new Date(today + 'T12:00:00Z').getUTCDay();
@@ -96,82 +96,97 @@ function addReading(row, key, label, event) {
 }
 
 function render() {
-  for (const id of ['cal-zone','cal-impact','ff-currency']) {
+  for (const id of ['cal-impact','ff-currency']) {
     for (const option of $(id).options) {
       option.dataset.sourceLabel ??= option.textContent;
       option.textContent = t(option.dataset.sourceLabel);
     }
   }
   if (!state.data) return;
-  const start = $('cal-start').value, end = $('cal-end').value, zone = $('cal-zone').value;
+  const start = $('cal-start').value, end = $('cal-end').value;
   const validRange = Boolean(start && end && start <= end);
   $('cal-range-error').hidden = validRange;
   const rows = validRange ? selectEvents(state.data.events, {
-    start, end, zone, impact:$('cal-impact').value, currency:$('ff-currency').value, search:$('cal-search').value,
+    start, end, impact:$('cal-impact').value, currency:$('ff-currency').value, search:$('cal-search').value,
   }) : [];
-  $('cal-count').textContent = rows.length + ' ' + t('sự kiện') + ' · ' + zone;
+  $('cal-count').textContent = rows.length + ' ' + t('sự kiện') + ' · ' + t('Việt Nam (UTC+7)');
   const stale = !state.health || state.health.outcome !== 'ok'
     || Date.now() - Date.parse(state.health.last_success_at) > 30 * 3600000;
   const freshness = $('ff-freshness');
-  const dateTime = new Intl.DateTimeFormat(numberLocale(), {timeZone:zone, dateStyle:'medium',timeStyle:'short'});
+  const dateTime = new Intl.DateTimeFormat(numberLocale(), {timeZone:VIETNAM_TIME_ZONE, dateStyle:'medium',timeStyle:'short'});
   freshness.textContent = t('Snapshot Forex Factory') + ' · ' + dateTime.format(new Date(state.data.source.retrieved_at))
     + ' · ' + t('Phạm vi lịch') + ' ' + state.data.coverage_start + ' → ' + state.data.coverage_end
     + (stale ? ' · ' + t('Dữ liệu có thể đã cũ') : '');
   freshness.classList.toggle('negative',stale);
-  const dateFormat = new Intl.DateTimeFormat(numberLocale(), {timeZone:zone,dateStyle:'medium'});
-  const sourceDate = new Intl.DateTimeFormat(numberLocale(), {timeZone:'UTC',dateStyle:'medium'});
-  const timeFormat = new Intl.DateTimeFormat(numberLocale(), {timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  const dateFormat = new Intl.DateTimeFormat(numberLocale(), {timeZone:VIETNAM_TIME_ZONE,dateStyle:'full'});
+  const timeFormat = new Intl.DateTimeFormat(numberLocale(), {timeZone:VIETNAM_TIME_ZONE,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
   const fragment = document.createDocumentFragment();
   const statuses = [];
-  for (const event of rows) {
-    const row = node('tr');
-    row.dataset.ffEvent = event.id;
-    for (const label of ['Ngày / giờ','Tiền tệ','Ảnh hưởng']) {
-      const cell = node('td');
-      cell.dataset.label = t(label);
-      row.append(cell);
+  const days = groupCalendarDays(rows);
+  for (const {day,events} of days) {
+    const group = node('tbody');
+    group.dataset.calDay = day;
+    const heading = node('tr',undefined,'cal-day-heading');
+    const header = node('th');
+    header.scope = 'rowgroup';
+    header.colSpan = 8;
+    const date = node('time',dateFormat.format(new Date(day + 'T12:00:00Z')));
+    date.dateTime = day;
+    header.append(date);
+    heading.append(header);
+    group.append(heading);
+
+    for (const event of events) {
+      const row = node('tr');
+      row.dataset.ffEvent = event.id;
+      for (const label of ['Giờ','Tiền tệ','Ảnh hưởng']) {
+        const cell = node('td');
+        cell.dataset.label = t(label);
+        row.append(cell);
+      }
+      const scheduled = event.scheduled_at ? new Date(event.scheduled_at) : null;
+      if (scheduled) {
+        const time = node('time',timeFormat.format(scheduled),'cal-event-time');
+        time.dateTime = event.scheduled_at;
+        row.cells[0].append(time);
+      } else {
+        row.cells[0].append(node('span',t(event.time_label || 'Chưa rõ giờ'),'small muted'));
+      }
+      row.cells[1].append(node('span',event.currency,'badge'));
+      row.cells[2].append(node('span',t(impacts[event.impact]),'cal-impact ' + event.impact));
+      const name = node('td',undefined,'cal-event');
+      const button = node('button',event.title,'cal-event-button');
+      button.type = 'button';
+      button.dataset.calEvent = String(event.id);
+      button.setAttribute('aria-pressed',String(event.id === state.selected));
+      name.append(button);
+      if (event.source_path) {
+        const link = node('a','Forex Factory ↗');
+        link.href = SOURCE + event.source_path;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        name.append(link);
+      }
+      row.append(name);
+      addReading(row,'actual','Thực tế',event);
+      addReading(row,'forecast','Dự báo',event);
+      addReading(row,'previous','Kỳ trước',event);
+      const statusCell = node('td');
+      statusCell.dataset.label = t('Trạng thái');
+      const status = node('span',undefined,'small ff-status');
+      statusCell.append(status);
+      row.append(statusCell);
+      statuses.push([event,status]);
+      group.append(row);
     }
-    const scheduled = event.scheduled_at ? new Date(event.scheduled_at) : null;
-    if (scheduled) {
-      const time = node('time',dateFormat.format(scheduled));
-      time.dateTime = event.scheduled_at;
-      time.append(node('b',timeFormat.format(scheduled)));
-      row.cells[0].append(time);
-    } else {
-      row.cells[0].append(node('time',sourceDate.format(new Date(event.source_day + 'T12:00:00Z'))));
-      row.cells[0].append(node('span',t(event.time_label || 'Chưa rõ giờ'),'small muted'));
-    }
-    row.cells[1].append(node('span',event.currency,'badge'));
-    row.cells[2].append(node('span',t(impacts[event.impact]),'cal-impact ' + event.impact));
-    const name = node('td',undefined,'cal-event');
-    const button = node('button',event.title,'cal-event-button');
-    button.type = 'button';
-    button.dataset.calEvent = String(event.id);
-    button.setAttribute('aria-pressed',String(event.id === state.selected));
-    name.append(button);
-    if (event.source_path) {
-      const link = node('a','Forex Factory ↗');
-      link.href = SOURCE + event.source_path;
-      link.target = '_blank';
-      link.rel = 'noreferrer';
-      name.append(link);
-    }
-    row.append(name);
-    addReading(row,'actual','Thực tế',event);
-    addReading(row,'forecast','Dự báo',event);
-    addReading(row,'previous','Kỳ trước',event);
-    const statusCell = node('td');
-    statusCell.dataset.label = t('Trạng thái');
-    const status = node('span',undefined,'small ff-status');
-    statusCell.append(status);
-    row.append(statusCell);
-    statuses.push([event,status]);
-    fragment.append(row);
+    fragment.append(group);
   }
-  $('cal-rows').replaceChildren(fragment);
+  const table = $('cal-rows');
+  for (const body of [...table.tBodies]) body.remove();
+  table.append(fragment);
   $('cal-empty').hidden = !validRange || rows.length > 0;
   state.statuses = statuses;
-  renderWatch(rows);
+  renderWatch(days.flatMap(group => group.events));
 }
 
 async function fetchJson(path) {
@@ -231,7 +246,7 @@ export function initForexCalendar() {
   document.querySelectorAll('[data-cal-range]').forEach(button => {
     button.addEventListener('click',() => setRange(button.dataset.calRange));
   });
-  for (const id of ['cal-start','cal-end','cal-zone','cal-impact','ff-currency']) $(id).addEventListener('change',render);
+  for (const id of ['cal-start','cal-end','cal-impact','ff-currency']) $(id).addEventListener('change',render);
   $('cal-search').addEventListener('input',render);
   $('cal-rows').addEventListener('click',event => {
     const button = event.target.closest('[data-cal-event]');

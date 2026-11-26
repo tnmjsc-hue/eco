@@ -7,7 +7,7 @@ const url=process.argv[2]||'http://127.0.0.1:8877/';
 await mkdir('test-results',{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
 try{
-  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  const page=await browser.newPage({viewport:{width:1440,height:1000},timezoneId:'America/New_York'});
   const clearRoutes=async()=>{
     await page.waitForFunction(()=>!document.getElementById('cal-refresh').disabled);
     await page.unrouteAll({behavior:'wait'});
@@ -54,18 +54,35 @@ try{
   const currencyFilter = page.locator('#ff-currency');
   const foreignCurrency = forexData.events.find(event => event.currency !== 'USD' && event.actual !== null).currency;
   await currencyFilter.selectOption(foreignCurrency);
-  const matchingRows = page.locator('#cal-rows tr');
+  const matchingRows = page.locator('#cal-rows tr[data-ff-event]');
   assert.ok(await matchingRows.count() > 0);
   assert.ok((await matchingRows.locator('td:nth-child(2)').allTextContents()).every(c => c === foreignCurrency));
   assert.ok((await matchingRows.locator('td:nth-child(5)').allTextContents()).some(actual => actual !== '—'));
   await currencyFilter.selectOption('all');
+
+  assert.match(await page.locator('#cal-count').innerText(),/Việt Nam \(UTC\+7\)/);
+  assert.equal(await page.locator('#cal-zone').count(),0);
+  const vietnamDay = iso => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short'}).format(new Date(iso));
+  const vietnamTime = iso => new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));
+  const midnightEvent = forexData.events.find(event => event.scheduled_at
+    && vietnamDay(event.scheduled_at) !== event.scheduled_at.slice(0,10));
+  assert.ok(midnightEvent);
+  const localDay = vietnamDay(midnightEvent.scheduled_at);
+  await page.locator('#cal-start').fill(localDay);
+  await page.locator('#cal-end').fill(localDay);
+  await page.locator('#cal-end').dispatchEvent('change');
+  const heading = page.locator('#cal-rows tbody[data-cal-day="'+localDay+'"] .cal-day-heading time');
+  assert.equal(await heading.getAttribute('datetime'),localDay);
+  assert.equal(await page.locator('#cal-rows .cal-day-heading').count(),1);
+  const midnightRow = page.locator('#cal-rows tbody[data-cal-day="'+localDay+'"] tr[data-ff-event="'+midnightEvent.id+'"]');
+  assert.equal(await midnightRow.locator('.cal-event-time').innerText(),vietnamTime(midnightEvent.scheduled_at));
+  assert.equal(await midnightRow.locator('.cal-event-time').getAttribute('datetime'),midnightEvent.scheduled_at);
   const expected = forexData.events.find(e => e.scheduled_at && e.expects_actual && !e.actual && Date.parse(e.scheduled_at) > Date.now());
   assert.ok(expected);
   const releaseTime = Date.parse(expected.scheduled_at);
   await page.evaluate(time => { window.originalDateNow = Date.now; Date.now = () => time; },releaseTime-10000);
-  await page.locator('#cal-zone').selectOption('UTC');
-  await page.locator('#cal-start').fill(expected.scheduled_at.slice(0,10));
-  await page.locator('#cal-end').fill(expected.scheduled_at.slice(0,10));
+  await page.locator('#cal-start').fill(vietnamDay(expected.scheduled_at));
+  await page.locator('#cal-end').fill(vietnamDay(expected.scheduled_at));
   await page.locator('#cal-end').dispatchEvent('change');
   await page.locator('[data-cal-event="'+expected.id+'"]').click();
   assert.equal(await page.locator('#ff-countdown').isVisible(),true);
@@ -74,7 +91,6 @@ try{
   await page.locator('#ff-watch-status[data-status="waiting"]').waitFor({timeout:3000});
   assert.equal(await page.locator('#ff-countdown').isVisible(),false);
   await page.evaluate(() => { Date.now = window.originalDateNow; delete window.originalDateNow; });
-  await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
   await page.locator('[data-cal-range="week"]').click();
   await page.route('**/data/forex-factory/latest.json',route=>route.abort());
   await page.locator('#cal-refresh').click();
@@ -102,11 +118,9 @@ try{
   assert.equal(await page.locator('#macro-latest-title').innerText(),latest);
   assert.equal(await page.locator('#macro-regime').innerText(),context);
   assert.equal(await page.locator('.usd-bullish,.usd-bearish').count(),0);
-  await page.locator('#cal-zone').selectOption('America/New_York');
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.equal(await page.locator('#market-content').getAttribute('data-release-id'),marketIdentity);
   await page.locator('#cal-search').fill('');
-  await page.locator('#cal-zone').selectOption('Asia/Ho_Chi_Minh');
   await page.locator('.macro-peers>summary').click();
   assert.ok(await page.locator('#macro-peers tr').count()>=7);
   assert.equal(await page.locator('.macro-details').isVisible(), false);
@@ -132,6 +146,7 @@ try{
   await page.locator('[data-cal-range="week"]').click();
   for(const width of [1440,768,390,360]){
     await page.setViewportSize({width,height:1000});
+    assert.equal(await page.locator('#cal-rows .cal-day-heading').first().isVisible(),true);
     assert.equal(await forexFactory.isVisible(), true);
     await page.screenshot({path:`test-results/macro-${width}.png`,fullPage:true});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`width ${width}`);
@@ -188,5 +203,5 @@ try{
   await page.locator('[data-view="calendar"]').click();
   assert.equal(await page.locator('#macro-content').getAttribute('data-assessment-id'),identity);
   assert.deepEqual(errors,[]);assert.deepEqual(providerRequests,[]);
-  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_new_tab:true,forex_factory_table:true,forex_factory_waiting:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
+  console.log(JSON.stringify({calendar_macro_browser_verified:true,url,assessment_id:identity,market_release_id:marketIdentity,probability_release_id:probabilityIdentity,viewports:[1440,768,390,360],languages:8,source_requests:0,forex_factory_new_tab:true,forex_factory_table:true,forex_factory_waiting:true,vietnam_date_groups:true,filter_invariance:true,retained_date:true,checksum_guard:true,dashboard_regression:true}));
 }finally{await browser.close();}

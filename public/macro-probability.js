@@ -1,5 +1,6 @@
+import { VIETNAM_TIME_ZONE } from './calendar-model.js?v=calendar-vn-days-1';
 import {loadProbability} from './macro-probability-model.js?v=prob-20261009a';
-import {translate as t,numberLocale} from './i18n.js?v=forex-factory-feed-1';
+import {translate as t,numberLocale} from './i18n.js?v=calendar-vn-days-1';
 const $=id=>document.getElementById(id);
 const STATES={collecting:'Đang thu thập mẫu',awaiting_calibration:'Chờ mẫu hiệu chỉnh',awaiting_test:'Chờ kiểm tra ngoài mẫu',validation_failed:'Chưa vượt kiểm định',validated_holdout:'Đã vượt kiểm tra ngoài mẫu nội bộ'};
 let good=null,warning=null,busy=false,calendarId=null;
@@ -14,7 +15,7 @@ export function renderProbability(){
   $('prob-train').textContent=`${e.train_n}/90`;$('prob-calibration').textContent=`${e.calibration_n}/45`;$('prob-test').textContent=`${e.test_n}/45`;
   $('prob-regime-samples').textContent=`${t('Mẫu của kịch bản hiện tại')}: ${e.regime_counts.train}/30 · ${e.regime_counts.calibration}/15 · ${e.regime_counts.test}/15`;
   const date=x=>new Intl.DateTimeFormat(numberLocale(),{timeZone:'UTC',dateStyle:'medium'}).format(new Date(x));
-  $('prob-window').textContent=c?`${t('Case đầu kỳ')}: ${c.regime_id} · ${date(c.base_date)} → ${date(c.end_date)} UTC · ${t('Ghi nhận lúc')}: ${new Intl.DateTimeFormat(numberLocale(),{timeZone:$('cal-zone').value,dateStyle:'medium',timeStyle:'short'}).format(new Date(c.issued_at))}`:t('Chưa ghi nhận case đủ điều kiện');
+  $('prob-window').textContent=c?`${t('Case đầu kỳ')}: ${c.regime_id} · ${date(c.base_date)} → ${date(c.end_date)} UTC · ${t('Ghi nhận lúc')}: ${new Intl.DateTimeFormat(numberLocale(),{timeZone:VIETNAM_TIME_ZONE,dateStyle:'medium',timeStyle:'short'}).format(new Date(c.issued_at))}`:t('Chưa ghi nhận case đủ điều kiện');
   const canShow=!outdated&&c?.probabilities&&Date.now()<Date.parse(c.end_date)+86400000&&e.state==='validated_holdout';
   for(const k of ['down','flat','up'])$(`prob-${k}`).textContent=canShow?`${(Number(c.probabilities[k])*100).toLocaleString(numberLocale(),{maximumFractionDigits:1})}%`:'—';
   $('prob-note').textContent=t(canShow?'Xác suất của mô hình ECO cho case đã ghi nhận; khả năng dự báo có thể thay đổi.':'Chưa có xác suất đủ kiểm định. Dấu — không phải 0% hoặc 50%; mô hình đang ghi nhận dữ liệu để học.');

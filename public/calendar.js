@@ -1,15 +1,15 @@
-import { translate as t, numberLocale } from './i18n.js?v=forex-factory-feed-1';
-import { validateCalendar } from './calendar-model.js?v=forex-factory-feed-1';
-import { initForexCalendar, refreshForexCalendar } from './forex-factory.js?v=forex-factory-feed-1';
-import {refreshMacro,renderMacro} from './macro.js?v=forex-factory-feed-1';
-import {refreshMarket,renderMarket} from './macro-market.js?v=forex-factory-feed-1';
-import {refreshProbability,renderProbability} from './macro-probability.js?v=forex-factory-feed-1';
+import { translate as t, numberLocale } from './i18n.js?v=calendar-vn-days-1';
+import { VIETNAM_TIME_ZONE, validateCalendar } from './calendar-model.js?v=calendar-vn-days-1';
+import { initForexCalendar, refreshForexCalendar } from './forex-factory.js?v=calendar-vn-days-1';
+import {refreshMacro,renderMacro} from './macro.js?v=calendar-vn-days-1';
+import {refreshMarket,renderMarket} from './macro-market.js?v=calendar-vn-days-1';
+import {refreshProbability,renderProbability} from './macro-probability.js?v=calendar-vn-days-1';
 
 const $ = id => document.getElementById(id);
 const state = { data: null, status: null, checked: 0, busy: false, release: null, hash: null };
 const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const txt = source => esc(t(source));
-const dateLabel = iso => new Intl.DateTimeFormat(numberLocale(), {timeZone: $('cal-zone').value, dateStyle: 'medium',timeStyle:'short'}).format(new Date(iso));
+const dateLabel = iso => new Intl.DateTimeFormat(numberLocale(), {timeZone: VIETNAM_TIME_ZONE, dateStyle: 'medium',timeStyle:'short'}).format(new Date(iso));
 
 function render() {
   renderMacro();
@@ -64,7 +64,6 @@ export function openCalendar() {
 
 export function initCalendar() {
   initForexCalendar();
-  $('cal-zone').addEventListener('change',render);
   $('cal-refresh').addEventListener('click',() => {
     refreshForexCalendar(true);
     load(true);

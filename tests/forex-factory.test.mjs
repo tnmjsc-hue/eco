@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { verifyForexCalendar, verifyForexPointer, forexEventStatus } from '../public/forex-factory-model.js';
-import { selectEvents } from '../public/calendar-model.js';
+import { groupCalendarDays, selectEvents } from '../public/calendar-model.js';
 
 test('Forex Factory published release matches its immutable pointer and has verified private backup', async () => {
   const pointer = JSON.parse(await readFile('public/data/forex-factory/latest.json'));
@@ -34,4 +34,18 @@ test('Forex Factory waiting and range filters respect release status, timezones 
   assert.deepEqual(selectEvents([event,masked],query),[event]);
   assert.deepEqual(selectEvents([event,masked],{...query,start:'2026-11-26',end:'2026-11-26'}),[masked]);
   assert.deepEqual(selectEvents([event],{...query,currency:'USD'}),[]);
+});
+
+test('Vietnam calendar date groups split at 17:00 UTC and put date-only events first', () => {
+  const endOfDay = { id:1, scheduled_at:'2026-11-26T16:59:00Z', source_day:'2026-11-26' };
+  const startOfDay = { id:2, scheduled_at:'2026-11-26T17:00:00Z', source_day:'2026-11-26' };
+  const next = { id:3, scheduled_at:'2026-11-27T00:30:00Z', source_day:'2026-11-27' };
+  const allDay = { id:4, scheduled_at:null, source_day:'2026-11-27' };
+  const events = [next,startOfDay,allDay,endOfDay];
+  assert.deepEqual(groupCalendarDays(events),[
+    { day:'2026-11-26', events:[endOfDay] },
+    { day:'2026-11-27', events:[allDay,startOfDay,next] },
+  ]);
+  assert.deepEqual(selectEvents(events,{start:'2026-11-26',end:'2026-11-26'}),[endOfDay]);
+  assert.deepEqual(groupCalendarDays([]),[]);
 });
